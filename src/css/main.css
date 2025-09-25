@@ -57,7 +57,9 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 500px;
 }
 
 .game-board-container {
@@ -98,38 +100,41 @@ body {
 
 .game-info {
     display: flex;
-    gap: 2rem;
-    font-size: 1.2rem;
+    gap: 1.5rem;
+    font-size: 1.1rem;
     font-weight: 600;
     flex-wrap: wrap;
     justify-content: center;
     background: linear-gradient(135deg, var(--header-bg) 0%, var(--cell-bg) 100%);
-    padding: 1.5rem 2rem;
-    border-radius: 16px;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--border-color);
+    width: 100%;
+    order: -1; /* Move to top */
 }
 
 .game-info > div {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
+    gap: 0.3rem;
+    padding: 0.4rem 0.8rem;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    min-width: 80px;
+    border-radius: 8px;
+    min-width: 70px;
+    flex: 1;
 }
 
 .game-info span:first-child {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     opacity: 0.8;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .game-info span:last-child {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--primary-color);
 }
@@ -329,8 +334,9 @@ body {
 .game-area {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.5rem;
     align-items: center;
+    width: 100%;
 }
 
 .game-board-container {
@@ -391,14 +397,24 @@ body {
     
     .game-info {
         flex-direction: row;
-        gap: 1rem;
-        padding: 1rem;
-        flex-wrap: wrap;
+        gap: 0.8rem;
+        padding: 0.8rem;
+        flex-wrap: nowrap;
+        order: -1;
     }
     
     .game-info > div {
-        min-width: 70px;
-        padding: 0.5rem;
+        min-width: 60px;
+        padding: 0.3rem 0.5rem;
+        flex: 1;
+    }
+    
+    .game-info span:first-child {
+        font-size: 0.7rem;
+    }
+    
+    .game-info span:last-child {
+        font-size: 1rem;
     }
     
     .blocks-container {
@@ -424,8 +440,22 @@ body {
 
 @media (max-width: 480px) {
     .game-info {
-        flex-direction: column;
+        flex-direction: row;
         gap: 0.5rem;
+        padding: 0.6rem;
+    }
+    
+    .game-info > div {
+        min-width: 50px;
+        padding: 0.2rem 0.3rem;
+    }
+    
+    .game-info span:first-child {
+        font-size: 0.6rem;
+    }
+    
+    .game-info span:last-child {
+        font-size: 0.9rem;
     }
     
     .blocks-container {
