@@ -5,6 +5,8 @@
 
 import { BlockManager } from './game/blocks.js';
 import { BlockPalette } from './ui/block-palette.js';
+import { ScoringSystem } from './game/scoring.js';
+import { EffectsSystem } from './ui/effects.js';
 
 class BlockdokuGame {
     constructor() {
@@ -20,6 +22,8 @@ class BlockdokuGame {
         // Initialize block management
         this.blockManager = new BlockManager();
         this.blockPalette = new BlockPalette('block-palette', this.blockManager);
+        this.scoringSystem = new ScoringSystem();
+        this.effectsSystem = new EffectsSystem(this.canvas, this.ctx);
         this.selectedBlock = null;
         this.previewPosition = null;
         
@@ -43,6 +47,25 @@ class BlockdokuGame {
         this.generateNewBlocks();
         this.drawBoard();
         this.updateUI();
+        this.startGameLoop();
+    }
+    
+    startGameLoop() {
+        const gameLoop = () => {
+            this.update();
+            this.draw();
+            requestAnimationFrame(gameLoop);
+        };
+        gameLoop();
+    }
+    
+    update() {
+        this.effectsSystem.update();
+    }
+    
+    draw() {
+        this.drawBoard();
+        this.effectsSystem.render();
     }
     
     setupEventListeners() {
@@ -276,17 +299,45 @@ class BlockdokuGame {
     }
     
     checkLineClears() {
-        // This will be implemented in Milestone 3
-        // For now, just a placeholder
-        console.log('Checking line clears...');
+        // Check for completed lines
+        const clearedLines = this.scoringSystem.checkAndClearLines(this.board);
+        
+        // If any lines were cleared, process them
+        if (clearedLines.rows.length > 0 || clearedLines.columns.length > 0 || clearedLines.squares.length > 0) {
+            const result = this.scoringSystem.clearLines(this.board, clearedLines);
+            this.board = result.board;
+            
+            // Update score and level
+            this.score = this.scoringSystem.getScore();
+            this.level = this.scoringSystem.getLevel();
+            
+            // Create visual effects
+            this.effectsSystem.createLineClearEffect(clearedLines);
+            
+            // Create score popup
+            const centerX = this.canvas.width / 2;
+            const centerY = this.canvas.height / 2;
+            this.effectsSystem.createScorePopup(centerX, centerY, result.scoreGained);
+            
+            // Create combo effect if applicable
+            const combo = this.scoringSystem.getCombo();
+            if (combo > 1) {
+                this.effectsSystem.createComboEffect(combo, centerX, centerY + 50);
+            }
+            
+            // Update UI
+            this.updateUI();
+        }
     }
     
     newGame() {
         this.board = this.initializeBoard();
+        this.scoringSystem.reset();
         this.score = 0;
         this.level = 1;
         this.selectedBlock = null;
         this.previewPosition = null;
+        this.effectsSystem.clear();
         this.generateNewBlocks();
         this.drawBoard();
         this.updateUI();
@@ -295,6 +346,18 @@ class BlockdokuGame {
     updateUI() {
         document.getElementById('score').textContent = this.score;
         document.getElementById('level').textContent = this.level;
+        document.getElementById('combo').textContent = this.scoringSystem.getCombo();
+    }
+    
+    // Get game statistics
+    getStats() {
+        return {
+            score: this.score,
+            level: this.level,
+            linesCleared: this.scoringSystem.getLinesCleared(),
+            combo: this.scoringSystem.getCombo(),
+            maxCombo: this.scoringSystem.getMaxCombo()
+        };
     }
 }
 
