@@ -3,12 +3,13 @@
  * MVT Milestone 2: Basic Block Placement System
  */
 
-import { BlockManager } from './game/blocks.js';
-import { BlockPalette } from './ui/block-palette.js';
-import { ScoringSystem } from './game/scoring.js';
-import { EffectsSystem } from './ui/effects.js';
-import { PWAInstallManager } from './pwa/install.js';
-import { OfflineManager } from './pwa/offline.js';
+// Temporarily comment out all imports to debug
+// import { BlockManager } from './game/blocks.js';
+// import { BlockPalette } from './ui/block-palette.js';
+// import { ScoringSystem } from './game/scoring.js';
+// import { EffectsSystem } from './ui/effects.js';
+// import { PWAInstallManager } from './pwa/install.js';
+// import { OfflineManager } from './pwa/offline.js';
 
 class BlockdokuGame {
     constructor() {
@@ -21,13 +22,13 @@ class BlockdokuGame {
         this.level = 1;
         this.currentTheme = 'light';
         
-        // Initialize block management
-        this.blockManager = new BlockManager();
-        this.blockPalette = new BlockPalette('block-palette', this.blockManager);
-        this.scoringSystem = new ScoringSystem();
-        this.effectsSystem = new EffectsSystem(this.canvas, this.ctx);
-        this.pwaInstallManager = new PWAInstallManager();
-        this.offlineManager = new OfflineManager();
+        // Temporarily disable complex features
+        // this.blockManager = new BlockManager();
+        // this.blockPalette = new BlockPalette('block-palette', this.blockManager);
+        // this.scoringSystem = new ScoringSystem();
+        // this.effectsSystem = new EffectsSystem(this.canvas, this.ctx);
+        // this.pwaInstallManager = new PWAInstallManager();
+        // this.offlineManager = new OfflineManager();
         this.selectedBlock = null;
         this.previewPosition = null;
         
@@ -49,7 +50,7 @@ class BlockdokuGame {
     init() {
         this.setupEventListeners();
         this.registerServiceWorker();
-        this.generateNewBlocks();
+        // this.generateNewBlocks();
         this.drawBoard();
         this.updateUI();
         this.startGameLoop();
@@ -81,12 +82,12 @@ class BlockdokuGame {
     }
     
     update() {
-        this.effectsSystem.update();
+        // this.effectsSystem.update();
     }
     
     draw() {
         this.drawBoard();
-        this.effectsSystem.render();
+        // this.effectsSystem.render();
     }
     
     setupEventListeners() {
@@ -143,53 +144,54 @@ class BlockdokuGame {
         this.drawBoard();
     }
     
-    canPlaceBlock(row, col) {
-        if (!this.selectedBlock) return false;
-        return this.blockManager.canPlaceBlock(this.selectedBlock, row, col, this.board);
-    }
+    // Temporarily disabled complex block placement
+    // canPlaceBlock(row, col) {
+    //     if (!this.selectedBlock) return false;
+    //     return this.blockManager.canPlaceBlock(this.selectedBlock, row, col, this.board);
+    // }
     
-    placeBlock(row, col) {
-        if (!this.canPlaceBlock(row, col)) return;
-        
-        // Place the block on the board
-        this.board = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);
-        
-        // Remove the used block
-        this.blockManager.removeBlock(this.selectedBlock.id);
-        this.selectedBlock = null;
-        this.previewPosition = null;
-        
-        // Update UI
-        this.blockPalette.updateBlocks(this.blockManager.currentBlocks);
-        this.drawBoard();
-        this.updateUI();
-        
-        // Check for line clears
-        this.checkLineClears();
-        
-        // Generate new blocks if needed
-        if (this.blockManager.currentBlocks.length === 0) {
-            this.generateNewBlocks();
-        }
-        
-        // Auto-select the first available block
-        this.autoSelectNextBlock();
-    }
+    // placeBlock(row, col) {
+    //     if (!this.canPlaceBlock(row, col)) return;
+    //     
+    //     // Place the block on the board
+    //     this.board = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);
+    //     
+    //     // Remove the used block
+    //     this.blockManager.removeBlock(this.selectedBlock.id);
+    //     this.selectedBlock = null;
+    //     this.previewPosition = null;
+    //     
+    //     // Update UI
+    //     this.blockPalette.updateBlocks(this.blockManager.currentBlocks);
+    //     this.drawBoard();
+    //     this.updateUI();
+    //     
+    //     // Check for line clears
+    //     this.checkLineClears();
+    //     
+    //     // Generate new blocks if needed
+    //     if (this.blockManager.currentBlocks.length === 0) {
+    //         this.generateNewBlocks();
+    //     }
+    //     
+    //     // Auto-select the first available block
+    //     this.autoSelectNextBlock();
+    // }
     
-    generateNewBlocks() {
-        const newBlocks = this.blockManager.generateRandomBlocks(3);
-        this.blockPalette.updateBlocks(newBlocks);
-        // Auto-select the first block when new blocks are generated
-        this.autoSelectNextBlock();
-    }
+    // generateNewBlocks() {
+    //     const newBlocks = this.blockManager.generateRandomBlocks(3);
+    //     this.blockPalette.updateBlocks(newBlocks);
+    //     // Auto-select the first block when new blocks are generated
+    //     this.autoSelectNextBlock();
+    // }
     
-    autoSelectNextBlock() {
-        if (this.blockManager.currentBlocks.length > 0) {
-            const firstBlock = this.blockManager.currentBlocks[0];
-            this.selectedBlock = firstBlock;
-            this.blockPalette.selectBlockById(firstBlock.id);
-        }
-    }
+    // autoSelectNextBlock() {
+    //     if (this.blockManager.currentBlocks.length > 0) {
+    //         const firstBlock = this.blockManager.currentBlocks[0];
+    //         this.selectedBlock = firstBlock;
+    //         this.blockPalette.selectBlockById(firstBlock.id);
+    //     }
+    // }
     
     drawBoard() {
         const ctx = this.ctx;
@@ -319,47 +321,47 @@ class BlockdokuGame {
         }
     }
     
-    checkLineClears() {
-        // Check for completed lines
-        const clearedLines = this.scoringSystem.checkAndClearLines(this.board);
-        
-        // If any lines were cleared, process them
-        if (clearedLines.rows.length > 0 || clearedLines.columns.length > 0 || clearedLines.squares.length > 0) {
-            const result = this.scoringSystem.clearLines(this.board, clearedLines);
-            this.board = result.board;
-            
-            // Update score and level
-            this.score = this.scoringSystem.getScore();
-            this.level = this.scoringSystem.getLevel();
-            
-            // Create visual effects
-            this.effectsSystem.createLineClearEffect(clearedLines);
-            
-            // Create score popup
-            const centerX = this.canvas.width / 2;
-            const centerY = this.canvas.height / 2;
-            this.effectsSystem.createScorePopup(centerX, centerY, result.scoreGained);
-            
-            // Create combo effect if applicable
-            const combo = this.scoringSystem.getCombo();
-            if (combo > 1) {
-                this.effectsSystem.createComboEffect(combo, centerX, centerY + 50);
-            }
-            
-            // Update UI
-            this.updateUI();
-        }
-    }
+    // checkLineClears() {
+    //     // Check for completed lines
+    //     const clearedLines = this.scoringSystem.checkAndClearLines(this.board);
+    //     
+    //     // If any lines were cleared, process them
+    //     if (clearedLines.rows.length > 0 || clearedLines.columns.length > 0 || clearedLines.squares.length > 0) {
+    //         const result = this.scoringSystem.clearLines(this.board, clearedLines);
+    //         this.board = result.board;
+    //         
+    //         // Update score and level
+    //         this.score = this.scoringSystem.getScore();
+    //         this.level = this.scoringSystem.getLevel();
+    //         
+    //         // Create visual effects
+    //         this.effectsSystem.createLineClearEffect(clearedLines);
+    //         
+    //         // Create score popup
+    //         const centerX = this.canvas.width / 2;
+    //         const centerY = this.canvas.height / 2;
+    //         this.effectsSystem.createScorePopup(centerX, centerY, result.scoreGained);
+    //         
+    //         // Create combo effect if applicable
+    //         const combo = this.scoringSystem.getCombo();
+    //         if (combo > 1) {
+    //             this.effectsSystem.createComboEffect(combo, centerX, centerY + 50);
+    //         }
+    //         
+    //         // Update UI
+    //         this.updateUI();
+    //     }
+    // }
     
     newGame() {
         this.board = this.initializeBoard();
-        this.scoringSystem.reset();
+        // this.scoringSystem.reset();
         this.score = 0;
         this.level = 1;
         this.selectedBlock = null;
         this.previewPosition = null;
-        this.effectsSystem.clear();
-        this.generateNewBlocks();
+        // this.effectsSystem.clear();
+        // this.generateNewBlocks();
         this.drawBoard();
         this.updateUI();
     }
@@ -367,7 +369,8 @@ class BlockdokuGame {
     updateUI() {
         document.getElementById('score').textContent = this.score;
         document.getElementById('level').textContent = this.level;
-        document.getElementById('combo').textContent = this.scoringSystem.getCombo();
+        // document.getElementById('combo').textContent = this.scoringSystem.getCombo();
+        document.getElementById('combo').textContent = 0;
     }
     
     // Get game statistics
@@ -375,9 +378,9 @@ class BlockdokuGame {
         return {
             score: this.score,
             level: this.level,
-            linesCleared: this.scoringSystem.getLinesCleared(),
-            combo: this.scoringSystem.getCombo(),
-            maxCombo: this.scoringSystem.getMaxCombo()
+            linesCleared: 0, // this.scoringSystem.getLinesCleared(),
+            combo: 0, // this.scoringSystem.getCombo(),
+            maxCombo: 0 // this.scoringSystem.getMaxCombo()
         };
     }
 }
