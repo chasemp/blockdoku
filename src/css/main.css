@@ -228,8 +228,9 @@ body {
 
 .game-area {
     display: flex;
+    flex-direction: column;
     gap: 2rem;
-    align-items: flex-start;
+    align-items: center;
 }
 
 .game-board-container {
