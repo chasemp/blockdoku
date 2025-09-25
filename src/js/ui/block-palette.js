@@ -135,6 +135,11 @@ export class BlockPalette {
         this.dispatchSelectionEvent();
     }
     
+    selectBlockById(blockId) {
+        // Public method to select a block by ID (for auto-selection)
+        this.selectBlock(blockId);
+    }
+    
     rotateBlock(blockId) {
         const block = this.blockManager.getBlockById(blockId);
         if (!block) return;

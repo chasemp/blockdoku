@@ -127,11 +127,24 @@ class BlockdokuGame {
         if (this.blockManager.currentBlocks.length === 0) {
             this.generateNewBlocks();
         }
+        
+        // Auto-select the first available block
+        this.autoSelectNextBlock();
     }
     
     generateNewBlocks() {
         const newBlocks = this.blockManager.generateRandomBlocks(3);
         this.blockPalette.updateBlocks(newBlocks);
+        // Auto-select the first block when new blocks are generated
+        this.autoSelectNextBlock();
+    }
+    
+    autoSelectNextBlock() {
+        if (this.blockManager.currentBlocks.length > 0) {
+            const firstBlock = this.blockManager.currentBlocks[0];
+            this.selectedBlock = firstBlock;
+            this.blockPalette.selectBlockById(firstBlock.id);
+        }
     }
     
     drawBoard() {
