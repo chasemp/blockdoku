@@ -4,17 +4,18 @@
  */
 
 // Re-enable imports incrementally
-import { BlockManager } from '/js/game/blocks.js';
-import { BlockPalette } from '/js/ui/block-palette.js';
-import { ScoringSystem } from '/js/game/scoring.js';
-// import { GameStorage } from '/js/storage/game-storage.js';
+import { BlockManager } from '/src/js/game/blocks.js';
+import { BlockPalette } from '/src/js/ui/block-palette.js';
+import { ScoringSystem } from '/src/js/game/scoring.js';
+// import { GameStorage } from '/src/js/storage/game-storage.js';
 // import { EffectsSystem } from './ui/effects.js';
-// import { PWAInstallManager } from './pwa/install.js';
-// import { OfflineManager } from './pwa/offline.js';
+import { PWAInstallManager } from '/src/js/pwa/install.js';
+import { OfflineManager } from '/src/js/pwa/offline.js';
 
 
 class BlockdokuGame {
     constructor() {
+        console.log('BlockdokuGame constructor called');
         this.canvas = document.getElementById('game-board');
         this.ctx = this.canvas.getContext('2d');
         this.boardSize = 9;
@@ -30,8 +31,8 @@ class BlockdokuGame {
         this.scoringSystem = new ScoringSystem();
         // this.storage = new GameStorage();
         // this.effectsSystem = new EffectsSystem(this.canvas, this.ctx);
-        // this.pwaInstallManager = new PWAInstallManager();
-        // this.offlineManager = new OfflineManager();
+        this.pwaInstallManager = new PWAInstallManager();
+        this.offlineManager = new OfflineManager();
         this.selectedBlock = null;
         this.previewPosition = null;
         
@@ -59,12 +60,20 @@ class BlockdokuGame {
         this.drawBoard();
         this.updateUI();
         this.startGameLoop();
+        
+        // Initialize PWA managers after everything else is set up
+        console.log('About to initialize PWA managers...');
+        this.initializePWAManagers().then(() => {
+            console.log('PWA managers initialization completed');
+        }).catch(error => {
+            console.error('PWA managers initialization failed:', error);
+        });
     }
     
     async registerServiceWorker() {
         if ('serviceWorker' in navigator) {
             try {
-                const registration = await navigator.serviceWorker.register('/sw.js');
+                const registration = await navigator.serviceWorker.register('/public/sw.js');
                 console.log('PWA: Service Worker registered successfully', registration);
                 
                 // Check for updates
@@ -74,6 +83,29 @@ class BlockdokuGame {
             } catch (error) {
                 console.error('PWA: Service Worker registration failed', error);
             }
+        }
+    }
+
+    async initializePWAManagers() {
+        try {
+            console.log('Initializing PWA managers...');
+            
+            // Dynamically import PWA modules
+            const installModule = await import('/src/js/pwa/install.js');
+            const offlineModule = await import('/src/js/pwa/offline.js');
+            
+            // Create PWA managers
+            this.pwaInstallManager = new installModule.PWAInstallManager();
+            this.offlineManager = new offlineModule.OfflineManager();
+            
+            console.log('PWA managers initialized successfully');
+            console.log('PWAInstallManager:', this.pwaInstallManager);
+            console.log('OfflineManager:', this.offlineManager);
+            
+        } catch (error) {
+            console.error('Error initializing PWA managers:', error);
+            this.pwaInstallManager = null;
+            this.offlineManager = null;
         }
     }
     
@@ -473,7 +505,9 @@ class BlockdokuGame {
             difficulty: 'normal',
             autoSave: true
         };
-        this.storage.saveSettings(settings);
+        if (this.storage) {
+            this.storage.saveSettings(settings);
+        }
     }
 
     applyTheme(theme) {

@@ -139,16 +139,29 @@ export class BlockManager {
         const shape = block.shape;
         const boardSize = board.length;
         
+        // Validate inputs
+        if (!block || !shape || !board || !Array.isArray(board)) {
+            return false;
+        }
+        
         // Check if block fits within board boundaries
-        if (row + shape.length > boardSize || col + shape[0].length > boardSize) {
+        if (row < 0 || col < 0 || 
+            row + shape.length > boardSize || 
+            col + shape[0].length > boardSize) {
             return false;
         }
         
         // Check if all cells are empty
         for (let r = 0; r < shape.length; r++) {
             for (let c = 0; c < shape[r].length; c++) {
-                if (shape[r][c] === 1 && board[row + r][col + c] === 1) {
-                    return false;
+                if (shape[r][c] === 1) {
+                    // Additional bounds checking
+                    if (row + r >= boardSize || col + c >= boardSize) {
+                        return false;
+                    }
+                    if (!board[row + r] || board[row + r][col + c] === 1) {
+                        return false;
+                    }
                 }
             }
         }
