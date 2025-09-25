@@ -6,10 +6,165 @@
 // Re-enable imports incrementally
 import { BlockManager } from '/js/game/blocks.js';
 import { BlockPalette } from '/js/ui/block-palette.js';
-import { ScoringSystem } from '/js/game/scoring.js';
+// import { ScoringSystem } from '/js/game/scoring.js';
+// import { GameStorage } from '/js/storage/game-storage.js';
 // import { EffectsSystem } from './ui/effects.js';
 // import { PWAInstallManager } from './pwa/install.js';
 // import { OfflineManager } from './pwa/offline.js';
+
+// Temporary inline ScoringSystem for testing
+class ScoringSystem {
+    constructor() {
+        this.score = 0;
+        this.level = 1;
+        this.linesCleared = 0;
+        this.combo = 0;
+        this.maxCombo = 0;
+        this.basePoints = {
+            single: 10,
+            line: 100,
+            square: 500,
+            combo: 50
+        };
+    }
+    
+    checkAndClearLines(board) {
+        const clearedLines = {
+            rows: [],
+            columns: [],
+            squares: []
+        };
+        
+        // Check rows
+        for (let row = 0; row < 9; row++) {
+            if (this.isRowComplete(board, row)) {
+                clearedLines.rows.push(row);
+            }
+        }
+        
+        // Check columns
+        for (let col = 0; col < 9; col++) {
+            if (this.isColumnComplete(board, col)) {
+                clearedLines.columns.push(col);
+            }
+        }
+        
+        // Check 3x3 squares
+        for (let squareRow = 0; squareRow < 3; squareRow++) {
+            for (let squareCol = 0; squareCol < 3; squareCol++) {
+                if (this.isSquareComplete(board, squareRow, squareCol)) {
+                    clearedLines.squares.push({ row: squareRow, col: squareCol });
+                }
+            }
+        }
+        
+        return clearedLines;
+    }
+    
+    isRowComplete(board, row) {
+        for (let col = 0; col < 9; col++) {
+            if (board[row][col] === 0) return false;
+        }
+        return true;
+    }
+    
+    isColumnComplete(board, col) {
+        for (let row = 0; row < 9; row++) {
+            if (board[row][col] === 0) return false;
+        }
+        return true;
+    }
+    
+    isSquareComplete(board, squareRow, squareCol) {
+        const startRow = squareRow * 3;
+        const startCol = squareCol * 3;
+        for (let row = startRow; row < startRow + 3; row++) {
+            for (let col = startCol; col < startCol + 3; col++) {
+                if (board[row][col] === 0) return false;
+            }
+        }
+        return true;
+    }
+    
+    clearLines(board, clearedLines) {
+        // Clear rows
+        clearedLines.rows.forEach(row => {
+            for (let col = 0; col < 9; col++) {
+                board[row][col] = 0;
+            }
+        });
+        
+        // Clear columns
+        clearedLines.columns.forEach(col => {
+            for (let row = 0; row < 9; row++) {
+                board[row][col] = 0;
+            }
+        });
+        
+        // Clear squares
+        clearedLines.squares.forEach(square => {
+            const startRow = square.row * 3;
+            const startCol = square.col * 3;
+            for (let row = startRow; row < startRow + 3; row++) {
+                for (let col = startCol; col < startCol + 3; col++) {
+                    board[row][col] = 0;
+                }
+            }
+        });
+    }
+    
+    calculateScore(clearedLines) {
+        let scoreGained = 0;
+        const totalLines = clearedLines.rows.length + clearedLines.columns.length + clearedLines.squares.length;
+        
+        if (totalLines > 0) {
+            // Base score for lines
+            scoreGained += clearedLines.rows.length * this.basePoints.line;
+            scoreGained += clearedLines.columns.length * this.basePoints.line;
+            scoreGained += clearedLines.squares.length * this.basePoints.square;
+            
+            // Combo bonus
+            if (totalLines > 1) {
+                this.combo++;
+                this.maxCombo = Math.max(this.maxCombo, this.combo);
+                scoreGained += this.combo * this.basePoints.combo;
+            } else {
+                this.combo = 0;
+            }
+            
+            this.score += scoreGained;
+            this.linesCleared += totalLines;
+            
+            // Level up every 10 lines
+            const newLevel = Math.floor(this.linesCleared / 10) + 1;
+            if (newLevel > this.level) {
+                this.level = newLevel;
+            }
+        }
+        
+        return scoreGained;
+    }
+    
+    reset() {
+        this.score = 0;
+        this.level = 1;
+        this.linesCleared = 0;
+        this.combo = 0;
+        this.maxCombo = 0;
+    }
+    
+    getCombo() {
+        return this.combo;
+    }
+    
+    getMaxCombo() {
+        return this.maxCombo;
+    }
+    
+    getLinesCleared() {
+        return this.linesCleared;
+    }
+}
 
 class BlockdokuGame {
     constructor() {
@@ -25,7 +180,10 @@ class BlockdokuGame {
         // Re-enable features incrementally
         this.blockManager = new BlockManager();
         this.blockPalette = new BlockPalette('block-palette', this.blockManager);
+        console.log('Creating ScoringSystem...');
         this.scoringSystem = new ScoringSystem();
+        console.log('ScoringSystem created:', this.scoringSystem);
+        // this.storage = new GameStorage();
         // this.effectsSystem = new EffectsSystem(this.canvas, this.ctx);
         // this.pwaInstallManager = new PWAInstallManager();
         // this.offlineManager = new OfflineManager();
@@ -50,6 +208,8 @@ class BlockdokuGame {
     init() {
         this.setupEventListeners();
         this.registerServiceWorker();
+        // this.loadSettings();
+        // this.loadGameState();
         this.generateNewBlocks();
         this.drawBoard();
         this.updateUI();
@@ -168,6 +328,9 @@ class BlockdokuGame {
         // Check for line clears
         this.checkLineClears();
         
+        // Auto-save game state
+        // this.saveGameState();
+        
         // Generate new blocks if needed
         if (this.blockManager.currentBlocks.length === 0) {
             this.generateNewBlocks();
@@ -277,11 +440,7 @@ class BlockdokuGame {
         const themes = ['light', 'dark', 'wood'];
         const currentIndex = themes.indexOf(this.currentTheme);
         const nextIndex = (currentIndex + 1) % themes.length;
-        this.currentTheme = themes[nextIndex];
-        
-        // Update theme CSS
-        const themeLink = document.getElementById('theme-css');
-        themeLink.href = `css/themes/${this.currentTheme}.css`;
+        this.applyTheme(themes[nextIndex]);
         
         // Redraw board with new colors
         this.drawBoard();
@@ -357,6 +516,11 @@ class BlockdokuGame {
     }
     
     newGame() {
+        // Check for high score before starting new game
+        // if (this.score > 0) {
+        //     this.checkHighScore();
+        // }
+        
         this.board = this.initializeBoard();
         this.scoringSystem.reset();
         this.score = 0;
@@ -367,6 +531,9 @@ class BlockdokuGame {
         this.generateNewBlocks();
         this.drawBoard();
         this.updateUI();
+        
+        // Clear saved game state for new game
+        // this.storage.clearGameState();
     }
     
     updateUI() {
@@ -413,6 +580,81 @@ class BlockdokuGame {
         setTimeout(() => {
             this.drawBoard();
         }, 1500);
+    }
+
+    // Storage Methods
+    loadSettings() {
+        const settings = this.storage.loadSettings();
+        this.currentTheme = settings.theme;
+        this.applyTheme(settings.theme);
+    }
+
+    loadGameState() {
+        const savedState = this.storage.loadGameState();
+        if (savedState) {
+            this.board = savedState.board || this.initializeBoard();
+            this.score = savedState.score || 0;
+            this.level = savedState.level || 1;
+            this.scoringSystem.score = this.score;
+            this.scoringSystem.level = this.level;
+            
+            if (savedState.currentBlocks) {
+                this.blockManager.currentBlocks = savedState.currentBlocks;
+                this.blockPalette.updateBlocks(savedState.currentBlocks);
+            }
+            
+            if (savedState.selectedBlock) {
+                this.selectedBlock = savedState.selectedBlock;
+            }
+        }
+    }
+
+    saveGameState() {
+        const gameState = {
+            board: this.board,
+            score: this.score,
+            level: this.level,
+            currentBlocks: this.blockManager.currentBlocks,
+            selectedBlock: this.selectedBlock
+        };
+        this.storage.saveGameState(gameState);
+    }
+
+    saveSettings() {
+        const settings = {
+            theme: this.currentTheme,
+            soundEnabled: true,
+            animationsEnabled: true,
+            difficulty: 'normal',
+            autoSave: true
+        };
+        this.storage.saveSettings(settings);
+    }
+
+    applyTheme(theme) {
+        this.currentTheme = theme;
+        const themeLink = document.getElementById('theme-css');
+        themeLink.href = `css/themes/${theme}.css`;
+        this.saveSettings();
+    }
+
+    // High Score Management
+    checkHighScore() {
+        const stats = this.getStats();
+        if (this.storage.isHighScore(stats.score)) {
+            this.storage.saveHighScore(stats);
+            this.storage.saveStatistics(stats);
+            return true;
+        }
+        return false;
+    }
+
+    getHighScores() {
+        return this.storage.getHighScores();
+    }
+
+    getStatistics() {
+        return this.storage.loadStatistics();
     }
 
     // Get game statistics
