@@ -4,8 +4,8 @@
  */
 
 // Re-enable imports incrementally
-import { BlockManager } from './game/blocks.js';
-// import { BlockPalette } from './ui/block-palette.js';
+import { BlockManager } from '/js/game/blocks.js';
+import { BlockPalette } from '/js/ui/block-palette.js';
 // import { ScoringSystem } from './game/scoring.js';
 // import { EffectsSystem } from './ui/effects.js';
 // import { PWAInstallManager } from './pwa/install.js';
@@ -24,7 +24,7 @@ class BlockdokuGame {
         
         // Re-enable features incrementally
         this.blockManager = new BlockManager();
-        // this.blockPalette = new BlockPalette('block-palette', this.blockManager);
+        this.blockPalette = new BlockPalette('block-palette', this.blockManager);
         // this.scoringSystem = new ScoringSystem();
         // this.effectsSystem = new EffectsSystem(this.canvas, this.ctx);
         // this.pwaInstallManager = new PWAInstallManager();
@@ -114,16 +114,8 @@ class BlockdokuGame {
         const col = Math.floor(x / this.cellSize);
         const row = Math.floor(y / this.cellSize);
         
-        // Temporarily disable block placement validation
-        // if (this.canPlaceBlock(row, col)) {
-        //     this.placeBlock(row, col);
-        // }
-        
-        // Simple click to toggle cell for now
-        if (row >= 0 && row < this.boardSize && col >= 0 && col < this.boardSize) {
-            this.toggleCell(row, col);
-            this.drawBoard();
-            this.updateUI();
+        if (this.canPlaceBlock(row, col)) {
+            this.placeBlock(row, col);
         }
     }
     
@@ -152,43 +144,42 @@ class BlockdokuGame {
         this.drawBoard();
     }
     
-    // Temporarily disabled complex block placement
-    // canPlaceBlock(row, col) {
-    //     if (!this.selectedBlock) return false;
-    //     return this.blockManager.canPlaceBlock(this.selectedBlock, row, col, this.board);
-    // }
+    canPlaceBlock(row, col) {
+        if (!this.selectedBlock) return false;
+        return this.blockManager.canPlaceBlock(this.selectedBlock, row, col, this.board);
+    }
     
-    // placeBlock(row, col) {
-    //     if (!this.canPlaceBlock(row, col)) return;
-    //     
-    //     // Place the block on the board
-    //     this.board = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);
-    //     
-    //     // Remove the used block
-    //     this.blockManager.removeBlock(this.selectedBlock.id);
-    //     this.selectedBlock = null;
-    //     this.previewPosition = null;
-    //     
-    //     // Update UI
-    //     this.blockPalette.updateBlocks(this.blockManager.currentBlocks);
-    //     this.drawBoard();
-    //     this.updateUI();
-    //     
-    //     // Check for line clears
-    //     this.checkLineClears();
-    //     
-    //     // Generate new blocks if needed
-    //     if (this.blockManager.currentBlocks.length === 0) {
-    //         this.generateNewBlocks();
-    //     }
-    //     
-    //     // Auto-select the first available block
-    //     this.autoSelectNextBlock();
-    // }
+    placeBlock(row, col) {
+        if (!this.canPlaceBlock(row, col)) return;
+        
+        // Place the block on the board
+        this.board = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);
+        
+        // Remove the used block
+        this.blockManager.removeBlock(this.selectedBlock.id);
+        this.selectedBlock = null;
+        this.previewPosition = null;
+        
+        // Update UI
+        this.blockPalette.updateBlocks(this.blockManager.currentBlocks);
+        this.drawBoard();
+        this.updateUI();
+        
+        // Check for line clears
+        // this.checkLineClears();
+        
+        // Generate new blocks if needed
+        if (this.blockManager.currentBlocks.length === 0) {
+            this.generateNewBlocks();
+        }
+        
+        // Auto-select the first available block
+        this.autoSelectNextBlock();
+    }
     
     generateNewBlocks() {
         const newBlocks = this.blockManager.generateRandomBlocks(3);
-        // this.blockPalette.updateBlocks(newBlocks);
+        this.blockPalette.updateBlocks(newBlocks);
         // Auto-select the first block when new blocks are generated
         this.autoSelectNextBlock();
     }
@@ -197,7 +188,7 @@ class BlockdokuGame {
         if (this.blockManager.currentBlocks.length > 0) {
             const firstBlock = this.blockManager.currentBlocks[0];
             this.selectedBlock = firstBlock;
-            // this.blockPalette.selectBlockById(firstBlock.id);
+            this.blockPalette.selectBlockById(firstBlock.id);
         }
     }
     
@@ -306,8 +297,7 @@ class BlockdokuGame {
         const col = this.previewPosition.col;
         
         // Check if placement is valid
-        // const canPlace = this.canPlaceBlock(row, col);
-        const canPlace = true; // Temporarily always allow placement
+        const canPlace = this.canPlaceBlock(row, col);
         
         // Set preview color based on validity
         ctx.fillStyle = canPlace ? 
@@ -374,7 +364,7 @@ class BlockdokuGame {
         this.selectedBlock = null;
         this.previewPosition = null;
         // this.effectsSystem.clear();
-        // this.generateNewBlocks();
+        this.generateNewBlocks();
         this.drawBoard();
         this.updateUI();
     }
@@ -399,6 +389,13 @@ class BlockdokuGame {
 }
 
 // Initialize game when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    new BlockdokuGame();
-});
+function initializeGame() {
+    window.game = new BlockdokuGame();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeGame);
+} else {
+    // DOM is already loaded
+    initializeGame();
+}
