@@ -1,4 +1,5 @@
-import { GameStorage } from '/src/js/storage/game-storage.js';
+import { GameStorage } from './storage/game-storage.js';
+import { PWAInstallManager } from './pwa/install.js';
 
 class SettingsManager {
     constructor() {
@@ -6,6 +7,7 @@ class SettingsManager {
         this.currentTheme = 'wood';
         this.currentDifficulty = 'normal';
         this.settings = this.storage.loadSettings();
+        this.pwaInstallManager = null;
         
         this.init();
     }
@@ -14,6 +16,16 @@ class SettingsManager {
         this.loadSettings();
         this.setupEventListeners();
         this.updateUI();
+        this.initializePWA();
+    }
+    
+    initializePWA() {
+        try {
+            this.pwaInstallManager = new PWAInstallManager();
+            console.log('PWA Install Manager initialized in settings');
+        } catch (error) {
+            console.error('Failed to initialize PWA Install Manager:', error);
+        }
     }
     
     loadSettings() {
