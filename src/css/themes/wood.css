@@ -1,0 +1,21 @@
+:root {
+    /* Wood theme colors - soft wood tones */
+    --bg-color: #f5f1e8;
+    --text-color: #3d2914;
+    --text-muted: #8b7355;
+    --header-bg: #e8ddd4;
+    --footer-bg: #e8ddd4;
+    --board-bg: #f5f1e8;
+    --border-color: #d4c4b0;
+    --primary-color: #8b4513;
+    --primary-hover: #6b3410;
+    --secondary-color: #a0522d;
+    --secondary-hover: #8b4513;
+    --cell-bg: #f5f1e8;
+    --cell-border: #d4c4b0;
+    --cell-hover: #ede7dc;
+    --block-color: #8b4513;
+    --block-border: #6b3410;
+    --grid-line: #d4c4b0;
+    --highlight: #f4e4bc;
+}
