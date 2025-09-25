@@ -205,7 +205,7 @@ class BlockdokuGame {
                 // NOTE: Settings is a separate PAGE (settings.html), not a modal!
                 // The settings page contains: theme selection, difficulty settings, 
                 // high scores, game settings, and the PWA install button.
-                window.location.href = './settings.html';
+                window.location.href = '/settings.html';
             });
         } else {
             console.error('Settings toggle button not found!');
