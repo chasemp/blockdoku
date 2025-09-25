@@ -7,7 +7,7 @@
 import { BlockManager } from '/src/js/game/blocks.js';
 import { BlockPalette } from '/src/js/ui/block-palette.js';
 import { ScoringSystem } from '/src/js/game/scoring.js';
-// import { GameStorage } from '/src/js/storage/game-storage.js';
+import { GameStorage } from '/src/js/storage/game-storage.js';
 // import { EffectsSystem } from './ui/effects.js';
 import { PWAInstallManager } from '/src/js/pwa/install.js';
 import { OfflineManager } from '/src/js/pwa/offline.js';
@@ -19,24 +19,61 @@ class BlockdokuGame {
         this.canvas = document.getElementById('game-board');
         this.ctx = this.canvas.getContext('2d');
         this.boardSize = 9;
-        this.cellSize = 50; // 450px / 9 cells = 50px per cell
+        this.cellSize = this.calculateCellSize();
         this.board = this.initializeBoard();
         this.score = 0;
         this.level = 1;
         this.currentTheme = 'light';
         
+        // Difficulty settings
+        this.difficulty = 'normal';
+        this.enableHints = false;
+        this.enableTimer = false;
+        this.enableUndo = false;
+        this.moveLimit = null;
+        this.timeLimit = null;
+        
         // Re-enable features incrementally
         this.blockManager = new BlockManager();
         this.blockPalette = new BlockPalette('block-palette', this.blockManager);
         this.scoringSystem = new ScoringSystem();
-        // this.storage = new GameStorage();
+        this.storage = new GameStorage();
         // this.effectsSystem = new EffectsSystem(this.canvas, this.ctx);
         this.pwaInstallManager = new PWAInstallManager();
         this.offlineManager = new OfflineManager();
         this.selectedBlock = null;
         this.previewPosition = null;
         
+        this.loadSettings();
         this.init();
+        this.setupResizeHandler();
+    }
+
+    calculateCellSize() {
+        const screenWidth = window.innerWidth;
+        if (screenWidth <= 480) {
+            return 25; // 240px / 9 cells = ~27px, use 25 for safety
+        } else if (screenWidth <= 768) {
+            return 30; // 280px / 9 cells = ~31px, use 30 for safety
+        } else {
+            return 50; // Desktop size
+        }
+    }
+
+    resizeCanvas() {
+        this.cellSize = this.calculateCellSize();
+        const canvasSize = this.cellSize * this.boardSize;
+        this.canvas.width = canvasSize;
+        this.canvas.height = canvasSize;
+        this.canvas.style.width = canvasSize + 'px';
+        this.canvas.style.height = canvasSize + 'px';
+        this.drawBoard();
+    }
+
+    setupResizeHandler() {
+        window.addEventListener('resize', () => {
+            this.resizeCanvas();
+        });
     }
     
     initializeBoard() {
@@ -52,6 +89,7 @@ class BlockdokuGame {
     }
     
     init() {
+        this.resizeCanvas();
         this.setupEventListeners();
         this.registerServiceWorker();
         // this.loadSettings();
@@ -134,8 +172,30 @@ class BlockdokuGame {
         this.canvas.addEventListener('mouseleave', () => this.handleCanvasMouseLeave());
         
         // Button events
-        document.getElementById('theme-toggle').addEventListener('click', () => this.toggleTheme());
+        document.getElementById('settings-toggle').addEventListener('click', () => {
+            this.showSettingsModal();
+        });
         document.getElementById('new-game').addEventListener('click', () => this.newGame());
+        
+        // Modal events (for remaining modals)
+        document.getElementById('close-high-scores').addEventListener('click', () => this.hideHighScores());
+        document.getElementById('close-difficulty').addEventListener('click', () => this.hideDifficultyModal());
+        document.getElementById('close-settings').addEventListener('click', () => this.hideSettingsModal());
+        
+        // Difficulty selection events
+        document.querySelectorAll('.difficulty-option').forEach(option => {
+            option.addEventListener('click', (e) => this.selectDifficulty(e.currentTarget.dataset.difficulty));
+        });
+        
+        // Additional settings events
+        document.getElementById('enable-hints').addEventListener('change', (e) => this.toggleSetting('hints', e.target.checked));
+        document.getElementById('enable-timer').addEventListener('change', (e) => this.toggleSetting('timer', e.target.checked));
+        document.getElementById('enable-undo').addEventListener('change', (e) => this.toggleSetting('undo', e.target.checked));
+        
+        // Theme selection events
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.addEventListener('click', (e) => this.selectTheme(e.currentTarget.dataset.theme));
+        });
         
         // Block selection events
         document.addEventListener('blockSelected', (e) => this.handleBlockSelected(e));
@@ -184,37 +244,6 @@ class BlockdokuGame {
     canPlaceBlock(row, col) {
         if (!this.selectedBlock) return false;
         return this.blockManager.canPlaceBlock(this.selectedBlock, row, col, this.board);
-    }
-    
-    placeBlock(row, col) {
-        if (!this.canPlaceBlock(row, col)) return;
-        
-        // Place the block on the board
-        this.board = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);
-        
-        // Remove the used block
-        this.blockManager.removeBlock(this.selectedBlock.id);
-        this.selectedBlock = null;
-        this.previewPosition = null;
-        
-        // Update UI
-        this.blockPalette.updateBlocks(this.blockManager.currentBlocks);
-        this.drawBoard();
-        this.updateUI();
-        
-        // Check for line clears
-        this.checkLineClears();
-        
-        // Auto-save game state
-        // this.saveGameState();
-        
-        // Generate new blocks if needed
-        if (this.blockManager.currentBlocks.length === 0) {
-            this.generateNewBlocks();
-        }
-        
-        // Auto-select the first available block
-        this.autoSelectNextBlock();
     }
     
     generateNewBlocks() {
@@ -322,6 +351,10 @@ class BlockdokuGame {
         // Redraw board with new colors
         this.drawBoard();
     }
+
+    selectTheme(theme) {
+        this.applyTheme(theme);
+    }
     
     drawPreviewBlock() {
         if (!this.selectedBlock || !this.previewPosition) return;
@@ -349,12 +382,19 @@ class BlockdokuGame {
         for (let r = 0; r < shape.length; r++) {
             for (let c = 0; c < shape[r].length; c++) {
                 if (shape[r][c] === 1) {
-                    const x = (col + c) * cellSize + 1;
-                    const y = (row + r) * cellSize + 1;
-                    const size = cellSize - 2;
+                    const blockCol = col + c;
+                    const blockRow = row + r;
                     
-                    ctx.fillRect(x, y, size, size);
-                    ctx.strokeRect(x, y, size, size);
+                    // Check if block cell is within bounds
+                    if (blockCol >= 0 && blockCol < this.boardSize && 
+                        blockRow >= 0 && blockRow < this.boardSize) {
+                        const x = blockCol * cellSize + 1;
+                        const y = blockRow * cellSize + 1;
+                        const size = cellSize - 2;
+                        
+                        ctx.fillRect(x, y, size, size);
+                        ctx.strokeRect(x, y, size, size);
+                    }
                 }
             }
         }
@@ -394,9 +434,9 @@ class BlockdokuGame {
     
     newGame() {
         // Check for high score before starting new game
-        // if (this.score > 0) {
-        //     this.checkHighScore();
-        // }
+        if (this.score > 0) {
+            this.checkHighScore();
+        }
         
         this.board = this.initializeBoard();
         this.scoringSystem.reset();
@@ -410,7 +450,7 @@ class BlockdokuGame {
         this.updateUI();
         
         // Clear saved game state for new game
-        // this.storage.clearGameState();
+        this.storage.clearGameState();
     }
     
     updateUI() {
@@ -497,17 +537,53 @@ class BlockdokuGame {
         this.storage.saveGameState(gameState);
     }
 
+    loadSettings() {
+        if (this.storage) {
+            const settings = this.storage.loadSettings();
+            this.currentTheme = settings.theme || 'light';
+            this.soundEnabled = settings.soundEnabled !== false;
+            this.animationsEnabled = settings.animationsEnabled !== false;
+            this.difficulty = settings.difficulty || 'normal';
+            this.autoSave = settings.autoSave !== false;
+            this.enableHints = settings.enableHints || false;
+            this.enableTimer = settings.enableTimer || false;
+            this.enableUndo = settings.enableUndo || false;
+            this.showPoints = settings.showPoints || false;
+            
+            // Apply loaded theme
+            this.applyTheme(this.currentTheme);
+            this.updateBlockPointsDisplay();
+        }
+    }
+
     saveSettings() {
         const settings = {
             theme: this.currentTheme,
-            soundEnabled: true,
-            animationsEnabled: true,
-            difficulty: 'normal',
-            autoSave: true
+            soundEnabled: this.soundEnabled,
+            animationsEnabled: this.animationsEnabled,
+            difficulty: this.difficulty,
+            autoSave: this.autoSave,
+            enableHints: this.enableHints,
+            enableTimer: this.enableTimer,
+            enableUndo: this.enableUndo,
+            showPoints: this.showPoints
         };
         if (this.storage) {
             this.storage.saveSettings(settings);
         }
+    }
+    
+    updateBlockPointsDisplay() {
+        const showPoints = this.showPoints || false;
+        const blockInfos = document.querySelectorAll('.block-info');
+        
+        blockInfos.forEach(info => {
+            if (showPoints) {
+                info.classList.add('show-points');
+            } else {
+                info.classList.remove('show-points');
+            }
+        });
     }
 
     applyTheme(theme) {
@@ -536,15 +612,413 @@ class BlockdokuGame {
         return this.storage.loadStatistics();
     }
 
-    // Get game statistics
+    // Game Over Detection
+    checkGameOver() {
+        if (this.blockManager.currentBlocks.length === 0) {
+            return; // No blocks to check
+        }
+        
+        // Check if any block can be placed anywhere on the board
+        for (let block of this.blockManager.currentBlocks) {
+            for (let row = 0; row < this.boardSize; row++) {
+                for (let col = 0; col < this.boardSize; col++) {
+                    if (this.blockManager.canPlaceBlock(block, row, col, this.board)) {
+                        return; // Game can continue
+                    }
+                }
+            }
+        }
+        
+        // No blocks can be placed - game over
+        this.gameOver();
+    }
+
+    gameOver() {
+        console.log('Game Over! Final Score:', this.score);
+        
+        // Save high score and statistics
+        const stats = this.getStats();
+        this.checkHighScore();
+        
+        // Show game over modal or notification
+        this.showGameOverModal(stats);
+        
+        // Save final game state
+        this.saveGameState();
+    }
+
+    showGameOverModal(stats) {
+        // Create a simple game over notification
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 1000;
+            font-family: Arial, sans-serif;
+        `;
+        
+        const isHighScore = this.storage.isHighScore(stats.score);
+        
+        modal.innerHTML = `
+            <h2>Game Over!</h2>
+            <p>Final Score: ${stats.score}</p>
+            <p>Lines Cleared: ${stats.linesCleared}</p>
+            <p>Max Combo: ${stats.maxCombo}</p>
+            ${isHighScore ? '<p style="color: #ffd700;">🎉 New High Score! 🎉</p>' : ''}
+            <button onclick="this.parentElement.remove(); game.newGame();" 
+                    style="margin: 10px; padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                New Game
+            </button>
+            <button onclick="this.parentElement.remove();" 
+                    style="margin: 10px; padding: 10px 20px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                Close
+            </button>
+        `;
+        
+        document.body.appendChild(modal);
+    }
+
     getStats() {
         return {
             score: this.score,
             level: this.level,
-            linesCleared: this.scoringSystem.getLinesCleared(),
+            linesCleared: this.scoringSystem.getTotalLinesCleared(),
             combo: this.scoringSystem.getCombo(),
             maxCombo: this.scoringSystem.getMaxCombo()
         };
+    }
+
+    // High Scores Display
+    showHighScores() {
+        const modal = document.getElementById('high-scores-modal');
+        const scoresList = document.getElementById('high-scores-list');
+        const statsDisplay = document.getElementById('statistics-display');
+        
+        // Display high scores
+        const scores = this.getHighScores();
+        if (scores.length === 0) {
+            scoresList.innerHTML = '<p>No high scores yet. Play a game to set your first record!</p>';
+        } else {
+            scoresList.innerHTML = scores.map((score, index) => `
+                <div class="score-item">
+                    <span class="rank">#${index + 1}</span>
+                    <span class="score-value">${score.score.toLocaleString()}</span>
+                    <span class="score-details">Level ${score.level} • ${score.linesCleared} lines • ${score.date}</span>
+                </div>
+            `).join('');
+        }
+        
+        // Display statistics
+        const stats = this.getStatistics();
+        statsDisplay.innerHTML = `
+            <div class="stat-item">
+                <span class="stat-label">Games Played:</span>
+                <span class="stat-value">${stats.gamesPlayed}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total Score:</span>
+                <span class="stat-value">${stats.totalScore.toLocaleString()}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Best Score:</span>
+                <span class="stat-value">${stats.bestScore.toLocaleString()}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total Lines:</span>
+                <span class="stat-value">${stats.totalLinesCleared}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Max Combo:</span>
+                <span class="stat-value">${stats.maxCombo}</span>
+            </div>
+        `;
+        
+        modal.style.display = 'block';
+    }
+
+    hideHighScores() {
+        const modal = document.getElementById('high-scores-modal');
+        modal.style.display = 'none';
+    }
+
+    loadHighScores() {
+        const scoresList = document.getElementById('high-scores-list');
+        const statsDisplay = document.getElementById('statistics-display');
+        
+        if (!scoresList || !statsDisplay) return;
+        
+        // Display high scores
+        const scores = this.getHighScores();
+        if (scores.length === 0) {
+            scoresList.innerHTML = '<p>No high scores yet. Play a game to set your first record!</p>';
+        } else {
+            scoresList.innerHTML = scores.map((score, index) => `
+                <div class="score-item">
+                    <span class="rank">#${index + 1}</span>
+                    <span class="score-value">${score.score.toLocaleString()}</span>
+                    <span class="score-details">Level ${score.level} • ${score.linesCleared} lines • ${score.date}</span>
+                </div>
+            `).join('');
+        }
+        
+        // Display statistics
+        const stats = this.getStatistics();
+        statsDisplay.innerHTML = `
+            <div class="stat-item">
+                <span class="stat-label">Games Played:</span>
+                <span class="stat-value">${stats.gamesPlayed}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total Score:</span>
+                <span class="stat-value">${stats.totalScore.toLocaleString()}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Best Score:</span>
+                <span class="stat-value">${stats.bestScore.toLocaleString()}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total Lines:</span>
+                <span class="stat-value">${stats.totalLines}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Max Combo:</span>
+                <span class="stat-value">${stats.maxCombo}</span>
+            </div>
+        `;
+    }
+
+
+    // Difficulty Management
+    showDifficultyModal() {
+        const modal = document.getElementById('difficulty-modal');
+        
+        // Update UI to reflect current settings
+        this.updateDifficultyUI();
+        
+        modal.style.display = 'block';
+    }
+
+    hideDifficultyModal() {
+        const modal = document.getElementById('difficulty-modal');
+        modal.style.display = 'none';
+    }
+
+    // Settings Modal Management
+    showSettingsModal() {
+        const modal = document.getElementById('settings-modal');
+        
+        // Ensure install button is created and shown
+        if (this.pwaInstallManager) {
+            this.pwaInstallManager.createInstallButton();
+            this.pwaInstallManager.showInstallButton();
+        } else {
+            console.log('PWA Install Manager not available');
+        }
+        
+        // Update UI to reflect current settings
+        this.updateThemeUI();
+        this.updateDifficultyUI();
+        this.updateGameSettingsUI();
+        
+        // Load high scores if needed
+        this.loadHighScores();
+        
+        modal.style.display = 'block';
+    }
+
+    hideSettingsModal() {
+        const modal = document.getElementById('settings-modal');
+        modal.style.display = 'none';
+    }
+
+    updateDifficultyUI() {
+        // Update selected difficulty
+        document.querySelectorAll('.difficulty-option').forEach(option => {
+            option.classList.remove('selected');
+            if (option.dataset.difficulty === this.difficulty) {
+                option.classList.add('selected');
+            }
+        });
+
+        // Update additional settings
+        document.getElementById('enable-hints').checked = this.enableHints;
+        document.getElementById('enable-timer').checked = this.enableTimer;
+        document.getElementById('enable-undo').checked = this.enableUndo;
+    }
+
+    selectDifficulty(difficulty) {
+        this.difficulty = difficulty;
+        this.applyDifficultySettings();
+        this.updateDifficultyUI();
+        this.saveSettings();
+    }
+
+    selectTheme(theme) {
+        this.currentTheme = theme;
+        this.applyTheme(theme);
+        this.updateThemeUI();
+        this.saveSettings();
+    }
+
+    applyTheme(theme) {
+        const themeLink = document.getElementById('theme-css');
+        if (themeLink) {
+            themeLink.href = `css/themes/${theme}.css`;
+        }
+    }
+
+    updateThemeUI() {
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.classList.remove('selected');
+            if (option.dataset.theme === this.currentTheme) {
+                option.classList.add('selected');
+            }
+        });
+    }
+
+    toggleSetting(setting, value) {
+        switch (setting) {
+            case 'hints':
+                this.enableHints = value;
+                break;
+            case 'timer':
+                this.enableTimer = value;
+                break;
+            case 'undo':
+                this.enableUndo = value;
+                break;
+        }
+        this.saveSettings();
+    }
+
+    applyDifficultySettings() {
+        // Apply difficulty-specific settings
+        switch (this.difficulty) {
+            case 'easy':
+                this.enableHints = true;
+                this.enableTimer = false;
+                this.enableUndo = true;
+                this.moveLimit = null;
+                this.timeLimit = null;
+                break;
+            case 'normal':
+                this.enableHints = false;
+                this.enableTimer = false;
+                this.enableUndo = false;
+                this.moveLimit = null;
+                this.timeLimit = null;
+                break;
+            case 'hard':
+                this.enableHints = false;
+                this.enableTimer = false;
+                this.enableUndo = false;
+                this.moveLimit = 50; // Limited moves
+                this.timeLimit = null;
+                break;
+            case 'expert':
+                this.enableHints = false;
+                this.enableTimer = true;
+                this.enableUndo = false;
+                this.moveLimit = 30; // Very limited moves
+                this.timeLimit = 300; // 5 minutes
+                break;
+        }
+    }
+
+    // Enhanced block generation based on difficulty
+    generateNewBlocks() {
+        let blockCount = 3;
+        let blockTypes = 'all';
+        
+        // Adjust block generation based on difficulty
+        switch (this.difficulty) {
+            case 'easy':
+                blockCount = 3;
+                blockTypes = 'large'; // Prefer larger, simpler blocks
+                break;
+            case 'normal':
+                blockCount = 3;
+                blockTypes = 'all';
+                break;
+            case 'hard':
+                blockCount = 4;
+                blockTypes = 'small'; // Prefer smaller, more complex blocks
+                break;
+            case 'expert':
+                blockCount = 5;
+                blockTypes = 'complex'; // Complex irregular shapes
+                break;
+        }
+        
+        const newBlocks = this.blockManager.generateRandomBlocks(blockCount, blockTypes);
+        this.blockPalette.updateBlocks(newBlocks);
+        this.updateBlockPointsDisplay();
+        this.autoSelectNextBlock();
+    }
+
+    // Enhanced block placement with hints
+    placeBlock(row, col) {
+        if (!this.canPlaceBlock(row, col)) return;
+        
+        // Place the block on the board
+        this.board = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);
+        
+        // Remove the used block
+        this.blockManager.removeBlock(this.selectedBlock.id);
+        this.selectedBlock = null;
+        this.previewPosition = null;
+        
+        // Update UI
+        this.blockPalette.updateBlocks(this.blockManager.currentBlocks);
+        this.drawBoard();
+        this.updateUI();
+        
+        // Check for line clears
+        this.checkLineClears();
+        
+        // Auto-save game state
+        if (this.autoSave) {
+            this.saveGameState();
+        }
+        
+        // Generate new blocks if needed
+        if (this.blockManager.currentBlocks.length === 0) {
+            this.generateNewBlocks();
+        }
+        
+        // Check for game over
+        this.checkGameOver();
+        
+        // Auto-select the first available block
+        this.autoSelectNextBlock();
+    }
+
+    // Enhanced game over detection with difficulty considerations
+    checkGameOver() {
+        if (this.blockManager.currentBlocks.length === 0) {
+            return; // No blocks to check
+        }
+        
+        // Check if any block can be placed anywhere on the board
+        for (let block of this.blockManager.currentBlocks) {
+            for (let row = 0; row < this.boardSize; row++) {
+                for (let col = 0; col < this.boardSize; col++) {
+                    if (this.blockManager.canPlaceBlock(block, row, col, this.board)) {
+                        return; // Game can continue
+                    }
+                }
+            }
+        }
+        
+        // No blocks can be placed - game over
+        this.gameOver();
     }
 }
 

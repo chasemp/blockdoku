@@ -59,6 +59,12 @@ export class PWAInstallManager {
     }
     
     createInstallButton() {
+        // Check if install button already exists
+        if (document.getElementById('install-button')) {
+            this.installButton = document.getElementById('install-button');
+            return;
+        }
+        
         // Create install button
         this.installButton = document.createElement('button');
         this.installButton.id = 'install-button';
@@ -66,10 +72,10 @@ export class PWAInstallManager {
         this.installButton.innerHTML = '📱 Install App';
         this.installButton.style.display = 'none';
         
-        // Add to header controls
-        const controls = document.querySelector('.controls');
-        if (controls) {
-            controls.appendChild(this.installButton);
+        // Add to settings modal install container
+        const installContainer = document.getElementById('install-button-container');
+        if (installContainer) {
+            installContainer.appendChild(this.installButton);
         }
         
         // Add click event
@@ -81,12 +87,14 @@ export class PWAInstallManager {
     showInstallButton() {
         if (this.installButton && !this.isInstalled) {
             this.installButton.style.display = 'inline-block';
+            this.installButton.classList.add('show');
         }
     }
     
     hideInstallButton() {
         if (this.installButton) {
             this.installButton.style.display = 'none';
+            this.installButton.classList.remove('show');
         }
     }
     
