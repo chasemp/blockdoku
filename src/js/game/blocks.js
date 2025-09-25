@@ -91,12 +91,43 @@ export class BlockManager {
         };
     }
     
-    generateRandomBlocks(count = 3) {
-        const shapeKeys = Object.keys(this.blockShapes);
+    generateRandomBlocks(count = 3, difficulty = 'all') {
+        let availableShapes = Object.keys(this.blockShapes);
+        
+        // Filter shapes based on difficulty
+        if (difficulty === 'large') {
+            // Prefer larger, simpler blocks for easy mode
+            availableShapes = availableShapes.filter(key => {
+                const shape = this.blockShapes[key].shape;
+                const maxDimension = Math.max(shape.length, shape[0].length);
+                return maxDimension >= 3; // 3x3 or larger
+            });
+        } else if (difficulty === 'small') {
+            // Prefer smaller blocks for hard mode
+            availableShapes = availableShapes.filter(key => {
+                const shape = this.blockShapes[key].shape;
+                const maxDimension = Math.max(shape.length, shape[0].length);
+                return maxDimension <= 3; // 3x3 or smaller
+            });
+        } else if (difficulty === 'complex') {
+            // Prefer complex irregular shapes for expert mode
+            availableShapes = availableShapes.filter(key => {
+                const shape = this.blockShapes[key].shape;
+                // Look for L-shapes, T-shapes, and other complex patterns
+                return key.includes('L') || key.includes('T') || key.includes('Z') || 
+                       key.includes('U') || key.includes('Cross') || key.includes('Plus');
+            });
+        }
+        
+        // Fallback to all shapes if filtering results in empty array
+        if (availableShapes.length === 0) {
+            availableShapes = Object.keys(this.blockShapes);
+        }
+        
         this.currentBlocks = [];
         
         for (let i = 0; i < count; i++) {
-            const randomKey = shapeKeys[Math.floor(Math.random() * shapeKeys.length)];
+            const randomKey = availableShapes[Math.floor(Math.random() * availableShapes.length)];
             const block = {
                 ...this.blockShapes[randomKey],
                 id: `block_${i}_${Date.now()}`,

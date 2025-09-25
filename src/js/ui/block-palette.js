@@ -28,6 +28,9 @@ export class BlockPalette {
                     <!-- Blocks will be rendered here -->
                 </div>
             </div>
+            <button id="rotate-selected" class="rotate-selected-btn" title="Rotate selected block">
+                <span>↻</span>
+            </button>
         `;
     }
     
@@ -49,6 +52,11 @@ export class BlockPalette {
         const blockDiv = document.createElement('div');
         blockDiv.className = 'block-item';
         blockDiv.dataset.blockId = block.id;
+        blockDiv.title = `Click to select, double-click to rotate: ${block.name} (${block.points} pts)`;
+        
+        // Create block shape container
+        const shapeContainer = document.createElement('div');
+        shapeContainer.className = 'block-shape';
         
         // Create block preview
         const preview = document.createElement('div');
@@ -79,24 +87,8 @@ export class BlockPalette {
         }
         
         preview.appendChild(canvas);
-        
-        // Block info
-        const info = document.createElement('div');
-        info.className = 'block-info';
-        info.innerHTML = `
-            <div class="block-name">${block.name}</div>
-            <div class="block-points">${block.points} pts</div>
-        `;
-        
-        // Rotate button
-        const rotateBtn = document.createElement('button');
-        rotateBtn.className = 'rotate-btn';
-        rotateBtn.innerHTML = '↻';
-        rotateBtn.title = 'Rotate block';
-        
-        blockDiv.appendChild(preview);
-        blockDiv.appendChild(info);
-        blockDiv.appendChild(rotateBtn);
+        shapeContainer.appendChild(preview);
+        blockDiv.appendChild(shapeContainer);
         
         return blockDiv;
     }
@@ -109,8 +101,17 @@ export class BlockPalette {
                 this.selectBlock(blockId);
             }
             
-            if (e.target.classList.contains('rotate-btn')) {
-                e.stopPropagation();
+            if (e.target.closest('#rotate-selected')) {
+                e.preventDefault();
+                if (this.selectedBlock) {
+                    this.rotateBlock(this.selectedBlock.id);
+                }
+            }
+        });
+        
+        document.addEventListener('dblclick', (e) => {
+            if (e.target.closest('.block-item')) {
+                e.preventDefault();
                 const blockItem = e.target.closest('.block-item');
                 const blockId = blockItem.dataset.blockId;
                 this.rotateBlock(blockId);
@@ -130,6 +131,9 @@ export class BlockPalette {
                 blockElement.classList.add('selected');
             }
         }
+        
+        // Update rotate button state
+        this.updateRotateButton();
         
         // Dispatch selection event
         this.dispatchSelectionEvent();
@@ -168,6 +172,7 @@ export class BlockPalette {
         this.blockElements.forEach(element => {
             element.classList.remove('selected');
         });
+        this.updateRotateButton();
     }
     
     dispatchSelectionEvent() {
@@ -189,6 +194,19 @@ export class BlockPalette {
         const newB = Math.max(0, b - 30);
         
         return `rgb(${newR}, ${newG}, ${newB})`;
+    }
+    
+    updateRotateButton() {
+        const rotateBtn = document.getElementById('rotate-selected');
+        if (rotateBtn) {
+            if (this.selectedBlock) {
+                rotateBtn.disabled = false;
+                rotateBtn.classList.remove('disabled');
+            } else {
+                rotateBtn.disabled = true;
+                rotateBtn.classList.add('disabled');
+            }
+        }
     }
     
     getSelectedBlock() {

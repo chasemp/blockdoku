@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Blockdoku</title>
+    <link rel="manifest" href="/public/manifest.json">
+    <link rel="icon" type="image/x-icon" href="/public/favicon.ico">
+    <meta name="theme-color" content="#007bff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="/public/icons/icon-192x192.png">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/themes/wood.css" id="theme-css">
+    <style>
+        .settings-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        
+        .settings-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .settings-header h1 {
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .settings-header p {
+            color: var(--text-muted);
+            margin: 0;
+        }
+        
+        .settings-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            justify-content: center;
+        }
+        
+        .nav-item {
+            padding: 1rem 2rem;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        .nav-item:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .nav-item.active {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: white;
+        }
+        
+        .settings-content {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .settings-section {
+            display: none;
+        }
+        
+        .settings-section.active {
+            display: block;
+        }
+        
+        .section-title {
+            color: var(--text-color);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--secondary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+        
+        .back-button:hover {
+            background: var(--secondary-hover);
+            transform: translateY(-1px);
+        }
+        
+        @media (max-width: 768px) {
+            .settings-container {
+                padding: 1rem;
+            }
+            
+            .settings-nav {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-item {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .settings-content {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="settings-header">
+            <h1>Settings</h1>
+            <p>Customize your Blockdoku experience</p>
+        </div>
+        
+        <div class="settings-nav">
+            <a href="#" class="nav-item active" data-section="theme">🎨 Theme</a>
+            <a href="#" class="nav-item" data-section="difficulty">⚡ Difficulty</a>
+            <a href="#" class="nav-item" data-section="scores">🏆 High Scores</a>
+            <a href="#" class="nav-item" data-section="game">🎮 Game Settings</a>
+        </div>
+        
+        <div class="settings-content">
+            <a href="index.html" class="back-button">
+                ← Back to Game
+            </a>
+            
+            <!-- Theme Section -->
+            <div class="settings-section active" id="theme-section">
+                <h2 class="section-title">Theme</h2>
+                <div class="theme-options">
+                    <button class="theme-option" data-theme="wood">
+                        <span class="theme-preview wood-preview"></span>
+                        <span>Wood</span>
+                    </button>
+                    <button class="theme-option" data-theme="light">
+                        <span class="theme-preview light-preview"></span>
+                        <span>Light</span>
+                    </button>
+                    <button class="theme-option" data-theme="dark">
+                        <span class="theme-preview dark-preview"></span>
+                        <span>Dark</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Difficulty Section -->
+            <div class="settings-section" id="difficulty-section">
+                <h2 class="section-title">Difficulty</h2>
+                <div class="difficulty-options">
+                    <button class="difficulty-option" data-difficulty="easy">
+                        <div class="difficulty-header">
+                            <h4>Easy</h4>
+                            <span class="difficulty-badge easy">EASY</span>
+                        </div>
+                        <p>Larger blocks, slower pace, hints available</p>
+                    </button>
+                    <button class="difficulty-option" data-difficulty="normal">
+                        <div class="difficulty-header">
+                            <h4>Normal</h4>
+                            <span class="difficulty-badge normal">NORMAL</span>
+                        </div>
+                        <p>Standard block variety, moderate pace</p>
+                    </button>
+                    <button class="difficulty-option" data-difficulty="hard">
+                        <div class="difficulty-header">
+                            <h4>Hard</h4>
+                            <span class="difficulty-badge hard">HARD</span>
+                        </div>
+                        <p>Smaller blocks, faster pace, no hints</p>
+                    </button>
+                    <button class="difficulty-option" data-difficulty="expert">
+                        <div class="difficulty-header">
+                            <h4>Expert</h4>
+                            <span class="difficulty-badge expert">EXPERT</span>
+                        </div>
+                        <p>Complex shapes, time pressure, limited moves</p>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- High Scores Section -->
+            <div class="settings-section" id="scores-section">
+                <h2 class="section-title">High Scores & Statistics</h2>
+                <div id="high-scores-list"></div>
+                <div class="statistics">
+                    <h3>Statistics</h3>
+                    <div id="statistics-display"></div>
+                </div>
+            </div>
+            
+            <!-- Game Settings Section -->
+            <div class="settings-section" id="game-section">
+                <h2 class="section-title">Game Settings</h2>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="enable-hints" />
+                        Enable hints
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="enable-timer" />
+                        Enable timer
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="enable-undo" />
+                        Enable undo
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="sound-enabled" />
+                        Sound effects
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="animations-enabled" />
+                        Animations
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="auto-save" />
+                        Auto-save game
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="show-points" />
+                        Show block points
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="js/settings.js"></script>
+</body>
+</html>

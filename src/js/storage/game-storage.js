@@ -124,11 +124,15 @@ export class GameStorage {
 
     getDefaultSettings() {
         return {
-            theme: 'light',
+            theme: 'wood',
             soundEnabled: true,
             animationsEnabled: true,
             difficulty: 'normal',
-            autoSave: true
+            autoSave: true,
+            enableHints: false,
+            enableTimer: false,
+            enableUndo: false,
+            showPoints: false
         };
     }
 

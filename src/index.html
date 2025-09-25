@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blockdoku PWA</title>
+    <title>Blockdoku</title>
     <link rel="manifest" href="/public/manifest.json">
     <link rel="icon" type="image/x-icon" href="/public/favicon.ico">
     <meta name="theme-color" content="#007bff">
@@ -12,15 +12,17 @@
     <meta name="apple-mobile-web-app-title" content="Blockdoku">
     <link rel="apple-touch-icon" href="/public/icons/icon-192x192.png">
     <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/themes/light.css" id="theme-css">
+    <link rel="stylesheet" href="css/themes/wood.css" id="theme-css">
 </head>
 <body>
     <div id="app">
         <header class="header">
-            <h1>Blockdoku PWA</h1>
+            <div class="logo-container">
+                <img src="assets/images/logo_transparent_bg.png" alt="Blockdoku" class="app-logo">
+            </div>
             <div class="controls">
-                <button id="theme-toggle" class="btn btn-secondary">Theme</button>
                 <button id="new-game" class="btn btn-primary">New Game</button>
+                <button id="settings-toggle" class="btn btn-secondary">⚙️</button>
             </div>
         </header>
         
@@ -55,6 +57,198 @@
         <footer class="footer">
             <p>Click on the board to place the selected block. Complete rows, columns, or 3x3 squares to score points!</p>
         </footer>
+    </div>
+    
+    <!-- High Scores Modal -->
+    <div id="high-scores-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>High Scores</h2>
+                <button id="close-high-scores" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="high-scores-list"></div>
+                <div class="statistics">
+                    <h3>Statistics</h3>
+                    <div id="statistics-display"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Difficulty Modal -->
+    <div id="difficulty-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Difficulty Settings</h2>
+                <button id="close-difficulty" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="difficulty-options">
+                    <div class="difficulty-option" data-difficulty="easy">
+                        <div class="difficulty-header">
+                            <h3>Easy</h3>
+                            <span class="difficulty-badge easy">EASY</span>
+                        </div>
+                        <p>Larger blocks, slower pace, hints available</p>
+                        <ul>
+                            <li>3x3 and 4x4 block shapes</li>
+                            <li>Visual placement hints</li>
+                            <li>No time pressure</li>
+                            <li>Undo moves available</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="difficulty-option" data-difficulty="normal">
+                        <div class="difficulty-header">
+                            <h3>Normal</h3>
+                            <span class="difficulty-badge normal">NORMAL</span>
+                        </div>
+                        <p>Standard block variety, moderate pace</p>
+                        <ul>
+                            <li>Mixed block sizes (1x1 to 5x5)</li>
+                            <li>Standard scoring</li>
+                            <li>No time pressure</li>
+                            <li>No hints</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="difficulty-option" data-difficulty="hard">
+                        <div class="difficulty-header">
+                            <h3>Hard</h3>
+                            <span class="difficulty-badge hard">HARD</span>
+                        </div>
+                        <p>Smaller blocks, faster pace, no hints</p>
+                        <ul>
+                            <li>Smaller block shapes (1x1 to 3x3)</li>
+                            <li>Faster block generation</li>
+                            <li>No placement hints</li>
+                            <li>Limited moves</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="difficulty-option" data-difficulty="expert">
+                        <div class="difficulty-header">
+                            <h3>Expert</h3>
+                            <span class="difficulty-badge expert">EXPERT</span>
+                        </div>
+                        <p>Complex shapes, time pressure, limited moves</p>
+                        <ul>
+                            <li>Complex irregular shapes</li>
+                            <li>Time pressure mode</li>
+                            <li>Very limited moves</li>
+                            <li>No hints or undo</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="difficulty-settings">
+                    <h3>Additional Settings</h3>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="enable-hints" />
+                            Enable placement hints
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="enable-timer" />
+                            Enable time pressure
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="enable-undo" />
+                            Enable undo moves
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Settings</h2>
+                    <button id="close-settings" class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Theme Section -->
+                    <div class="settings-section">
+                        <h3>Theme</h3>
+                        <div class="theme-options">
+                            <button class="theme-option" data-theme="wood">
+                                <span class="theme-preview wood-preview"></span>
+                                <span>Wood</span>
+                            </button>
+                            <button class="theme-option" data-theme="light">
+                                <span class="theme-preview light-preview"></span>
+                                <span>Light</span>
+                            </button>
+                            <button class="theme-option" data-theme="dark">
+                                <span class="theme-preview dark-preview"></span>
+                                <span>Dark</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Difficulty Section -->
+                    <div class="settings-section">
+                        <h3>Difficulty</h3>
+                        <div class="difficulty-options">
+                            <button class="difficulty-option" data-difficulty="easy">
+                                <div class="difficulty-header">
+                                    <h4>Easy</h4>
+                                    <span class="difficulty-badge easy">EASY</span>
+                                </div>
+                                <p>Larger blocks, slower pace, hints available</p>
+                            </button>
+                            <button class="difficulty-option" data-difficulty="normal">
+                                <div class="difficulty-header">
+                                    <h4>Normal</h4>
+                                    <span class="difficulty-badge normal">NORMAL</span>
+                                </div>
+                                <p>Standard block variety, moderate pace</p>
+                            </button>
+                            <button class="difficulty-option" data-difficulty="hard">
+                                <div class="difficulty-header">
+                                    <h4>Hard</h4>
+                                    <span class="difficulty-badge hard">HARD</span>
+                                </div>
+                                <p>Smaller blocks, faster pace, no hints</p>
+                            </button>
+                            <button class="difficulty-option" data-difficulty="expert">
+                                <div class="difficulty-header">
+                                    <h4>Expert</h4>
+                                    <span class="difficulty-badge expert">EXPERT</span>
+                                </div>
+                                <p>Complex shapes, time pressure, limited moves</p>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- High Scores Section -->
+                    <div class="settings-section">
+                        <h3>High Scores</h3>
+                        <div id="high-scores-list"></div>
+                        <div class="statistics">
+                            <h4>Statistics</h4>
+                            <div id="statistics-display"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- PWA Install Section -->
+                    <div class="settings-section">
+                        <h3>Install App</h3>
+                        <p>Install Blockdoku as a Progressive Web App for a better experience:</p>
+                        <div id="install-button-container">
+                            <!-- Install button will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <script type="module" src="js/app.js"></script>
