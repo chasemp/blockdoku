@@ -1,16 +1,21 @@
 /**
  * Blockdoku PWA - Main Application
  * MVT Milestone 2: Basic Block Placement System
+ * 
+ * IMPORTANT: Settings is implemented as a separate PAGE (settings.html), not a modal!
+ * - Settings button navigates to /settings.html
+ * - Settings page contains: theme selection, difficulty, high scores, game settings, PWA install
+ * - Do not try to create a settings modal - it's a dedicated page for better mobile UX
  */
 
 // Re-enable imports incrementally
-import { BlockManager } from '/src/js/game/blocks.js';
-import { BlockPalette } from '/src/js/ui/block-palette.js';
-import { ScoringSystem } from '/src/js/game/scoring.js';
-import { GameStorage } from '/src/js/storage/game-storage.js';
+import { BlockManager } from './game/blocks.js';
+import { BlockPalette } from './ui/block-palette.js';
+import { ScoringSystem } from './game/scoring.js';
+import { GameStorage } from './storage/game-storage.js';
 // import { EffectsSystem } from './ui/effects.js';
-import { PWAInstallManager } from '/src/js/pwa/install.js';
-import { OfflineManager } from '/src/js/pwa/offline.js';
+import { PWAInstallManager } from './pwa/install.js';
+import { OfflineManager } from './pwa/offline.js';
 
 
 class BlockdokuGame {
@@ -19,7 +24,7 @@ class BlockdokuGame {
         this.canvas = document.getElementById('game-board');
         this.ctx = this.canvas.getContext('2d');
         this.boardSize = 9;
-        this.cellSize = this.calculateCellSize();
+        this.cellSize = 0; // Will be calculated when canvas is ready
         this.board = this.initializeBoard();
         this.score = 0;
         this.level = 1;
@@ -49,30 +54,39 @@ class BlockdokuGame {
         this.setupResizeHandler();
     }
 
-    calculateCellSize() {
-        const screenWidth = window.innerWidth;
-        if (screenWidth <= 480) {
-            return 25; // 240px / 9 cells = ~27px, use 25 for safety
-        } else if (screenWidth <= 768) {
-            return 30; // 280px / 9 cells = ~31px, use 30 for safety
-        } else {
-            return 50; // Desktop size
-        }
-    }
 
     resizeCanvas() {
-        this.cellSize = this.calculateCellSize();
-        const canvasSize = this.cellSize * this.boardSize;
-        this.canvas.width = canvasSize;
-        this.canvas.height = canvasSize;
-        this.canvas.style.width = canvasSize + 'px';
-        this.canvas.style.height = canvasSize + 'px';
-        this.drawBoard();
+        // Get the container dimensions
+        const container = this.canvas.parentElement;
+        if (!container) return;
+        
+        const containerRect = container.getBoundingClientRect();
+        const containerSize = Math.min(containerRect.width, containerRect.height);
+        
+        // Calculate cell size to perfectly fill the container
+        this.cellSize = Math.floor(containerSize / this.boardSize);
+        
+        // Set canvas internal resolution to match container size exactly
+        this.canvas.width = containerSize;
+        this.canvas.height = containerSize;
+        
+        // Set canvas display size to match container size
+        this.canvas.style.width = containerSize + 'px';
+        this.canvas.style.height = containerSize + 'px';
+        
+        // Ensure crisp rendering
+        this.ctx.imageSmoothingEnabled = false;
+        this.ctx.lineCap = 'square';
+        this.ctx.lineJoin = 'miter';
     }
 
     setupResizeHandler() {
         window.addEventListener('resize', () => {
             this.resizeCanvas();
+            // Redraw after resize to ensure proper alignment
+            requestAnimationFrame(() => {
+                this.drawBoard();
+            });
         });
     }
     
@@ -89,14 +103,24 @@ class BlockdokuGame {
     }
     
     init() {
-        this.resizeCanvas();
+        console.log('Game init() called');
         this.setupEventListeners();
         this.registerServiceWorker();
         // this.loadSettings();
         // this.loadGameState();
         this.generateNewBlocks();
-        this.drawBoard();
-        this.updateUI();
+        
+        // Wait for DOM to be fully ready before sizing and drawing
+        setTimeout(() => {
+            this.resizeCanvas();
+            
+            // Wait for next frame to ensure canvas is fully rendered
+            requestAnimationFrame(() => {
+                this.drawBoard();
+                this.updateUI();
+            });
+        }, 100); // Increased delay to ensure DOM is fully ready
+        
         this.startGameLoop();
         
         // Initialize PWA managers after everything else is set up
@@ -129,8 +153,8 @@ class BlockdokuGame {
             console.log('Initializing PWA managers...');
             
             // Dynamically import PWA modules
-            const installModule = await import('/src/js/pwa/install.js');
-            const offlineModule = await import('/src/js/pwa/offline.js');
+            const installModule = await import('./pwa/install.js');
+            const offlineModule = await import('./pwa/offline.js');
             
             // Create PWA managers
             this.pwaInstallManager = new installModule.PWAInstallManager();
@@ -166,21 +190,49 @@ class BlockdokuGame {
     }
     
     setupEventListeners() {
+        console.log('Setting up event listeners...');
+        
         // Canvas click events
         this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
         this.canvas.addEventListener('mousemove', (e) => this.handleCanvasMouseMove(e));
         this.canvas.addEventListener('mouseleave', () => this.handleCanvasMouseLeave());
         
         // Button events
-        document.getElementById('settings-toggle').addEventListener('click', () => {
-            this.showSettingsModal();
-        });
-        document.getElementById('new-game').addEventListener('click', () => this.newGame());
+        const settingsToggle = document.getElementById('settings-toggle');
+        if (settingsToggle) {
+            settingsToggle.addEventListener('click', () => {
+                console.log('Settings button clicked - navigating to settings page');
+                // NOTE: Settings is a separate PAGE (settings.html), not a modal!
+                // The settings page contains: theme selection, difficulty settings, 
+                // high scores, game settings, and the PWA install button.
+                window.location.href = '/settings.html';
+            });
+        } else {
+            console.error('Settings toggle button not found!');
+        }
+        
+        const newGameBtn = document.getElementById('new-game');
+        if (newGameBtn) {
+            newGameBtn.addEventListener('click', () => this.newGame());
+        } else {
+            console.error('New game button not found!');
+        }
         
         // Modal events (for remaining modals)
-        document.getElementById('close-high-scores').addEventListener('click', () => this.hideHighScores());
-        document.getElementById('close-difficulty').addEventListener('click', () => this.hideDifficultyModal());
-        document.getElementById('close-settings').addEventListener('click', () => this.hideSettingsModal());
+        const closeHighScores = document.getElementById('close-high-scores');
+        if (closeHighScores) {
+            closeHighScores.addEventListener('click', () => this.hideHighScores());
+        }
+        
+        const closeDifficulty = document.getElementById('close-difficulty');
+        if (closeDifficulty) {
+            closeDifficulty.addEventListener('click', () => this.hideDifficultyModal());
+        }
+        
+        const closeSettings = document.getElementById('close-settings');
+        if (closeSettings) {
+            closeSettings.addEventListener('click', () => this.hideSettingsModal());
+        }
         
         // Difficulty selection events
         document.querySelectorAll('.difficulty-option').forEach(option => {
@@ -266,6 +318,11 @@ class BlockdokuGame {
     }
     
     drawBoard() {
+        // Don't draw if canvas isn't ready
+        if (this.cellSize === 0 || this.canvas.width === 0) {
+            return;
+        }
+        
         const ctx = this.ctx;
         const cellSize = this.cellSize;
         
@@ -276,44 +333,48 @@ class BlockdokuGame {
         ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--board-bg');
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Draw grid lines
+        // Draw grid lines with precise pixel alignment
         ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--grid-line');
         ctx.lineWidth = 1;
         
-        // Vertical lines
+        // Use the full canvas dimensions for grid
+        const canvasWidth = this.canvas.width;
+        const canvasHeight = this.canvas.height;
+        
+        // Vertical lines - fill entire canvas height
         for (let i = 0; i <= this.boardSize; i++) {
-            const x = i * cellSize;
+            const x = Math.floor(i * cellSize);
             ctx.beginPath();
             ctx.moveTo(x, 0);
-            ctx.lineTo(x, this.canvas.height);
+            ctx.lineTo(x, canvasHeight);
             ctx.stroke();
         }
         
-        // Horizontal lines
+        // Horizontal lines - fill entire canvas width
         for (let i = 0; i <= this.boardSize; i++) {
-            const y = i * cellSize;
+            const y = Math.floor(i * cellSize);
             ctx.beginPath();
             ctx.moveTo(0, y);
-            ctx.lineTo(this.canvas.width, y);
+            ctx.lineTo(canvasWidth, y);
             ctx.stroke();
         }
         
-        // Draw 3x3 square borders (thicker lines)
+        // Draw 3x3 square borders (thicker lines) with precise alignment
         ctx.lineWidth = 2;
         for (let i = 0; i <= 3; i++) {
-            const x = i * 3 * cellSize;
-            const y = i * 3 * cellSize;
+            const x = Math.floor(i * 3 * cellSize);
+            const y = Math.floor(i * 3 * cellSize);
             
             // Vertical 3x3 borders
             ctx.beginPath();
             ctx.moveTo(x, 0);
-            ctx.lineTo(x, this.canvas.height);
+            ctx.lineTo(x, canvasHeight);
             ctx.stroke();
             
             // Horizontal 3x3 borders
             ctx.beginPath();
             ctx.moveTo(0, y);
-            ctx.lineTo(this.canvas.width, y);
+            ctx.lineTo(canvasWidth, y);
             ctx.stroke();
         }
         
@@ -812,7 +873,15 @@ class BlockdokuGame {
 
     // Settings Modal Management
     showSettingsModal() {
+        console.log('showSettingsModal called');
         const modal = document.getElementById('settings-modal');
+        
+        if (!modal) {
+            console.error('Settings modal not found!');
+            return;
+        }
+        
+        console.log('Settings modal found, showing...');
         
         // Ensure install button is created and shown
         if (this.pwaInstallManager) {
@@ -825,12 +894,12 @@ class BlockdokuGame {
         // Update UI to reflect current settings
         this.updateThemeUI();
         this.updateDifficultyUI();
-        this.updateGameSettingsUI();
         
         // Load high scores if needed
         this.loadHighScores();
         
         modal.style.display = 'block';
+        console.log('Settings modal should now be visible');
     }
 
     hideSettingsModal() {
