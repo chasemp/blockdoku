@@ -7,6 +7,8 @@ import { BlockManager } from './game/blocks.js';
 import { BlockPalette } from './ui/block-palette.js';
 import { ScoringSystem } from './game/scoring.js';
 import { EffectsSystem } from './ui/effects.js';
+import { PWAInstallManager } from './pwa/install.js';
+import { OfflineManager } from './pwa/offline.js';
 
 class BlockdokuGame {
     constructor() {
@@ -24,6 +26,8 @@ class BlockdokuGame {
         this.blockPalette = new BlockPalette('block-palette', this.blockManager);
         this.scoringSystem = new ScoringSystem();
         this.effectsSystem = new EffectsSystem(this.canvas, this.ctx);
+        this.pwaInstallManager = new PWAInstallManager();
+        this.offlineManager = new OfflineManager();
         this.selectedBlock = null;
         this.previewPosition = null;
         
@@ -44,10 +48,27 @@ class BlockdokuGame {
     
     init() {
         this.setupEventListeners();
+        this.registerServiceWorker();
         this.generateNewBlocks();
         this.drawBoard();
         this.updateUI();
         this.startGameLoop();
+    }
+    
+    async registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            try {
+                const registration = await navigator.serviceWorker.register('/sw.js');
+                console.log('PWA: Service Worker registered successfully', registration);
+                
+                // Check for updates
+                registration.addEventListener('updatefound', () => {
+                    console.log('PWA: Service Worker update found');
+                });
+            } catch (error) {
+                console.error('PWA: Service Worker registration failed', error);
+            }
+        }
     }
     
     startGameLoop() {
