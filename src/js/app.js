@@ -3,8 +3,8 @@
  * MVT Milestone 2: Basic Block Placement System
  */
 
-// Temporarily comment out all imports to debug
-// import { BlockManager } from './game/blocks.js';
+// Re-enable imports incrementally
+import { BlockManager } from './game/blocks.js';
 // import { BlockPalette } from './ui/block-palette.js';
 // import { ScoringSystem } from './game/scoring.js';
 // import { EffectsSystem } from './ui/effects.js';
@@ -22,8 +22,8 @@ class BlockdokuGame {
         this.level = 1;
         this.currentTheme = 'light';
         
-        // Temporarily disable complex features
-        // this.blockManager = new BlockManager();
+        // Re-enable features incrementally
+        this.blockManager = new BlockManager();
         // this.blockPalette = new BlockPalette('block-palette', this.blockManager);
         // this.scoringSystem = new ScoringSystem();
         // this.effectsSystem = new EffectsSystem(this.canvas, this.ctx);
@@ -50,7 +50,7 @@ class BlockdokuGame {
     init() {
         this.setupEventListeners();
         this.registerServiceWorker();
-        // this.generateNewBlocks();
+        this.generateNewBlocks();
         this.drawBoard();
         this.updateUI();
         this.startGameLoop();
@@ -114,8 +114,16 @@ class BlockdokuGame {
         const col = Math.floor(x / this.cellSize);
         const row = Math.floor(y / this.cellSize);
         
-        if (this.canPlaceBlock(row, col)) {
-            this.placeBlock(row, col);
+        // Temporarily disable block placement validation
+        // if (this.canPlaceBlock(row, col)) {
+        //     this.placeBlock(row, col);
+        // }
+        
+        // Simple click to toggle cell for now
+        if (row >= 0 && row < this.boardSize && col >= 0 && col < this.boardSize) {
+            this.toggleCell(row, col);
+            this.drawBoard();
+            this.updateUI();
         }
     }
     
@@ -178,20 +186,24 @@ class BlockdokuGame {
     //     this.autoSelectNextBlock();
     // }
     
-    // generateNewBlocks() {
-    //     const newBlocks = this.blockManager.generateRandomBlocks(3);
-    //     this.blockPalette.updateBlocks(newBlocks);
-    //     // Auto-select the first block when new blocks are generated
-    //     this.autoSelectNextBlock();
-    // }
+    generateNewBlocks() {
+        const newBlocks = this.blockManager.generateRandomBlocks(3);
+        // this.blockPalette.updateBlocks(newBlocks);
+        // Auto-select the first block when new blocks are generated
+        this.autoSelectNextBlock();
+    }
     
-    // autoSelectNextBlock() {
-    //     if (this.blockManager.currentBlocks.length > 0) {
-    //         const firstBlock = this.blockManager.currentBlocks[0];
-    //         this.selectedBlock = firstBlock;
-    //         this.blockPalette.selectBlockById(firstBlock.id);
-    //     }
-    // }
+    autoSelectNextBlock() {
+        if (this.blockManager.currentBlocks.length > 0) {
+            const firstBlock = this.blockManager.currentBlocks[0];
+            this.selectedBlock = firstBlock;
+            // this.blockPalette.selectBlockById(firstBlock.id);
+        }
+    }
+    
+    toggleCell(row, col) {
+        this.board[row][col] = this.board[row][col] === 0 ? 1 : 0;
+    }
     
     drawBoard() {
         const ctx = this.ctx;
@@ -294,7 +306,8 @@ class BlockdokuGame {
         const col = this.previewPosition.col;
         
         // Check if placement is valid
-        const canPlace = this.canPlaceBlock(row, col);
+        // const canPlace = this.canPlaceBlock(row, col);
+        const canPlace = true; // Temporarily always allow placement
         
         // Set preview color based on validity
         ctx.fillStyle = canPlace ? 
