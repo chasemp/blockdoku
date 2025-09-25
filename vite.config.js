@@ -4,6 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   root: 'src',
   publicDir: '../public',
+  base: '/blockdoku_pwa/',
   build: {
     outDir: '../dist',
     emptyOutDir: true
