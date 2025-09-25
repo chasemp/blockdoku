@@ -6,7 +6,7 @@
 // Re-enable imports incrementally
 import { BlockManager } from '/js/game/blocks.js';
 import { BlockPalette } from '/js/ui/block-palette.js';
-// import { ScoringSystem } from './game/scoring.js';
+import { ScoringSystem } from '/js/game/scoring.js';
 // import { EffectsSystem } from './ui/effects.js';
 // import { PWAInstallManager } from './pwa/install.js';
 // import { OfflineManager } from './pwa/offline.js';
@@ -25,7 +25,7 @@ class BlockdokuGame {
         // Re-enable features incrementally
         this.blockManager = new BlockManager();
         this.blockPalette = new BlockPalette('block-palette', this.blockManager);
-        // this.scoringSystem = new ScoringSystem();
+        this.scoringSystem = new ScoringSystem();
         // this.effectsSystem = new EffectsSystem(this.canvas, this.ctx);
         // this.pwaInstallManager = new PWAInstallManager();
         // this.offlineManager = new OfflineManager();
@@ -166,7 +166,7 @@ class BlockdokuGame {
         this.updateUI();
         
         // Check for line clears
-        // this.checkLineClears();
+        this.checkLineClears();
         
         // Generate new blocks if needed
         if (this.blockManager.currentBlocks.length === 0) {
@@ -324,41 +324,41 @@ class BlockdokuGame {
         }
     }
     
-    // checkLineClears() {
-    //     // Check for completed lines
-    //     const clearedLines = this.scoringSystem.checkAndClearLines(this.board);
-    //     
-    //     // If any lines were cleared, process them
-    //     if (clearedLines.rows.length > 0 || clearedLines.columns.length > 0 || clearedLines.squares.length > 0) {
-    //         const result = this.scoringSystem.clearLines(this.board, clearedLines);
-    //         this.board = result.board;
-    //         
-    //         // Update score and level
-    //         this.score = this.scoringSystem.getScore();
-    //         this.level = this.scoringSystem.getLevel();
-    //         
-    //         // Create visual effects
-    //         this.effectsSystem.createLineClearEffect(clearedLines);
-    //         
-    //         // Create score popup
-    //         const centerX = this.canvas.width / 2;
-    //         const centerY = this.canvas.height / 2;
-    //         this.effectsSystem.createScorePopup(centerX, centerY, result.scoreGained);
-    //         
-    //         // Create combo effect if applicable
-    //         const combo = this.scoringSystem.getCombo();
-    //         if (combo > 1) {
-    //             this.effectsSystem.createComboEffect(combo, centerX, centerY + 50);
-    //         }
-    //         
-    //         // Update UI
-    //         this.updateUI();
-    //     }
-    // }
+    checkLineClears() {
+        // Check for completed lines
+        const clearedLines = this.scoringSystem.checkAndClearLines(this.board);
+        
+        // If any lines were cleared, process them
+        if (clearedLines.rows.length > 0 || clearedLines.columns.length > 0 || clearedLines.squares.length > 0) {
+            const result = this.scoringSystem.clearLines(this.board, clearedLines);
+            this.board = result.board;
+            
+            // Update score and level
+            this.score = this.scoringSystem.getScore();
+            this.level = this.scoringSystem.getLevel();
+            
+            // Create visual effects (simplified without effects system for now)
+            this.createLineClearEffect(clearedLines);
+            
+            // Create score popup (simplified)
+            const centerX = this.canvas.width / 2;
+            const centerY = this.canvas.height / 2;
+            this.createScorePopup(centerX, centerY, result.scoreGained);
+            
+            // Create combo effect if applicable
+            const combo = this.scoringSystem.getCombo();
+            if (combo > 1) {
+                this.createComboEffect(combo, centerX, centerY + 50);
+            }
+            
+            // Update UI
+            this.updateUI();
+        }
+    }
     
     newGame() {
         this.board = this.initializeBoard();
-        // this.scoringSystem.reset();
+        this.scoringSystem.reset();
         this.score = 0;
         this.level = 1;
         this.selectedBlock = null;
@@ -372,18 +372,57 @@ class BlockdokuGame {
     updateUI() {
         document.getElementById('score').textContent = this.score;
         document.getElementById('level').textContent = this.level;
-        // document.getElementById('combo').textContent = this.scoringSystem.getCombo();
-        document.getElementById('combo').textContent = 0;
+        document.getElementById('combo').textContent = this.scoringSystem.getCombo();
     }
     
+    // Simplified visual effects for line clearing
+    createLineClearEffect(clearedLines) {
+        // Simple visual feedback - redraw the board with a flash effect
+        this.ctx.fillStyle = '#ffff00';
+        this.ctx.globalAlpha = 0.3;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.globalAlpha = 1.0;
+        
+        // Redraw the board after a short delay
+        setTimeout(() => {
+            this.drawBoard();
+        }, 100);
+    }
+    
+    createScorePopup(x, y, scoreGained) {
+        // Simple score popup using canvas text
+        this.ctx.fillStyle = '#00ff00';
+        this.ctx.font = 'bold 24px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(`+${scoreGained}`, x, y);
+        
+        // Clear the popup after a delay
+        setTimeout(() => {
+            this.drawBoard();
+        }, 1000);
+    }
+    
+    createComboEffect(combo, x, y) {
+        // Simple combo effect using canvas text
+        this.ctx.fillStyle = '#ff6600';
+        this.ctx.font = 'bold 20px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(`${combo}x COMBO!`, x, y);
+        
+        // Clear the combo effect after a delay
+        setTimeout(() => {
+            this.drawBoard();
+        }, 1500);
+    }
+
     // Get game statistics
     getStats() {
         return {
             score: this.score,
             level: this.level,
-            linesCleared: 0, // this.scoringSystem.getLinesCleared(),
-            combo: 0, // this.scoringSystem.getCombo(),
-            maxCombo: 0 // this.scoringSystem.getMaxCombo()
+            linesCleared: this.scoringSystem.getLinesCleared(),
+            combo: this.scoringSystem.getCombo(),
+            maxCombo: this.scoringSystem.getMaxCombo()
         };
     }
 }
