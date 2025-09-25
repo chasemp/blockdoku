@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockdoku PWA</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/themes/light.css" id="theme-css">
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <h1>Blockdoku PWA</h1>
+            <div class="controls">
+                <button id="theme-toggle" class="btn btn-secondary">Theme</button>
+                <button id="new-game" class="btn btn-primary">New Game</button>
+            </div>
+        </header>
+        
+        <main class="main">
+            <div class="game-container">
+                <div id="block-palette"></div>
+                
+                <div class="game-area">
+                    <div class="game-board-container">
+                        <canvas id="game-board" width="450" height="450"></canvas>
+                        <div class="board-overlay" id="board-overlay"></div>
+                    </div>
+                </div>
+                
+                <div class="game-info">
+                    <div class="score">
+                        <span>Score: </span>
+                        <span id="score">0</span>
+                    </div>
+                    <div class="level">
+                        <span>Level: </span>
+                        <span id="level">1</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="footer">
+            <p>Select a block from the palette, then click on the board to place it</p>
+        </footer>
+    </div>
+    
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

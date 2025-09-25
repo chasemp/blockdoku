@@ -1,0 +1,192 @@
+/**
+ * Blockdoku PWA - Block Palette UI
+ * MVT Milestone 2: Basic Block Placement System
+ */
+
+export class BlockPalette {
+    constructor(containerId, blockManager) {
+        this.container = document.getElementById(containerId);
+        this.blockManager = blockManager;
+        this.selectedBlock = null;
+        this.blockElements = new Map();
+        
+        this.init();
+    }
+    
+    init() {
+        this.render();
+        this.setupEventListeners();
+    }
+    
+    render() {
+        if (!this.container) return;
+        
+        this.container.innerHTML = `
+            <div class="block-palette">
+                <h3>Available Blocks</h3>
+                <div class="blocks-container" id="blocks-container">
+                    <!-- Blocks will be rendered here -->
+                </div>
+            </div>
+        `;
+    }
+    
+    updateBlocks(blocks) {
+        const container = document.getElementById('blocks-container');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        this.blockElements.clear();
+        
+        blocks.forEach(block => {
+            const blockElement = this.createBlockElement(block);
+            container.appendChild(blockElement);
+            this.blockElements.set(block.id, blockElement);
+        });
+    }
+    
+    createBlockElement(block) {
+        const blockDiv = document.createElement('div');
+        blockDiv.className = 'block-item';
+        blockDiv.dataset.blockId = block.id;
+        
+        // Create block preview
+        const preview = document.createElement('div');
+        preview.className = 'block-preview';
+        preview.style.width = `${block.shape[0].length * 20}px`;
+        preview.style.height = `${block.shape.length * 20}px`;
+        
+        // Draw block shape
+        const canvas = document.createElement('canvas');
+        canvas.width = block.shape[0].length * 20;
+        canvas.height = block.shape.length * 20;
+        const ctx = canvas.getContext('2d');
+        
+        // Draw block
+        ctx.fillStyle = block.color;
+        ctx.strokeStyle = this.darkenColor(block.color);
+        ctx.lineWidth = 1;
+        
+        for (let r = 0; r < block.shape.length; r++) {
+            for (let c = 0; c < block.shape[r].length; c++) {
+                if (block.shape[r][c] === 1) {
+                    const x = c * 20;
+                    const y = r * 20;
+                    ctx.fillRect(x, y, 20, 20);
+                    ctx.strokeRect(x, y, 20, 20);
+                }
+            }
+        }
+        
+        preview.appendChild(canvas);
+        
+        // Block info
+        const info = document.createElement('div');
+        info.className = 'block-info';
+        info.innerHTML = `
+            <div class="block-name">${block.name}</div>
+            <div class="block-points">${block.points} pts</div>
+        `;
+        
+        // Rotate button
+        const rotateBtn = document.createElement('button');
+        rotateBtn.className = 'rotate-btn';
+        rotateBtn.innerHTML = '↻';
+        rotateBtn.title = 'Rotate block';
+        
+        blockDiv.appendChild(preview);
+        blockDiv.appendChild(info);
+        blockDiv.appendChild(rotateBtn);
+        
+        return blockDiv;
+    }
+    
+    setupEventListeners() {
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.block-item')) {
+                const blockItem = e.target.closest('.block-item');
+                const blockId = blockItem.dataset.blockId;
+                this.selectBlock(blockId);
+            }
+            
+            if (e.target.classList.contains('rotate-btn')) {
+                e.stopPropagation();
+                const blockItem = e.target.closest('.block-item');
+                const blockId = blockItem.dataset.blockId;
+                this.rotateBlock(blockId);
+            }
+        });
+    }
+    
+    selectBlock(blockId) {
+        // Clear previous selection
+        this.clearSelection();
+        
+        // Select new block
+        this.selectedBlock = this.blockManager.getBlockById(blockId);
+        if (this.selectedBlock) {
+            const blockElement = this.blockElements.get(blockId);
+            if (blockElement) {
+                blockElement.classList.add('selected');
+            }
+        }
+        
+        // Dispatch selection event
+        this.dispatchSelectionEvent();
+    }
+    
+    rotateBlock(blockId) {
+        const block = this.blockManager.getBlockById(blockId);
+        if (!block) return;
+        
+        const rotatedBlock = this.blockManager.rotateBlock(block);
+        if (rotatedBlock) {
+            // Update the block in the manager
+            const blockIndex = this.blockManager.currentBlocks.findIndex(b => b.id === blockId);
+            if (blockIndex !== -1) {
+                this.blockManager.currentBlocks[blockIndex] = rotatedBlock;
+                
+                // Update UI
+                this.updateBlocks(this.blockManager.currentBlocks);
+                
+                // Re-select if this was the selected block
+                if (this.selectedBlock && this.selectedBlock.id === blockId) {
+                    this.selectedBlock = rotatedBlock;
+                    this.dispatchSelectionEvent();
+                }
+            }
+        }
+    }
+    
+    clearSelection() {
+        this.selectedBlock = null;
+        this.blockElements.forEach(element => {
+            element.classList.remove('selected');
+        });
+    }
+    
+    dispatchSelectionEvent() {
+        const event = new CustomEvent('blockSelected', {
+            detail: { block: this.selectedBlock }
+        });
+        document.dispatchEvent(event);
+    }
+    
+    darkenColor(color) {
+        // Simple color darkening for borders
+        const hex = color.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        
+        const newR = Math.max(0, r - 30);
+        const newG = Math.max(0, g - 30);
+        const newB = Math.max(0, b - 30);
+        
+        return `rgb(${newR}, ${newG}, ${newB})`;
+    }
+    
+    getSelectedBlock() {
+        return this.selectedBlock;
+    }
+}
