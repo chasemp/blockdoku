@@ -240,10 +240,12 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="./assets/settings-BqvlN0WL.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/install-B2AQisTF.js">
-  <link rel="stylesheet" crossorigin href="./assets/install-rhC3yv2Z.css">
+  <script type="module" crossorigin src="./assets/settings-SveDNKLH.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/wood-CS1vos5M.js">
+  <link rel="modulepreload" crossorigin href="./assets/confirmation-dialog-DB89HPdq.js">
+  <link rel="modulepreload" crossorigin href="./assets/build-info-Dwp5dZmk.js">
   <link rel="stylesheet" crossorigin href="./assets/wood-dGYy0LCH.css">
+  <link rel="stylesheet" crossorigin href="./assets/confirmation-dialog-vTMOWxgv.css">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
     <div class="settings-container">
@@ -407,7 +409,7 @@
             
             <!-- About Section -->
             <div class="settings-section" id="about-section">
-                <h2 class="section-title">About Blockdoku <button id="share-button" class="share-button" title="Share Blockdoku">📤</button></h2>
+                <h2 class="section-title">About Blockdoku <button id="share-button" class="share-button" title="Share Blockdoku"><span class="share-icon"></span></button></h2>
                 <div class="about-content">
                     <div class="about-item">
                         <h3>Author</h3>
@@ -429,7 +431,8 @@
                     
                     <div class="about-item">
                         <h3>Version</h3>
-                        <p>v1.3</p>
+                        <p id="version-display">Loading...</p>
+                        <p id="build-info" class="build-info">Build: Loading...</p>
                     </div>
                 </div>
             </div>

@@ -311,9 +311,24 @@
         </div>
     </div>
 
-    <div class="version-info">v1.4.0</div>
+    <div class="version-info" id="version-display">v1.4.0</div>
 
-    <script>
+    <script type="module">
+        // Load and display build info
+        import { buildInfo } from './js/utils/build-info.js';
+        
+        const updateVersionDisplay = () => {
+            const versionDisplay = document.getElementById('version-display');
+            if (versionDisplay && buildInfo.isLoaded()) {
+                versionDisplay.textContent = buildInfo.getDisplayVersion();
+            } else if (versionDisplay) {
+                // Check again in 100ms
+                setTimeout(updateVersionDisplay, 100);
+            }
+        };
+        
+        updateVersionDisplay();
+        
         // Auto-redirect to main game after splash screen
         setTimeout(() => {
             window.location.href = 'index.html';

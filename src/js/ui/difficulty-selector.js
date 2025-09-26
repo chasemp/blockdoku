@@ -3,12 +3,15 @@
  * Handles difficulty selection and display
  */
 
+import { ConfirmationDialog } from './confirmation-dialog.js';
+
 export class DifficultySelector {
     constructor(game, difficultyManager) {
         this.game = game;
         this.difficultyManager = difficultyManager;
         this.container = null;
         this.isVisible = false;
+        this.confirmationDialog = new ConfirmationDialog();
     }
     
     create() {
@@ -128,8 +131,8 @@ export class DifficultySelector {
         option.appendChild(content);
         
         // Add click handler
-        option.addEventListener('click', () => {
-            this.selectDifficulty(difficulty.key);
+        option.addEventListener('click', async () => {
+            await this.selectDifficulty(difficulty.key);
         });
         
         return option;
@@ -145,7 +148,21 @@ export class DifficultySelector {
         return icons[difficulty] || '🎮';
     }
     
-    selectDifficulty(difficulty) {
+    async selectDifficulty(difficulty) {
+        // Check if game is in progress (has blocks placed or score > 0)
+        const gameInProgress = this.game.score > 0 || this.game.board.some(row => row.some(cell => cell === 1));
+        
+        if (gameInProgress) {
+            // Show confirmation dialog
+            const confirmed = await this.confirmationDialog.show(
+                `Changing difficulty to ${difficulty.toUpperCase()} will reset your current game and you'll lose your progress. Are you sure you want to continue?`
+            );
+            
+            if (!confirmed) {
+                return; // User cancelled
+            }
+        }
+        
         // Update difficulty manager
         this.difficultyManager.setDifficulty(difficulty);
         
@@ -284,8 +301,9 @@ export class DifficultySelector {
             
             .difficulty-option.selected {
                 border-color: var(--primary-color, #007bff);
-                background: var(--highlight, #f8f9ff);
-                color: var(--primary-color, #007bff);
+                background: var(--primary-color, #007bff);
+                color: white !important;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
             }
             
             .difficulty-icon {
@@ -305,11 +323,21 @@ export class DifficultySelector {
                 font-size: 1.1rem;
             }
             
+            .difficulty-option.selected .difficulty-content h3 {
+                color: white !important;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
+            }
+            
             .difficulty-content p {
                 margin: 0 0 8px 0;
                 color: var(--text-muted, #666);
                 font-size: 0.9rem;
                 line-height: 1.4;
+            }
+            
+            .difficulty-option.selected .difficulty-content p {
+                color: rgba(255, 255, 255, 0.9);
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
             }
             
             .difficulty-features {
