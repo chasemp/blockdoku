@@ -222,6 +222,11 @@ class BlockdokuGame {
         this.canvas.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
         this.canvas.addEventListener('touchcancel', (e) => this.handleTouchCancel(e), { passive: false });
         
+        // Global touch events for drag operation
+        document.addEventListener('touchmove', (e) => this.handleGlobalTouchMove(e), { passive: false });
+        document.addEventListener('touchend', (e) => this.handleGlobalTouchEnd(e), { passive: false });
+        document.addEventListener('touchcancel', (e) => this.handleGlobalTouchCancel(e), { passive: false });
+        
         // Button events
         const settingsToggle = document.getElementById('settings-toggle');
         if (settingsToggle) {
@@ -276,6 +281,9 @@ class BlockdokuGame {
         
         // Block selection events
         document.addEventListener('blockSelected', (e) => this.handleBlockSelected(e));
+        
+        // Block drag events
+        document.addEventListener('blockDragStart', (e) => this.handleBlockDragStart(e));
     }
     
     handleCanvasClick(e) {
@@ -340,19 +348,19 @@ class BlockdokuGame {
     }
     
     handleTouchMove(e) {
-        e.preventDefault();
-        
         if (!this.isDragging || !this.selectedBlock) return;
+        
+        e.preventDefault();
         
         const touch = e.touches[0];
         const rect = this.canvas.getBoundingClientRect();
         const x = touch.clientX - rect.left;
         const y = touch.clientY - rect.top;
         
-        this.dragCurrentPosition = { x, y };
+        this.dragCurrentPosition = { x: touch.clientX, y: touch.clientY };
         
         // Update drag element position
-        this.updateDragElement(x, y);
+        this.updateDragElement(touch.clientX, touch.clientY);
         
         // Update preview position
         const col = Math.floor(x / this.mouseCellSize);
@@ -384,6 +392,64 @@ class BlockdokuGame {
     }
     
     handleTouchCancel(e) {
+        e.preventDefault();
+        this.cleanupDrag();
+    }
+    
+    // Global touch event handlers for drag operation
+    handleGlobalTouchMove(e) {
+        if (!this.isDragging || !this.selectedBlock) return;
+        
+        e.preventDefault();
+        
+        const touch = e.touches[0];
+        this.dragCurrentPosition = { x: touch.clientX, y: touch.clientY };
+        
+        // Update drag element position
+        this.updateDragElement(touch.clientX, touch.clientY);
+        
+        // Update preview position based on canvas position
+        const rect = this.canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        
+        // Only update preview if touch is over the canvas
+        if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+            const col = Math.floor(x / this.mouseCellSize);
+            const row = Math.floor(y / this.mouseCellSize);
+            this.previewPosition = { row, col };
+            this.drawBoard();
+        } else {
+            this.previewPosition = null;
+            this.drawBoard();
+        }
+    }
+    
+    handleGlobalTouchEnd(e) {
+        if (!this.isDragging || !this.selectedBlock) return;
+        
+        e.preventDefault();
+        
+        const touch = e.changedTouches[0];
+        const rect = this.canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        
+        // Only place block if touch ended over the canvas
+        if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+            const col = Math.floor(x / this.mouseCellSize);
+            const row = Math.floor(y / this.mouseCellSize);
+            
+            if (this.canPlaceBlock(row, col)) {
+                this.placeBlock(row, col);
+            }
+        }
+        
+        // Clean up drag state
+        this.cleanupDrag();
+    }
+    
+    handleGlobalTouchCancel(e) {
         e.preventDefault();
         this.cleanupDrag();
     }
@@ -467,6 +533,28 @@ class BlockdokuGame {
     handleBlockSelected(e) {
         this.selectedBlock = e.detail.block;
         this.previewPosition = null;
+        this.drawBoard();
+    }
+    
+    handleBlockDragStart(e) {
+        const { block, touch } = e.detail;
+        this.selectedBlock = block;
+        
+        // Start drag operation
+        this.isDragging = true;
+        this.dragStartPosition = { x: touch.clientX, y: touch.clientY };
+        this.dragCurrentPosition = { x: touch.clientX, y: touch.clientY };
+        
+        // Create drag element
+        this.createDragElement();
+        
+        // Update preview position
+        const rect = this.canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        const col = Math.floor(x / this.mouseCellSize);
+        const row = Math.floor(y / this.mouseCellSize);
+        this.previewPosition = { row, col };
         this.drawBoard();
     }
     

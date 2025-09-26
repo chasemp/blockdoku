@@ -128,11 +128,16 @@ export class BlockPalette {
                 // Store the touch for potential drag
                 this.touchStart = e.touches[0];
                 this.touchStartTime = Date.now();
+                this.touchStartBlockId = blockId;
+                
+                // Add visual feedback
+                blockItem.style.transform = 'scale(0.95)';
+                blockItem.style.transition = 'transform 0.1s ease';
             }
         }, { passive: true });
         
         document.addEventListener('touchmove', (e) => {
-            if (this.touchStart && e.target.closest('.block-item')) {
+            if (this.touchStart && this.touchStartBlockId) {
                 const touch = e.touches[0];
                 const deltaX = Math.abs(touch.clientX - this.touchStart.clientX);
                 const deltaY = Math.abs(touch.clientY - this.touchStart.clientY);
@@ -141,15 +146,41 @@ export class BlockPalette {
                 // If moved more than 10px or 200ms has passed, consider it a drag
                 if (deltaX > 10 || deltaY > 10 || deltaTime > 200) {
                     e.preventDefault();
-                    // The drag will be handled by the canvas touch events
+                    
+                    // Start drag operation
+                    if (!this.isDragging) {
+                        this.isDragging = true;
+                        this.startDragFromPalette(touch);
+                    }
                 }
             }
         }, { passive: false });
         
         document.addEventListener('touchend', (e) => {
-            this.touchStart = null;
-            this.touchStartTime = null;
+            if (this.touchStart) {
+                // Reset visual feedback
+                const blockItem = document.querySelector(`[data-block-id="${this.touchStartBlockId}"]`);
+                if (blockItem) {
+                    blockItem.style.transform = '';
+                    blockItem.style.transition = '';
+                }
+                
+                this.touchStart = null;
+                this.touchStartTime = null;
+                this.touchStartBlockId = null;
+            }
         }, { passive: true });
+    }
+    
+    startDragFromPalette(touch) {
+        // Notify the game that we're starting a drag from the palette
+        const dragEvent = new CustomEvent('blockDragStart', {
+            detail: {
+                block: this.selectedBlock,
+                touch: touch
+            }
+        });
+        document.dispatchEvent(dragEvent);
     }
     
     selectBlock(blockId) {
