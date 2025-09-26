@@ -232,7 +232,8 @@ export class DifficultySelector {
             
             .difficulty-modal {
                 position: relative;
-                background: white;
+                background: var(--card-bg, var(--header-bg, white));
+                border: 2px solid var(--border-color, #e0e0e0);
                 border-radius: 12px;
                 padding: 24px;
                 max-width: 500px;
@@ -255,7 +256,7 @@ export class DifficultySelector {
             
             .difficulty-header h2 {
                 margin: 0;
-                color: #333;
+                color: var(--text-color, #333);
                 font-size: 1.5rem;
             }
             
@@ -268,22 +269,23 @@ export class DifficultySelector {
                 display: flex;
                 align-items: center;
                 padding: 16px;
-                border: 2px solid #e0e0e0;
+                border: 2px solid var(--border-color, #e0e0e0);
                 border-radius: 8px;
                 cursor: pointer;
                 transition: all 0.2s ease;
-                background: white;
+                background: var(--card-bg, var(--header-bg, white));
             }
             
             .difficulty-option:hover {
-                border-color: #007bff;
+                border-color: var(--primary-color, #007bff);
                 transform: translateY(-2px);
                 box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
             }
             
             .difficulty-option.selected {
-                border-color: #007bff;
-                background: #f8f9ff;
+                border-color: var(--primary-color, #007bff);
+                background: var(--highlight, #f8f9ff);
+                color: var(--primary-color, #007bff);
             }
             
             .difficulty-icon {
@@ -299,13 +301,13 @@ export class DifficultySelector {
             
             .difficulty-content h3 {
                 margin: 0 0 8px 0;
-                color: #333;
+                color: var(--text-color, #333);
                 font-size: 1.1rem;
             }
             
             .difficulty-content p {
                 margin: 0 0 8px 0;
-                color: #666;
+                color: var(--text-muted, #666);
                 font-size: 0.9rem;
                 line-height: 1.4;
             }
@@ -353,7 +355,7 @@ export class DifficultySelector {
                 border: none;
                 font-size: 1.5rem;
                 cursor: pointer;
-                color: #999;
+                color: var(--text-muted, #999);
                 width: 32px;
                 height: 32px;
                 display: flex;
@@ -364,8 +366,8 @@ export class DifficultySelector {
             }
             
             .difficulty-close:hover {
-                background: #f0f0f0;
-                color: #333;
+                background: var(--cell-hover, #f0f0f0);
+                color: var(--text-color, #333);
             }
             
             @media (max-width: 480px) {

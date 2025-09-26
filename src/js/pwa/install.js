@@ -8,6 +8,7 @@ export class PWAInstallManager {
         this.deferredPrompt = null;
         this.isInstalled = false;
         this.installButton = null;
+        this.settingsInstallButton = null;
         
         this.init();
     }
@@ -16,6 +17,7 @@ export class PWAInstallManager {
         this.setupEventListeners();
         this.checkInstallStatus();
         this.createInstallButton();
+        this.setupSettingsButton();
     }
     
     setupEventListeners() {
@@ -34,6 +36,7 @@ export class PWAInstallManager {
             console.log('PWA: App was installed');
             this.isInstalled = true;
             this.hideInstallButton();
+            this.updateSettingsButtonStatus();
             this.deferredPrompt = null;
         });
         
@@ -58,6 +61,9 @@ export class PWAInstallManager {
             this.isInstalled = true;
             console.log('PWA: App is installed on iOS');
         }
+        
+        // Update settings button status after checking
+        this.updateSettingsButtonStatus();
     }
     
     createInstallButton() {
@@ -204,6 +210,52 @@ export class PWAInstallManager {
     // Check if PWA features are supported
     isPWASupported() {
         return 'serviceWorker' in navigator && 'PushManager' in window;
+    }
+    
+    // Setup settings page install button
+    setupSettingsButton() {
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                this.initializeSettingsButton();
+            });
+        } else {
+            this.initializeSettingsButton();
+        }
+    }
+    
+    initializeSettingsButton() {
+        this.settingsInstallButton = document.getElementById('pwa-install-button');
+        if (this.settingsInstallButton) {
+            this.settingsInstallButton.addEventListener('click', () => {
+                this.installApp();
+            });
+            this.updateSettingsButtonStatus();
+        }
+    }
+    
+    // Update settings button status
+    updateSettingsButtonStatus() {
+        if (!this.settingsInstallButton) return;
+        
+        const statusElement = document.getElementById('install-status');
+        
+        if (this.isInstalled) {
+            this.settingsInstallButton.classList.add('installed');
+            if (statusElement) {
+                statusElement.textContent = 'Installed as PWA';
+            }
+        } else if (this.deferredPrompt) {
+            this.settingsInstallButton.classList.remove('installed');
+            if (statusElement) {
+                statusElement.textContent = '';
+            }
+        } else {
+            this.settingsInstallButton.classList.remove('installed');
+            if (statusElement) {
+                statusElement.textContent = 'Not available';
+            }
+        }
     }
     
     // Get PWA status

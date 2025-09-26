@@ -34,6 +34,35 @@ class SettingsManager {
         
         // Apply the loaded theme immediately
         this.applyTheme(this.currentTheme);
+        
+        // Load effects settings
+        this.loadEffectsSettings();
+    }
+    
+    loadEffectsSettings() {
+        // Sound effects
+        const soundEnabled = document.getElementById('sound-enabled');
+        if (soundEnabled) {
+            soundEnabled.checked = this.settings.soundEnabled === true; // Default to false
+        }
+        
+        // Animations
+        const animationsEnabled = document.getElementById('animations-enabled');
+        if (animationsEnabled) {
+            animationsEnabled.checked = this.settings.animationsEnabled !== false; // Default to true
+        }
+        
+        // Particle effects
+        const particlesEnabled = document.getElementById('particles-enabled');
+        if (particlesEnabled) {
+            particlesEnabled.checked = this.settings.particlesEnabled !== false; // Default to true
+        }
+        
+        // Haptic feedback
+        const hapticEnabled = document.getElementById('haptic-enabled');
+        if (hapticEnabled) {
+            hapticEnabled.checked = this.settings.hapticEnabled !== false; // Default to true
+        }
     }
     
     setupEventListeners() {
@@ -88,6 +117,23 @@ class SettingsManager {
             this.updateSetting('showPoints', e.target.checked);
             this.updateBlockPointsDisplay();
         });
+        
+        // Effects settings
+        document.getElementById('particles-enabled').addEventListener('change', (e) => {
+            this.updateSetting('particlesEnabled', e.target.checked);
+        });
+        
+        document.getElementById('haptic-enabled').addEventListener('change', (e) => {
+            this.updateSetting('hapticEnabled', e.target.checked);
+        });
+        
+        // Share button
+        const shareButton = document.getElementById('share-button');
+        if (shareButton) {
+            shareButton.addEventListener('click', () => {
+                this.shareGame();
+            });
+        }
     }
     
     showSection(sectionName) {
@@ -160,10 +206,11 @@ class SettingsManager {
         document.getElementById('enable-hints').checked = this.settings.enableHints || false;
         document.getElementById('enable-timer').checked = this.settings.enableTimer || false;
         document.getElementById('enable-undo').checked = this.settings.enableUndo || false;
-        document.getElementById('sound-enabled').checked = this.settings.soundEnabled !== false;
-        document.getElementById('animations-enabled').checked = this.settings.animationsEnabled !== false;
         document.getElementById('auto-save').checked = this.settings.autoSave !== false;
         document.getElementById('show-points').checked = this.settings.showPoints || false;
+        
+        // Effects settings are handled by loadEffectsSettings()
+        this.loadEffectsSettings();
     }
     
     updateBlockPointsDisplay() {
@@ -215,7 +262,7 @@ class SettingsManager {
             </div>
             <div class="stat-item">
                 <span class="stat-label">Total Lines:</span>
-                <span class="stat-value">${stats.totalLines}</span>
+                <span class="stat-value">${stats.totalLinesCleared}</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Max Combo:</span>
@@ -231,6 +278,75 @@ class SettingsManager {
             difficulty: this.currentDifficulty
         };
         this.storage.saveSettings(settings);
+    }
+    
+    shareGame() {
+        const url = 'https://blockdoku.523.life';
+        const title = 'Blockdoku - A Progressive Web App Puzzle Game';
+        const text = 'Check out this awesome Blockdoku puzzle game!';
+        
+        if (navigator.share) {
+            // Use native Web Share API if available
+            navigator.share({
+                title: title,
+                text: text,
+                url: url
+            }).catch(err => {
+                console.log('Error sharing:', err);
+                this.fallbackShare(url, title);
+            });
+        } else {
+            // Fallback to clipboard and notification
+            this.fallbackShare(url, title);
+        }
+    }
+    
+    fallbackShare(url, title) {
+        // Copy to clipboard
+        navigator.clipboard.writeText(url).then(() => {
+            // Show a temporary notification
+            this.showNotification('Game URL copied to clipboard!');
+        }).catch(() => {
+            // If clipboard fails, show URL in alert
+            alert(`Share this game: ${url}`);
+        });
+    }
+    
+    showNotification(message) {
+        // Create a temporary notification
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary-color, #007bff);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+        `;
+        notification.textContent = message;
+        
+        // Add animation keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(notification);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.remove();
+            style.remove();
+        }, 3000);
     }
 }
 
