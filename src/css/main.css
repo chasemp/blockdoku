@@ -500,20 +500,24 @@ body {
     100% { box-shadow: 0 12px 35px rgba(0, 123, 255, 0.4); }
 }
 
-.block-preview {
+    .block-preview {
     display: flex;
     justify-content: center;
     align-items: center;
     margin: 0;
     min-height: 40px;
-    width: 100%;
-    height: 100%;
+    width: auto; /* Let it size based on content */
+    height: auto; /* Let it size based on content */
+    flex-shrink: 0; /* Don't shrink the preview */
 }
 
-.block-preview canvas {
+    .block-preview canvas {
     border: none;
     border-radius: 4px;
     display: block;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Maintain aspect ratio */
 }
 
 /* Block info and rotate button styles removed - using tooltips and double-click instead */
@@ -677,25 +681,26 @@ body {
     .blocks-container {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 0.4rem;
+        gap: 0.6rem; /* Increased gap for larger blocks */
         width: 100%;
-        max-width: 300px;
+        max-width: 450px; /* Match game board width */
         padding: 0.5rem;
     }
     
     .block-item {
         min-width: 0;
-        padding: 0.3rem; /* Small padding for touch targets */
+        padding: 0.4rem; /* Increased padding for better touch targets */
         font-size: 0.75rem;
-        aspect-ratio: 1;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         position: relative;
         text-align: center;
-        min-width: 50px;
-        min-height: 50px;
+        min-width: 70px; /* Increased from 50px */
+        min-height: 70px; /* Increased from 50px */
+        width: auto; /* Let it size naturally */
+        height: auto; /* Let it size naturally */
     }
     
     .block-item .block-shape {
@@ -712,9 +717,9 @@ body {
         padding: 0.5rem;
         margin: 0;
         width: 100%;
-        max-width: 320px;
-        min-height: 80px; /* Smaller height for mobile */
-        height: 80px;
+        max-width: 450px; /* Match game board width */
+        min-height: 115px; /* Increased height for magnified selected blocks */
+        height: 115px;
         order: 2; /* After game board */
     }
     
@@ -898,30 +903,30 @@ body {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 0.3rem;
-        max-width: 280px;
+        max-width: 450px; /* Match game board width */
         padding: 0.4rem;
     }
     
     .block-item {
-        padding: 0.2rem; /* Small padding for touch targets */
+        padding: 0.3rem; /* Increased padding for better touch targets */
         font-size: 0.7rem;
         width: auto;
         max-width: none;
-        aspect-ratio: 1;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         text-align: center;
-        min-width: 45px;
-        min-height: 45px;
+        min-width: 60px; /* Increased from 45px */
+        min-height: 60px; /* Increased from 45px */
+        height: auto; /* Let it size naturally */
     }
     
     .block-palette {
         padding: 0.4rem;
-        max-width: 300px;
-        min-height: 70px; /* Even smaller for smallest mobile */
-        height: 70px;
+        max-width: 450px; /* Match game board width */
+        min-height: 105px; /* Increased height for magnified selected blocks */
+        height: 105px;
     }
     
     .rotate-selected-btn {
@@ -1224,8 +1229,16 @@ body {
 .difficulty-option.selected {
     border-color: var(--primary-color);
     background: var(--primary-color);
-    color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Override for light theme to ensure readability */
+[data-theme="light"] .difficulty-option.selected,
+body.light-theme .difficulty-option.selected,
+html.light-theme .difficulty-option.selected {
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
 }
 
 .difficulty-header {
@@ -1304,6 +1317,12 @@ body {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+.difficulty-option.selected h4,
+.difficulty-option.selected p {
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
+}
+
 .difficulty-settings {
     border-top: 1px solid var(--border-color);
     padding-top: 1.5rem;
@@ -1377,6 +1396,14 @@ body {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
+/* Override for light theme to ensure readability */
+[data-theme="light"] .theme-option.selected,
+body.light-theme .theme-option.selected,
+html.light-theme .theme-option.selected {
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
+}
+
 .theme-preview {
     width: 40px;
     height: 40px;
@@ -1434,8 +1461,16 @@ body {
 .settings-section .difficulty-option.selected {
     border-color: var(--primary-color);
     background: var(--primary-color);
-    color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Override for light theme to ensure readability */
+[data-theme="light"] .settings-section .difficulty-option.selected,
+body.light-theme .settings-section .difficulty-option.selected,
+html.light-theme .settings-section .difficulty-option.selected {
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
 }
 
 .settings-section .difficulty-header {
@@ -1459,6 +1494,12 @@ body {
 
 .settings-section .difficulty-option.selected p {
     opacity: 1;
+    color: white !important;
+}
+
+.settings-section .difficulty-option.selected h4 {
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
 }
 
 .setting-item input[type="checkbox"] {
@@ -1483,6 +1524,15 @@ body {
 
 #install-button-container .install-btn.show {
     display: inline-block;
+}
+
+/* Build Info Styles */
+.build-info {
+    font-size: 0.85rem;
+    color: var(--text-muted, #666);
+    margin-top: 0.25rem;
+    font-family: 'Courier New', monospace;
+    opacity: 0.8;
 }
 
 /* Responsive Difficulty Modal */

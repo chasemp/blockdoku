@@ -58,30 +58,31 @@ export class BlockPalette {
         const shapeContainer = document.createElement('div');
         shapeContainer.className = 'block-shape';
         
-        // Create block preview
+        // Create block preview - increased size for better mobile experience
+        const cellSize = 30; // Increased from 20 to 30 pixels
         const preview = document.createElement('div');
         preview.className = 'block-preview';
-        preview.style.width = `${block.shape[0].length * 20}px`;
-        preview.style.height = `${block.shape.length * 20}px`;
+        preview.style.width = `${block.shape[0].length * cellSize}px`;
+        preview.style.height = `${block.shape.length * cellSize}px`;
         
         // Draw block shape
         const canvas = document.createElement('canvas');
-        canvas.width = block.shape[0].length * 20;
-        canvas.height = block.shape.length * 20;
+        canvas.width = block.shape[0].length * cellSize;
+        canvas.height = block.shape.length * cellSize;
         const ctx = canvas.getContext('2d');
         
         // Draw block
         ctx.fillStyle = block.color;
         ctx.strokeStyle = this.darkenColor(block.color);
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 2; // Increased line width for better visibility
         
         for (let r = 0; r < block.shape.length; r++) {
             for (let c = 0; c < block.shape[r].length; c++) {
                 if (block.shape[r][c] === 1) {
-                    const x = c * 20;
-                    const y = r * 20;
-                    ctx.fillRect(x, y, 20, 20);
-                    ctx.strokeRect(x, y, 20, 20);
+                    const x = c * cellSize;
+                    const y = r * cellSize;
+                    ctx.fillRect(x, y, cellSize, cellSize);
+                    ctx.strokeRect(x, y, cellSize, cellSize);
                 }
             }
         }

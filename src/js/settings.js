@@ -1,5 +1,7 @@
 import { GameStorage } from './storage/game-storage.js';
 import { PWAInstallManager } from './pwa/install.js';
+import { ConfirmationDialog } from './ui/confirmation-dialog.js';
+import { buildInfo } from './utils/build-info.js';
 
 class SettingsManager {
     constructor() {
@@ -8,6 +10,7 @@ class SettingsManager {
         this.currentDifficulty = 'normal';
         this.settings = this.storage.loadSettings();
         this.pwaInstallManager = null;
+        this.confirmationDialog = new ConfirmationDialog();
         
         this.init();
     }
@@ -16,6 +19,7 @@ class SettingsManager {
         this.loadSettings();
         this.setupEventListeners();
         this.updateUI();
+        this.updateBuildInfo();
         this.initializePWA();
     }
     
@@ -37,6 +41,9 @@ class SettingsManager {
         
         // Load effects settings
         this.loadEffectsSettings();
+        
+        // Update difficulty UI to apply theme-specific styling
+        this.updateDifficultyUI();
     }
     
     loadEffectsSettings() {
@@ -63,6 +70,32 @@ class SettingsManager {
         if (hapticEnabled) {
             hapticEnabled.checked = this.settings.hapticEnabled !== false; // Default to true
         }
+        
+        // Game settings
+        const enableHints = document.getElementById('enable-hints');
+        if (enableHints) {
+            enableHints.checked = this.settings.enableHints === true; // Default to false
+        }
+        
+        const enableTimer = document.getElementById('enable-timer');
+        if (enableTimer) {
+            enableTimer.checked = this.settings.enableTimer === true; // Default to false
+        }
+        
+        const enableUndo = document.getElementById('enable-undo');
+        if (enableUndo) {
+            enableUndo.checked = this.settings.enableUndo === true; // Default to false
+        }
+        
+        const autoSave = document.getElementById('auto-save');
+        if (autoSave) {
+            autoSave.checked = this.settings.autoSave !== false; // Default to true
+        }
+        
+        const showPoints = document.getElementById('show-points');
+        if (showPoints) {
+            showPoints.checked = this.settings.showPoints === true; // Default to false
+        }
     }
     
     setupEventListeners() {
@@ -83,8 +116,8 @@ class SettingsManager {
         
         // Difficulty selection
         document.querySelectorAll('.difficulty-option').forEach(option => {
-            option.addEventListener('click', (e) => {
-                this.selectDifficulty(e.currentTarget.dataset.difficulty);
+            option.addEventListener('click', async (e) => {
+                await this.selectDifficulty(e.currentTarget.dataset.difficulty);
             });
         });
         
@@ -159,15 +192,50 @@ class SettingsManager {
         this.currentTheme = theme;
         this.applyTheme(theme);
         this.updateThemeUI();
+        this.updateDifficultyUI(); // Update difficulty UI to apply theme-specific styling
         this.saveSettings();
     }
     
     applyTheme(theme) {
         const themeLink = document.getElementById('theme-css');
         themeLink.href = `css/themes/${theme}.css`;
+        
+        // Set data-theme attribute for CSS selectors
+        document.documentElement.setAttribute('data-theme', theme);
+        
+        // Also add class to body as fallback
+        document.body.className = document.body.className.replace(/light-theme|dark-theme|wood-theme/g, '');
+        document.body.classList.add(`${theme}-theme`);
     }
     
-    selectDifficulty(difficulty) {
+    async selectDifficulty(difficulty) {
+        // Check if there's a game in progress by looking at localStorage
+        const gameState = localStorage.getItem('blockdoku_game_state');
+        let gameInProgress = false;
+        
+        if (gameState) {
+            try {
+                const state = JSON.parse(gameState);
+                gameInProgress = state.score > 0 || state.board.some(row => row.some(cell => cell === 1));
+            } catch (e) {
+                // If we can't parse the game state, assume no game in progress
+                gameInProgress = false;
+            }
+        }
+        
+        if (gameInProgress) {
+            // Show confirmation dialog
+            const confirmed = await this.confirmationDialog.show(
+                `Changing difficulty to ${difficulty.toUpperCase()} will reset your current game and you'll lose your progress. Are you sure you want to continue?`
+            );
+            
+            if (!confirmed) {
+                // User cancelled, revert the UI selection
+                this.updateDifficultyUI();
+                return;
+            }
+        }
+        
         this.currentDifficulty = difficulty;
         this.updateDifficultyUI();
         this.saveSettings();
@@ -211,6 +279,39 @@ class SettingsManager {
             option.classList.remove('selected');
             if (option.dataset.difficulty === this.currentDifficulty) {
                 option.classList.add('selected');
+                
+                // Force white text for light theme
+                if (this.currentTheme === 'light') {
+                    option.style.color = 'white';
+                    option.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.7)';
+                    
+                    // Also style child elements
+                    const h4 = option.querySelector('h4');
+                    if (h4) {
+                        h4.style.color = 'white';
+                        h4.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.7)';
+                    }
+                    
+                    const p = option.querySelector('p');
+                    if (p) {
+                        p.style.color = 'white';
+                        p.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.7)';
+                    }
+                } else {
+                    // Reset styles for other themes
+                    option.style.color = '';
+                    option.style.textShadow = '';
+                    const h4 = option.querySelector('h4');
+                    if (h4) {
+                        h4.style.color = '';
+                        h4.style.textShadow = '';
+                    }
+                    const p = option.querySelector('p');
+                    if (p) {
+                        p.style.color = '';
+                        p.style.textShadow = '';
+                    }
+                }
             }
         });
     }
@@ -237,6 +338,29 @@ class SettingsManager {
                 info.classList.remove('show-points');
             }
         });
+    }
+    
+    updateBuildInfo() {
+        // Wait for build info to load, then update display
+        const checkBuildInfo = () => {
+            if (buildInfo.isLoaded()) {
+                const versionDisplay = document.getElementById('version-display');
+                const buildInfoDisplay = document.getElementById('build-info');
+                
+                if (versionDisplay) {
+                    versionDisplay.textContent = buildInfo.getDisplayVersion();
+                }
+                
+                if (buildInfoDisplay) {
+                    buildInfoDisplay.textContent = `Build: ${buildInfo.getBuildId()} (${buildInfo.getFormattedBuildDate()})`;
+                }
+            } else {
+                // Check again in 100ms
+                setTimeout(checkBuildInfo, 100);
+            }
+        };
+        
+        checkBuildInfo();
     }
     
     loadHighScores() {

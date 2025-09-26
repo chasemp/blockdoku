@@ -5,7 +5,9 @@
   "main": "src/index.html",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/generate-build-info.js",
     "build": "vite build",
+    "postbuild": "node scripts/generate-build-info.js",
     "deploy": "node build-and-deploy.js",
     "preview": "vite preview",
     "test": "jest",

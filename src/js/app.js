@@ -21,6 +21,7 @@ import { HintSystem } from './difficulty/hint-system.js';
 import { TimerSystem } from './difficulty/timer-system.js';
 import { DifficultySelector } from './ui/difficulty-selector.js';
 import { EffectsManager } from './effects/effects-manager.js';
+import { ConfirmationDialog } from './ui/confirmation-dialog.js';
 
 
 class BlockdokuGame {
@@ -66,6 +67,7 @@ class BlockdokuGame {
         
         // Effects system
         this.effectsManager = new EffectsManager(this.canvas, this.ctx);
+        this.confirmationDialog = new ConfirmationDialog();
         this.selectedBlock = null;
         this.previewPosition = null;
         
@@ -337,7 +339,9 @@ class BlockdokuGame {
         
         // Difficulty selection events
         document.querySelectorAll('.difficulty-option').forEach(option => {
-            option.addEventListener('click', (e) => this.selectDifficulty(e.currentTarget.dataset.difficulty));
+            option.addEventListener('click', async (e) => {
+                await this.selectDifficulty(e.currentTarget.dataset.difficulty);
+            });
         });
         
         // Additional settings events
@@ -357,9 +361,17 @@ class BlockdokuGame {
         document.addEventListener('blockDragStart', (e) => this.handleBlockDragStart(e));
         
         // Message events for settings page communication
-        window.addEventListener('message', (e) => {
+        window.addEventListener('message', async (e) => {
             if (e.data.type === 'difficultyChanged') {
-                this.selectDifficulty(e.data.difficulty);
+                await this.selectDifficulty(e.data.difficulty);
+            }
+        });
+        
+        // Listen for settings changes from settings page
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'blockdoku-settings') {
+                this.loadSettings();
+                this.updateHintControls();
             }
         });
     }
@@ -394,21 +406,8 @@ class BlockdokuGame {
     }
     
     getBlockDragOffset(shape) {
-        // Return offset to position block 1.5 grid boxes above finger
-        const centerOffset = this.getBlockCenterOffset(shape);
-        return {
-            row: centerOffset.row - 1.5, // Move up 1.5 grid boxes
-            col: centerOffset.col
-        };
-    }
-    
-    getBlockPreviewOffset(shape) {
-        // Return offset for preview (1.5 grid boxes above finger)
-        const centerOffset = this.getBlockCenterOffset(shape);
-        return {
-            row: centerOffset.row - 1.5, // Move up 1.5 grid boxes
-            col: centerOffset.col
-        };
+        // Not used for mobile - we only use preview
+        return { row: 0, col: 0 };
     }
     
     getBlockPlacementOffset(shape) {
@@ -483,7 +482,7 @@ class BlockdokuGame {
         // Update preview position with preview offset (1.5 grid boxes above finger)
         const col = Math.floor(x / this.mouseCellSize);
         const row = Math.floor(y / this.mouseCellSize);
-        const previewOffset = this.getBlockPreviewOffset(this.selectedBlock.shape);
+        const previewOffset = this.getBlockPlacementOffset(this.selectedBlock.shape);
         const adjustedRow = row - previewOffset.row;
         const adjustedCol = col - previewOffset.col;
         this.previewPosition = { row: adjustedRow, col: adjustedCol };
@@ -508,7 +507,7 @@ class BlockdokuGame {
         // Update preview position with preview offset (1.5 grid boxes above finger)
         const col = Math.floor(x / this.mouseCellSize);
         const row = Math.floor(y / this.mouseCellSize);
-        const previewOffset = this.getBlockPreviewOffset(this.selectedBlock.shape);
+        const previewOffset = this.getBlockPlacementOffset(this.selectedBlock.shape);
         const adjustedRow = row - previewOffset.row;
         const adjustedCol = col - previewOffset.col;
         this.previewPosition = { row: adjustedRow, col: adjustedCol };
@@ -570,13 +569,23 @@ class BlockdokuGame {
         const x = touch.clientX - rect.left;
         const y = touch.clientY - rect.top;
         
-        // Only update preview if touch is over the canvas
-        if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
-            const col = Math.floor(x / this.mouseCellSize);
-            const row = Math.floor(y / this.mouseCellSize);
-            const centerOffset = this.getBlockCenterOffset(this.selectedBlock.shape);
-            const adjustedRow = row - centerOffset.row;
-            const adjustedCol = col - centerOffset.col;
+        // Calculate preview position - preview should show where block will actually be placed
+        // The finger offset is just for control, but preview shows actual placement
+        // Adjust touch position to account for finger offset (move touch point up by 2.5 grid boxes)
+        const fingerOffset = 2.5; // Grid boxes above finger
+        const adjustedY = y - (fingerOffset * this.mouseCellSize);
+        
+        const col = Math.floor(x / this.mouseCellSize);
+        const row = Math.floor(adjustedY / this.mouseCellSize);
+        const placementOffset = this.getBlockPlacementOffset(this.selectedBlock.shape);
+        const adjustedRow = row - placementOffset.row;
+        const adjustedCol = col - placementOffset.col;
+        
+        // Check if the PREVIEW (not the touch point) is within the canvas bounds
+        const previewX = adjustedCol * this.mouseCellSize;
+        const previewY = adjustedRow * this.mouseCellSize;
+        
+        if (previewX >= 0 && previewX <= rect.width && previewY >= 0 && previewY <= rect.height) {
             this.previewPosition = { row: adjustedRow, col: adjustedCol };
             this.drawBoard();
         } else {
@@ -595,16 +604,21 @@ class BlockdokuGame {
         const x = touch.clientX - rect.left;
         const y = touch.clientY - rect.top;
         
-        // Only place block if touch ended over the canvas
-        if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
-            const col = Math.floor(x / this.mouseCellSize);
-            const row = Math.floor(y / this.mouseCellSize);
-            
-            // Adjust position with placement offset (center the block)
-            const placementOffset = this.getBlockPlacementOffset(this.selectedBlock.shape);
-            const adjustedRow = row - placementOffset.row;
-            const adjustedCol = col - placementOffset.col;
-            
+        // Calculate placement position - adjust touch position to account for finger offset
+        const fingerOffset = 2.5; // Grid boxes above finger
+        const adjustedY = y - (fingerOffset * this.mouseCellSize);
+        
+        const col = Math.floor(x / this.mouseCellSize);
+        const row = Math.floor(adjustedY / this.mouseCellSize);
+        const placementOffset = this.getBlockPlacementOffset(this.selectedBlock.shape);
+        const adjustedRow = row - placementOffset.row;
+        const adjustedCol = col - placementOffset.col;
+        
+        // Check if the PLACEMENT (not the touch point) is within the canvas bounds
+        const placementX = adjustedCol * this.mouseCellSize;
+        const placementY = adjustedRow * this.mouseCellSize;
+        
+        if (placementX >= 0 && placementX <= rect.width && placementY >= 0 && placementY <= rect.height) {
             if (this.canPlaceBlock(adjustedRow, adjustedCol)) {
                 this.placeBlock(adjustedRow, adjustedCol);
             } else {
@@ -630,33 +644,14 @@ class BlockdokuGame {
             this.dragBlockElement.remove();
         }
         
-        this.dragBlockElement = document.createElement('div');
-        this.dragBlockElement.className = 'drag-block-element';
-        this.dragBlockElement.style.position = 'fixed';
-        this.dragBlockElement.style.pointerEvents = 'none';
-        this.dragBlockElement.style.zIndex = '1000';
-        this.dragBlockElement.style.opacity = '0.8';
-        this.dragBlockElement.style.transform = 'translate(-50%, -50%)';
-        
-        // Create a canvas to draw the block
-        const canvas = document.createElement('canvas');
-        const size = 40; // Size for the drag element
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext('2d');
-        
-        // Draw the block shape
-        this.drawBlockOnCanvas(ctx, this.selectedBlock, size);
-        
-        this.dragBlockElement.appendChild(canvas);
-        document.body.appendChild(this.dragBlockElement);
+        // Don't create drag element for mobile - we only want the preview
+        // The preview will show the green/red grid instead
+        this.dragBlockElement = null;
     }
     
     updateDragElement(x, y) {
-        if (!this.dragBlockElement) return;
-        
-        this.dragBlockElement.style.left = `${x}px`;
-        this.dragBlockElement.style.top = `${y}px`;
+        // No drag element for mobile - we only use the preview
+        // The preview is handled in the touch move handlers
     }
     
     drawBlockOnCanvas(ctx, block, size) {
@@ -725,7 +720,7 @@ class BlockdokuGame {
         const y = touch.clientY - rect.top;
         const col = Math.floor(x / this.mouseCellSize);
         const row = Math.floor(y / this.mouseCellSize);
-        const previewOffset = this.getBlockPreviewOffset(block.shape);
+        const previewOffset = this.getBlockPlacementOffset(block.shape);
         const adjustedRow = row - previewOffset.row;
         const adjustedCol = col - previewOffset.col;
         this.previewPosition = { row: adjustedRow, col: adjustedCol };
@@ -926,15 +921,13 @@ class BlockdokuGame {
     }
     
     startLineClearAnimation(clearedLines) {
-        // After a brief moment, highlight the blocks that will be cleared
-        setTimeout(() => {
-            this.highlightClearingBlocks(clearedLines);
-        }, 200);
+        // Start glow effect immediately
+        this.highlightClearingBlocks(clearedLines);
         
-        // After 1.25 seconds total, actually clear the lines and show effects
+        // After 1 second, actually clear the lines and show effects
         setTimeout(() => {
             this.completeLineClear(clearedLines);
-        }, 1250);
+        }, 1000);
     }
     
     showImmediateClearFeedback(clearedLines) {
@@ -969,24 +962,24 @@ class BlockdokuGame {
     }
     
     drawClearingBlockGlow(clearedLines) {
-        // Draw glow outline around blocks that will be cleared
+        // Draw enhanced glow outline around blocks that will be cleared
         this.ctx.save();
         const drawCellSize = this.actualCellSize || this.cellSize;
         
-        // Set up very subtle glow effect
+        // Set up enhanced glow effect
         this.ctx.shadowColor = '#00ff00';
-        this.ctx.shadowBlur = 4;
+        this.ctx.shadowBlur = 8;
         this.ctx.strokeStyle = '#00ff00';
-        this.ctx.lineWidth = 1.5;
+        this.ctx.lineWidth = 2;
         
-        // Draw outer glow
-        this.ctx.globalAlpha = 0.4;
+        // Draw outer glow - more visible
+        this.ctx.globalAlpha = 0.8;
         clearedLines.rows.forEach(row => {
             for (let col = 0; col < this.boardSize; col++) {
                 if (this.board[row][col] === 1) {
                     const x = col * drawCellSize;
                     const y = row * drawCellSize;
-                    this.ctx.strokeRect(x + 1, y + 1, drawCellSize - 2, drawCellSize - 2);
+                    this.ctx.strokeRect(x + 2, y + 2, drawCellSize - 4, drawCellSize - 4);
                 }
             }
         });
@@ -996,7 +989,7 @@ class BlockdokuGame {
                 if (this.board[row][col] === 1) {
                     const x = col * drawCellSize;
                     const y = row * drawCellSize;
-                    this.ctx.strokeRect(x + 1, y + 1, drawCellSize - 2, drawCellSize - 2);
+                    this.ctx.strokeRect(x + 2, y + 2, drawCellSize - 4, drawCellSize - 4);
                 }
             }
         });
@@ -1011,24 +1004,24 @@ class BlockdokuGame {
                     if (this.board[row][col] === 1) {
                         const x = col * drawCellSize;
                         const y = row * drawCellSize;
-                        this.ctx.strokeRect(x + 1, y + 1, drawCellSize - 2, drawCellSize - 2);
+                        this.ctx.strokeRect(x + 2, y + 2, drawCellSize - 4, drawCellSize - 4);
                     }
                 }
             }
         });
         
-        // Draw inner subtle outline
+        // Draw inner bright outline
         this.ctx.shadowBlur = 0;
         this.ctx.strokeStyle = '#ffffff';
-        this.ctx.lineWidth = 0.8;
-        this.ctx.globalAlpha = 0.6;
+        this.ctx.lineWidth = 1.5;
+        this.ctx.globalAlpha = 1.0;
         
         clearedLines.rows.forEach(row => {
             for (let col = 0; col < this.boardSize; col++) {
                 if (this.board[row][col] === 1) {
                     const x = col * drawCellSize;
                     const y = row * drawCellSize;
-                    this.ctx.strokeRect(x + 3, y + 3, drawCellSize - 6, drawCellSize - 6);
+                    this.ctx.strokeRect(x + 4, y + 4, drawCellSize - 8, drawCellSize - 8);
                 }
             }
         });
@@ -1038,7 +1031,7 @@ class BlockdokuGame {
                 if (this.board[row][col] === 1) {
                     const x = col * drawCellSize;
                     const y = row * drawCellSize;
-                    this.ctx.strokeRect(x + 3, y + 3, drawCellSize - 6, drawCellSize - 6);
+                    this.ctx.strokeRect(x + 4, y + 4, drawCellSize - 8, drawCellSize - 8);
                 }
             }
         });
@@ -1053,7 +1046,7 @@ class BlockdokuGame {
                     if (this.board[row][col] === 1) {
                         const x = col * drawCellSize;
                         const y = row * drawCellSize;
-                        this.ctx.strokeRect(x + 3, y + 3, drawCellSize - 6, drawCellSize - 6);
+                        this.ctx.strokeRect(x + 4, y + 4, drawCellSize - 8, drawCellSize - 8);
                     }
                 }
             }
@@ -1604,7 +1597,17 @@ class BlockdokuGame {
     applyTheme(theme) {
         this.currentTheme = theme;
         const themeLink = document.getElementById('theme-css');
-        themeLink.href = `css/themes/${theme}.css`;
+        if (themeLink) {
+            themeLink.href = `css/themes/${theme}.css`;
+        }
+        
+        // Set data-theme attribute for CSS selectors
+        document.documentElement.setAttribute('data-theme', theme);
+        
+        // Also add class to body as fallback
+        document.body.className = document.body.className.replace(/light-theme|dark-theme|wood-theme/g, '');
+        document.body.classList.add(`${theme}-theme`);
+        
         this.saveSettings();
     }
 
@@ -1880,7 +1883,21 @@ class BlockdokuGame {
         document.getElementById('enable-undo').checked = this.enableUndo;
     }
 
-    selectDifficulty(difficulty) {
+    async selectDifficulty(difficulty) {
+        // Check if game is in progress (has blocks placed or score > 0)
+        const gameInProgress = this.score > 0 || this.board.some(row => row.some(cell => cell === 1));
+        
+        if (gameInProgress) {
+            // Show confirmation dialog
+            const confirmed = await this.confirmationDialog.show(
+                `Changing difficulty to ${difficulty.toUpperCase()} will reset your current game and you'll lose your progress. Are you sure you want to continue?`
+            );
+            
+            if (!confirmed) {
+                return; // User cancelled
+            }
+        }
+        
         this.difficulty = difficulty;
         
         // Update difficulty manager
@@ -1906,6 +1923,13 @@ class BlockdokuGame {
         if (themeLink) {
             themeLink.href = `css/themes/${theme}.css`;
         }
+        
+        // Set data-theme attribute for CSS selectors
+        document.documentElement.setAttribute('data-theme', theme);
+        
+        // Also add class to body as fallback
+        document.body.className = document.body.className.replace(/light-theme|dark-theme|wood-theme/g, '');
+        document.body.classList.add(`${theme}-theme`);
     }
 
     updateThemeUI() {

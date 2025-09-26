@@ -23,6 +23,7 @@ export class HintSystem {
     
     isHintAvailable() {
         return this.difficultyManager.isHintsEnabled() && 
+               this.game.enableHints && 
                this.hintCooldown <= 0 && 
                this.game.selectedBlock !== null;
     }

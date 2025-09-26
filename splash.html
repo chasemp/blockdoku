@@ -286,6 +286,9 @@
             100% { opacity: 1; }
         }
     </style>
+  <script type="module" crossorigin src="./assets/splash-DybpqPaT.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/wood-CS1vos5M.js">
+  <link rel="modulepreload" crossorigin href="./assets/build-info-Dwp5dZmk.js">
   <link rel="stylesheet" crossorigin href="./assets/wood-dGYy0LCH.css">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
@@ -311,23 +314,7 @@
         </div>
     </div>
 
-    <div class="version-info">v1.4.0</div>
+    <div class="version-info" id="version-display">v1.4.0</div>
 
-    <script>
-        // Auto-redirect to main game after splash screen
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 3000);
-
-        // Handle immediate redirect if user clicks anywhere
-        document.addEventListener('click', () => {
-            window.location.href = 'index.html';
-        });
-
-        // Handle keyboard input for immediate redirect
-        document.addEventListener('keydown', () => {
-            window.location.href = 'index.html';
-        });
-    </script>
 </body>
 </html>
