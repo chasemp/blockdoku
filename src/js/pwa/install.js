@@ -24,6 +24,8 @@ export class PWAInstallManager {
             console.log('PWA: beforeinstallprompt event fired');
             e.preventDefault();
             this.deferredPrompt = e;
+            // Create and show install button immediately
+            this.createInstallButton();
             this.showInstallButton();
         });
         
@@ -72,8 +74,17 @@ export class PWAInstallManager {
         this.installButton.innerHTML = '📱 Install App';
         this.installButton.style.display = 'none';
         
-        // Add to settings modal install container
-        const installContainer = document.getElementById('install-button-container');
+        // Try to add to settings modal install container first
+        let installContainer = document.getElementById('install-button-container');
+        
+        // If not on settings page, add to header controls
+        if (!installContainer) {
+            const headerControls = document.querySelector('.controls');
+            if (headerControls) {
+                installContainer = headerControls;
+            }
+        }
+        
         if (installContainer) {
             installContainer.appendChild(this.installButton);
         }

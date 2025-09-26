@@ -154,6 +154,14 @@ class BlockdokuGame {
     async registerServiceWorker() {
         if ('serviceWorker' in navigator) {
             try {
+                // Check if we're in development mode by looking for Vite's dev server
+                const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                
+                if (isDev) {
+                    console.log('PWA: Skipping Service Worker registration in development mode');
+                    return;
+                }
+                
                 const registration = await navigator.serviceWorker.register('./sw.js');
                 console.log('PWA: Service Worker registered successfully', registration);
                 
@@ -162,7 +170,7 @@ class BlockdokuGame {
                     console.log('PWA: Service Worker update found');
                 });
             } catch (error) {
-                console.error('PWA: Service Worker registration failed', error);
+                console.log('PWA: Service Worker registration failed (this is normal in development mode)', error.message);
             }
         }
     }
@@ -392,7 +400,10 @@ class BlockdokuGame {
     }
     
     handleTouchCancel(e) {
-        e.preventDefault();
+        // Only prevent default if the event is cancelable
+        if (e.cancelable) {
+            e.preventDefault();
+        }
         this.cleanupDrag();
     }
     
@@ -450,7 +461,10 @@ class BlockdokuGame {
     }
     
     handleGlobalTouchCancel(e) {
-        e.preventDefault();
+        // Only prevent default if the event is cancelable
+        if (e.cancelable) {
+            e.preventDefault();
+        }
         this.cleanupDrag();
     }
     
