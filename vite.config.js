@@ -6,7 +6,7 @@ import { resolve } from 'path'
 export default defineConfig({
   root: 'src',
   publicDir: '../public',
-  base: '/',
+  base: './',
   build: {
     outDir: '../dist',
     emptyOutDir: true,
@@ -18,6 +18,10 @@ export default defineConfig({
         settings: resolve(__dirname, 'src/settings.html')
       }
     }
+  },
+  server: {
+    port: 8080,
+    host: true
   },
   plugins: [
     VitePWA({

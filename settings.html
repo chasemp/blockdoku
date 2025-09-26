@@ -4,21 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Blockdoku</title>
-    <link rel="manifest" href="public/manifest.json">
-    <link rel="icon" type="image/x-icon" href="public/favicon.ico">
+    <link rel="manifest" href="/public/manifest.json">
+    <link rel="icon" type="image/x-icon" href="/public/favicon.ico">
     <meta name="theme-color" content="#8d6e63">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <link rel="apple-touch-icon" href="public/icons/icon-192x192.png">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/themes/wood.css" id="theme-css">
+    <link rel="apple-touch-icon" href="/public/icons/icon-192x192.png">
     <style>
-        body {
-            background: linear-gradient(135deg, var(--bg-color) 0%, var(--header-bg) 100%);
-            min-height: 100vh;
-        }
-        
         .settings-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -29,25 +22,16 @@
         .settings-header {
             text-align: center;
             margin-bottom: 3rem;
-            background: linear-gradient(135deg, var(--header-bg) 0%, var(--primary-color) 100%);
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            color: white;
         }
         
         .settings-header h1 {
-            color: white;
+            color: var(--text-color);
             margin-bottom: 0.5rem;
-            font-size: 2.5rem;
-            font-weight: 700;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
         
         .settings-header p {
-            color: rgba(255, 255, 255, 0.9);
+            color: var(--text-muted);
             margin: 0;
-            font-size: 1.1rem;
         }
         
         .settings-nav {
@@ -70,7 +54,6 @@
             font-weight: 500;
             min-width: 120px;
             text-align: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
         .nav-item:hover {
@@ -119,13 +102,11 @@
             border-radius: 8px;
             transition: all 0.3s ease;
             margin-bottom: 2rem;
-            font-weight: 600;
         }
         
         .back-button:hover {
             background: var(--secondary-hover);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
         
         .about-content {
@@ -182,19 +163,9 @@
                 padding: 1rem;
             }
             
-            .settings-header {
-                padding: 1.5rem;
-                margin-bottom: 2rem;
-            }
-            
-            .settings-header h1 {
-                font-size: 2rem;
-            }
-            
             .settings-nav {
                 flex-direction: column;
                 align-items: center;
-                margin-bottom: 2rem;
             }
             
             .nav-item {
@@ -207,7 +178,11 @@
             }
         }
     </style>
-</head>
+  <script type="module" crossorigin src="./assets/settings-B7voPjsY.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/install-CYW7TF1w.js">
+  <link rel="stylesheet" crossorigin href="./assets/install-Oaqkipe7.css">
+  <link rel="stylesheet" crossorigin href="./assets/wood-dGYy0LCH.css">
+<link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
     <div class="settings-container">
         <div class="settings-header">
@@ -384,7 +359,5 @@
         </div>
     </div>
     
-    <script type="module" src="js/settings.js"></script>
-    <script type="module" src="js/pwa/install.js"></script>
 </body>
 </html>
