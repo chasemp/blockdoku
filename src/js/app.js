@@ -355,6 +355,13 @@ class BlockdokuGame {
         
         // Block drag events
         document.addEventListener('blockDragStart', (e) => this.handleBlockDragStart(e));
+        
+        // Message events for settings page communication
+        window.addEventListener('message', (e) => {
+            if (e.data.type === 'difficultyChanged') {
+                this.selectDifficulty(e.data.difficulty);
+            }
+        });
     }
     
     // Calculate the center offset for a block shape
@@ -1529,6 +1536,13 @@ class BlockdokuGame {
             this.showPoints = settings.showPoints || false;
             this.particlesEnabled = settings.particlesEnabled !== false;
             this.hapticEnabled = settings.hapticEnabled !== false;
+            
+            // Check for pending difficulty changes from settings page
+            const pendingDifficulty = localStorage.getItem('blockdoku_pending_difficulty');
+            if (pendingDifficulty) {
+                this.difficulty = pendingDifficulty;
+                localStorage.removeItem('blockdoku_pending_difficulty');
+            }
             
             // Apply loaded theme
             this.applyTheme(this.currentTheme);
