@@ -91,32 +91,49 @@ export class BlockManager {
         };
     }
     
-    generateRandomBlocks(count = 3, difficulty = 'all') {
+    generateRandomBlocks(count = 3, difficulty = 'all', difficultyManager = null) {
         let availableShapes = Object.keys(this.blockShapes);
         
-        // Filter shapes based on difficulty
-        if (difficulty === 'large') {
-            // Prefer larger, simpler blocks for easy mode
+        // Use difficulty manager if provided
+        if (difficultyManager) {
+            const allowedShapes = difficultyManager.getAllowedShapes();
+            const sizeRange = difficultyManager.getBlockSizeRange();
+            
+            if (allowedShapes !== 'all') {
+                availableShapes = availableShapes.filter(key => allowedShapes.includes(key));
+            }
+            
+            // Filter by size range
             availableShapes = availableShapes.filter(key => {
                 const shape = this.blockShapes[key].shape;
                 const maxDimension = Math.max(shape.length, shape[0].length);
-                return maxDimension >= 3; // 3x3 or larger
+                return maxDimension >= sizeRange[0] && maxDimension <= sizeRange[1];
             });
-        } else if (difficulty === 'small') {
-            // Prefer smaller blocks for hard mode
-            availableShapes = availableShapes.filter(key => {
-                const shape = this.blockShapes[key].shape;
-                const maxDimension = Math.max(shape.length, shape[0].length);
-                return maxDimension <= 3; // 3x3 or smaller
-            });
-        } else if (difficulty === 'complex') {
-            // Prefer complex irregular shapes for expert mode
-            availableShapes = availableShapes.filter(key => {
-                const shape = this.blockShapes[key].shape;
-                // Look for L-shapes, T-shapes, and other complex patterns
-                return key.includes('L') || key.includes('T') || key.includes('Z') || 
-                       key.includes('U') || key.includes('Cross') || key.includes('Plus');
-            });
+        } else {
+            // Legacy difficulty filtering
+            if (difficulty === 'large') {
+                // Prefer larger, simpler blocks for easy mode
+                availableShapes = availableShapes.filter(key => {
+                    const shape = this.blockShapes[key].shape;
+                    const maxDimension = Math.max(shape.length, shape[0].length);
+                    return maxDimension >= 3; // 3x3 or larger
+                });
+            } else if (difficulty === 'small') {
+                // Prefer smaller blocks for hard mode
+                availableShapes = availableShapes.filter(key => {
+                    const shape = this.blockShapes[key].shape;
+                    const maxDimension = Math.max(shape.length, shape[0].length);
+                    return maxDimension <= 3; // 3x3 or smaller
+                });
+            } else if (difficulty === 'complex') {
+                // Prefer complex irregular shapes for expert mode
+                availableShapes = availableShapes.filter(key => {
+                    const shape = this.blockShapes[key].shape;
+                    // Look for L-shapes, T-shapes, and other complex patterns
+                    return key.includes('L') || key.includes('T') || key.includes('Z') || 
+                           key.includes('U') || key.includes('Cross') || key.includes('Plus');
+                });
+            }
         }
         
         // Fallback to all shapes if filtering results in empty array

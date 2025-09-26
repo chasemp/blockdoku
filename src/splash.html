@@ -11,7 +11,41 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Blockdoku">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <link rel="stylesheet" href="css/themes/wood.css">
+    <link rel="stylesheet" href="css/themes/wood.css" id="theme-css">
+    <script>
+        // Function to update theme
+        function updateTheme() {
+            const savedSettings = localStorage.getItem('blockdoku-settings');
+            if (savedSettings) {
+                try {
+                    const settings = JSON.parse(savedSettings);
+                    if (settings.theme) {
+                        const themeLink = document.getElementById('theme-css');
+                        themeLink.href = `css/themes/${settings.theme}.css`;
+                    }
+                } catch (e) {
+                    console.log('No saved theme found, using default');
+                }
+            }
+        }
+        
+        // Load current theme from localStorage on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTheme();
+        });
+        
+        // Listen for theme changes from other pages
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'blockdoku-settings') {
+                updateTheme();
+            }
+        });
+        
+        // Also listen for focus events (when returning from main page)
+        window.addEventListener('focus', function() {
+            updateTheme();
+        });
+    </script>
     <style>
         * {
             margin: 0;

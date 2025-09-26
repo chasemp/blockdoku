@@ -20,9 +20,10 @@
         <header class="header">
             <div class="logo-container">
                 <img src="assets/images/logo_transparent_bg.png" alt="Blockdoku" class="app-logo">
+                <button id="new-game" class="btn btn-primary new-game-btn">New Game</button>
             </div>
             <div class="controls">
-                <button id="new-game" class="btn btn-primary">New Game</button>
+                <button id="difficulty-btn" class="btn btn-secondary difficulty-btn">Normal</button>
                 <!-- Settings button navigates to separate settings.html page (not a modal) -->
                 <button id="settings-toggle" class="btn btn-secondary">⚙️</button>
             </div>
@@ -32,16 +33,19 @@
             <div class="game-container">
                 <div class="game-info">
                     <div class="score">
-                        <span>Score: </span>
+                        <span>Score </span>
                         <span id="score">0</span>
                     </div>
                     <div class="level">
-                        <span>Level: </span>
+                        <span>Level </span>
                         <span id="level">1</span>
                     </div>
                     <div class="combo">
-                        <span>Combo: </span>
+                        <span>Combo </span>
                         <span id="combo">0</span>
+                    </div>
+                    <div class="hint-controls" id="hint-controls" style="display: none;">
+                        <button id="hint-btn" class="btn btn-hint">💡 Hint</button>
                     </div>
                 </div>
                 

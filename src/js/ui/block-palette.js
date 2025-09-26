@@ -143,14 +143,21 @@ export class BlockPalette {
                 const deltaY = Math.abs(touch.clientY - this.touchStart.clientY);
                 const deltaTime = Date.now() - this.touchStartTime;
                 
-                // If moved more than 10px or 200ms has passed, consider it a drag
-                if (deltaX > 10 || deltaY > 10 || deltaTime > 200) {
+                // If moved more than 5px or 100ms has passed, consider it a drag
+                if (deltaX > 5 || deltaY > 5 || deltaTime > 100) {
                     e.preventDefault();
                     
                     // Start drag operation
                     if (!this.isDragging) {
                         this.isDragging = true;
                         this.startDragFromPalette(touch);
+                        
+                        // Add dragging visual feedback
+                        const blockItem = document.querySelector(`[data-block-id="${this.touchStartBlockId}"]`);
+                        if (blockItem) {
+                            blockItem.style.opacity = '0.7';
+                            blockItem.style.transform = 'scale(1.1)';
+                        }
                     }
                 }
             }
@@ -163,11 +170,30 @@ export class BlockPalette {
                 if (blockItem) {
                     blockItem.style.transform = '';
                     blockItem.style.transition = '';
+                    blockItem.style.opacity = '';
                 }
                 
                 this.touchStart = null;
                 this.touchStartTime = null;
                 this.touchStartBlockId = null;
+                this.isDragging = false;
+            }
+        }, { passive: true });
+        
+        document.addEventListener('touchcancel', (e) => {
+            if (this.touchStart) {
+                // Reset visual feedback
+                const blockItem = document.querySelector(`[data-block-id="${this.touchStartBlockId}"]`);
+                if (blockItem) {
+                    blockItem.style.transform = '';
+                    blockItem.style.transition = '';
+                    blockItem.style.opacity = '';
+                }
+                
+                this.touchStart = null;
+                this.touchStartTime = null;
+                this.touchStartBlockId = null;
+                this.isDragging = false;
             }
         }, { passive: true });
     }
