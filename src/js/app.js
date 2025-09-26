@@ -294,6 +294,35 @@ class BlockdokuGame {
         document.addEventListener('blockDragStart', (e) => this.handleBlockDragStart(e));
     }
     
+    // Calculate the center offset for a block shape
+    getBlockCenterOffset(shape) {
+        const rows = shape.length;
+        const cols = shape[0].length;
+        
+        // Find the center of the shape
+        let centerRow = 0;
+        let centerCol = 0;
+        let cellCount = 0;
+        
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                if (shape[r][c] === 1) {
+                    centerRow += r;
+                    centerCol += c;
+                    cellCount++;
+                }
+            }
+        }
+        
+        if (cellCount === 0) return { row: 0, col: 0 };
+        
+        // Calculate average position (center of mass)
+        centerRow = Math.round(centerRow / cellCount);
+        centerCol = Math.round(centerCol / cellCount);
+        
+        return { row: centerRow, col: centerCol };
+    }
+
     handleCanvasClick(e) {
         if (!this.selectedBlock) return;
         
@@ -305,8 +334,13 @@ class BlockdokuGame {
         const col = Math.floor(x / this.mouseCellSize);
         const row = Math.floor(y / this.mouseCellSize);
         
-        if (this.canPlaceBlock(row, col)) {
-            this.placeBlock(row, col);
+        // Adjust position to center the block
+        const centerOffset = this.getBlockCenterOffset(this.selectedBlock.shape);
+        const adjustedRow = row - centerOffset.row;
+        const adjustedCol = col - centerOffset.col;
+        
+        if (this.canPlaceBlock(adjustedRow, adjustedCol)) {
+            this.placeBlock(adjustedRow, adjustedCol);
         }
     }
     
@@ -321,7 +355,12 @@ class BlockdokuGame {
         const col = Math.floor(x / this.mouseCellSize);
         const row = Math.floor(y / this.mouseCellSize);
         
-        this.previewPosition = { row, col };
+        // Adjust position to center the block
+        const centerOffset = this.getBlockCenterOffset(this.selectedBlock.shape);
+        const adjustedRow = row - centerOffset.row;
+        const adjustedCol = col - centerOffset.col;
+        
+        this.previewPosition = { row: adjustedRow, col: adjustedCol };
         this.drawBoard();
     }
     
@@ -348,10 +387,13 @@ class BlockdokuGame {
         // Create a visual drag element
         this.createDragElement();
         
-        // Update preview position
+        // Update preview position with center offset
         const col = Math.floor(x / this.mouseCellSize);
         const row = Math.floor(y / this.mouseCellSize);
-        this.previewPosition = { row, col };
+        const centerOffset = this.getBlockCenterOffset(this.selectedBlock.shape);
+        const adjustedRow = row - centerOffset.row;
+        const adjustedCol = col - centerOffset.col;
+        this.previewPosition = { row: adjustedRow, col: adjustedCol };
         this.drawBoard();
     }
     
@@ -370,10 +412,13 @@ class BlockdokuGame {
         // Update drag element position
         this.updateDragElement(touch.clientX, touch.clientY);
         
-        // Update preview position
+        // Update preview position with center offset
         const col = Math.floor(x / this.mouseCellSize);
         const row = Math.floor(y / this.mouseCellSize);
-        this.previewPosition = { row, col };
+        const centerOffset = this.getBlockCenterOffset(this.selectedBlock.shape);
+        const adjustedRow = row - centerOffset.row;
+        const adjustedCol = col - centerOffset.col;
+        this.previewPosition = { row: adjustedRow, col: adjustedCol };
         this.drawBoard();
     }
     
@@ -390,9 +435,14 @@ class BlockdokuGame {
         const col = Math.floor(x / this.mouseCellSize);
         const row = Math.floor(y / this.mouseCellSize);
         
+        // Adjust position to center the block
+        const centerOffset = this.getBlockCenterOffset(this.selectedBlock.shape);
+        const adjustedRow = row - centerOffset.row;
+        const adjustedCol = col - centerOffset.col;
+        
         // Check if we can place the block
-        if (this.canPlaceBlock(row, col)) {
-            this.placeBlock(row, col);
+        if (this.canPlaceBlock(adjustedRow, adjustedCol)) {
+            this.placeBlock(adjustedRow, adjustedCol);
         }
         
         // Clean up drag state
@@ -428,7 +478,10 @@ class BlockdokuGame {
         if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
             const col = Math.floor(x / this.mouseCellSize);
             const row = Math.floor(y / this.mouseCellSize);
-            this.previewPosition = { row, col };
+            const centerOffset = this.getBlockCenterOffset(this.selectedBlock.shape);
+            const adjustedRow = row - centerOffset.row;
+            const adjustedCol = col - centerOffset.col;
+            this.previewPosition = { row: adjustedRow, col: adjustedCol };
             this.drawBoard();
         } else {
             this.previewPosition = null;
@@ -451,8 +504,13 @@ class BlockdokuGame {
             const col = Math.floor(x / this.mouseCellSize);
             const row = Math.floor(y / this.mouseCellSize);
             
-            if (this.canPlaceBlock(row, col)) {
-                this.placeBlock(row, col);
+            // Adjust position to center the block
+            const centerOffset = this.getBlockCenterOffset(this.selectedBlock.shape);
+            const adjustedRow = row - centerOffset.row;
+            const adjustedCol = col - centerOffset.col;
+            
+            if (this.canPlaceBlock(adjustedRow, adjustedCol)) {
+                this.placeBlock(adjustedRow, adjustedCol);
             }
         }
         
@@ -562,13 +620,16 @@ class BlockdokuGame {
         // Create drag element
         this.createDragElement();
         
-        // Update preview position
+        // Update preview position with center offset
         const rect = this.canvas.getBoundingClientRect();
         const x = touch.clientX - rect.left;
         const y = touch.clientY - rect.top;
         const col = Math.floor(x / this.mouseCellSize);
         const row = Math.floor(y / this.mouseCellSize);
-        this.previewPosition = { row, col };
+        const centerOffset = this.getBlockCenterOffset(block.shape);
+        const adjustedRow = row - centerOffset.row;
+        const adjustedCol = col - centerOffset.col;
+        this.previewPosition = { row: adjustedRow, col: adjustedCol };
         this.drawBoard();
     }
     
