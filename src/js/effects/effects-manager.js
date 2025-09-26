@@ -42,7 +42,7 @@ export class EffectsManager {
     // Block placement effects
     onBlockPlace(x, y) {
         this.particles.createSparkles(x, y, 6);
-        this.sound.play('blockPlace');
+        if (this.settings.sound) this.sound.play('blockPlace');
         this.haptic.onBlockPlace();
     }
     
@@ -51,45 +51,45 @@ export class EffectsManager {
         const totalClears = clearedLines.rows.length + clearedLines.columns.length + clearedLines.squares.length;
         
         this.particles.createConfetti(x, y, totalClears * 5);
-        this.sound.play('lineClear');
+        if (this.settings.sound) this.sound.play('lineClear');
         this.haptic.onLineClear();
     }
     
     // Level up effects
     onLevelUp(x, y) {
         this.particles.createLevelUpEffect(x, y);
-        this.sound.play('levelUp');
+        if (this.settings.sound) this.sound.play('levelUp');
         this.haptic.onLevelUp();
     }
     
     // Combo effects
     onCombo(x, y, combo) {
         this.particles.createComboEffect(x, y, combo);
-        this.sound.play('combo');
+        if (this.settings.sound) this.sound.play('combo');
         this.haptic.onCombo(combo);
     }
     
     // Score gain effects
     onScoreGain(x, y, score) {
         this.particles.createScoreNumber(x, y, score, '#00ff00');
-        this.sound.play('scoreGain');
+        if (this.settings.sound) this.sound.play('scoreGain');
     }
     
     // Error effects
     onError() {
-        this.sound.play('error');
+        if (this.settings.sound) this.sound.play('error');
         this.haptic.onError();
     }
     
     // Button click effects
     onButtonClick() {
-        this.sound.play('buttonClick');
+        if (this.settings.sound) this.sound.play('buttonClick');
         this.haptic.onButtonClick();
     }
     
     // Block rotation effects
     onBlockRotate() {
-        this.sound.play('blockRotate');
+        if (this.settings.sound) this.sound.play('blockRotate');
     }
     
     // Glow trail for block movement

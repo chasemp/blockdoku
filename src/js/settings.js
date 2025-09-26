@@ -171,6 +171,19 @@ class SettingsManager {
         this.currentDifficulty = difficulty;
         this.updateDifficultyUI();
         this.saveSettings();
+        
+        // Also update the main game's difficulty if we're on the settings page
+        // This ensures the difficulty change takes effect immediately
+        if (window.parent && window.parent !== window) {
+            // If we're in an iframe, communicate with parent
+            window.parent.postMessage({
+                type: 'difficultyChanged',
+                difficulty: difficulty
+            }, '*');
+        } else {
+            // If we're on the settings page directly, store the change for the main game to pick up
+            localStorage.setItem('blockdoku_pending_difficulty', difficulty);
+        }
     }
     
     updateSetting(key, value) {
