@@ -14,9 +14,7 @@ const filesToCopy = [
   'index.html',
   'settings.html', 
   'splash.html',
-  'manifest.json',
   'manifest.webmanifest',
-  'favicon.ico',
   'registerSW.js',
   'sw.js',
   'workbox-5ffe50d4.js'
@@ -60,8 +58,7 @@ const essentialFiles = [
 ];
 
 const dirsToCopy = [
-  'assets',
-  'icons'
+  'assets'
 ];
 
 // Copy files
@@ -113,5 +110,27 @@ essentialFiles.forEach(({ content, dest }) => {
   fs.writeFileSync(dest, content);
   console.log(`Created essential file ${dest}`);
 });
+
+// Create favicon.ico (copy from src if exists, otherwise create a simple one)
+if (fs.existsSync('src/assets/images/logo.png')) {
+  fs.copyFileSync('src/assets/images/logo.png', 'favicon.ico');
+  console.log('Created favicon.ico from logo.png');
+} else {
+  // Create a simple favicon placeholder
+  fs.writeFileSync('favicon.ico', '');
+  console.log('Created favicon.ico placeholder');
+}
+
+// Create icons directory and copy icons from src if they exist
+if (fs.existsSync('src/assets/icons')) {
+  if (!fs.existsSync('icons')) {
+    fs.mkdirSync('icons', { recursive: true });
+  }
+  fs.cpSync('src/assets/icons', 'icons', { recursive: true });
+  console.log('Copied icons from src/assets/icons');
+} else {
+  // Create basic icon files if they don't exist
+  console.log('No icons found in src/assets/icons - using default icons');
+}
 
 console.log('Build and deploy preparation complete!');
