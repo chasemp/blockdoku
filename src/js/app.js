@@ -49,6 +49,12 @@ class BlockdokuGame {
         this.selectedBlock = null;
         this.previewPosition = null;
         
+        // Drag and drop state
+        this.isDragging = false;
+        this.dragStartPosition = null;
+        this.dragCurrentPosition = null;
+        this.dragBlockElement = null;
+        
         this.loadSettings();
         this.init();
         this.setupResizeHandler();
@@ -210,6 +216,12 @@ class BlockdokuGame {
         this.canvas.addEventListener('mousemove', (e) => this.handleCanvasMouseMove(e));
         this.canvas.addEventListener('mouseleave', () => this.handleCanvasMouseLeave());
         
+        // Touch events for mobile drag and drop
+        this.canvas.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
+        this.canvas.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: false });
+        this.canvas.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
+        this.canvas.addEventListener('touchcancel', (e) => this.handleTouchCancel(e), { passive: false });
+        
         // Button events
         const settingsToggle = document.getElementById('settings-toggle');
         if (settingsToggle) {
@@ -299,6 +311,156 @@ class BlockdokuGame {
     
     handleCanvasMouseLeave() {
         this.previewPosition = null;
+        this.drawBoard();
+    }
+    
+    // Touch event handlers for mobile drag and drop
+    handleTouchStart(e) {
+        e.preventDefault();
+        
+        if (!this.selectedBlock) return;
+        
+        const touch = e.touches[0];
+        const rect = this.canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        
+        this.isDragging = true;
+        this.dragStartPosition = { x, y };
+        this.dragCurrentPosition = { x, y };
+        
+        // Create a visual drag element
+        this.createDragElement();
+        
+        // Update preview position
+        const col = Math.floor(x / this.mouseCellSize);
+        const row = Math.floor(y / this.mouseCellSize);
+        this.previewPosition = { row, col };
+        this.drawBoard();
+    }
+    
+    handleTouchMove(e) {
+        e.preventDefault();
+        
+        if (!this.isDragging || !this.selectedBlock) return;
+        
+        const touch = e.touches[0];
+        const rect = this.canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        
+        this.dragCurrentPosition = { x, y };
+        
+        // Update drag element position
+        this.updateDragElement(x, y);
+        
+        // Update preview position
+        const col = Math.floor(x / this.mouseCellSize);
+        const row = Math.floor(y / this.mouseCellSize);
+        this.previewPosition = { row, col };
+        this.drawBoard();
+    }
+    
+    handleTouchEnd(e) {
+        e.preventDefault();
+        
+        if (!this.isDragging || !this.selectedBlock) return;
+        
+        const touch = e.changedTouches[0];
+        const rect = this.canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        
+        const col = Math.floor(x / this.mouseCellSize);
+        const row = Math.floor(y / this.mouseCellSize);
+        
+        // Check if we can place the block
+        if (this.canPlaceBlock(row, col)) {
+            this.placeBlock(row, col);
+        }
+        
+        // Clean up drag state
+        this.cleanupDrag();
+    }
+    
+    handleTouchCancel(e) {
+        e.preventDefault();
+        this.cleanupDrag();
+    }
+    
+    createDragElement() {
+        if (this.dragBlockElement) {
+            this.dragBlockElement.remove();
+        }
+        
+        this.dragBlockElement = document.createElement('div');
+        this.dragBlockElement.className = 'drag-block-element';
+        this.dragBlockElement.style.position = 'fixed';
+        this.dragBlockElement.style.pointerEvents = 'none';
+        this.dragBlockElement.style.zIndex = '1000';
+        this.dragBlockElement.style.opacity = '0.8';
+        this.dragBlockElement.style.transform = 'translate(-50%, -50%)';
+        
+        // Create a canvas to draw the block
+        const canvas = document.createElement('canvas');
+        const size = 40; // Size for the drag element
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        
+        // Draw the block shape
+        this.drawBlockOnCanvas(ctx, this.selectedBlock, size);
+        
+        this.dragBlockElement.appendChild(canvas);
+        document.body.appendChild(this.dragBlockElement);
+    }
+    
+    updateDragElement(x, y) {
+        if (!this.dragBlockElement) return;
+        
+        this.dragBlockElement.style.left = `${x}px`;
+        this.dragBlockElement.style.top = `${y}px`;
+    }
+    
+    drawBlockOnCanvas(ctx, block, size) {
+        const cellSize = size / Math.max(block.shape.length, block.shape[0].length);
+        
+        ctx.fillStyle = block.color;
+        ctx.strokeStyle = this.darkenColor(block.color);
+        ctx.lineWidth = 1;
+        
+        for (let r = 0; r < block.shape.length; r++) {
+            for (let c = 0; c < block.shape[r].length; c++) {
+                if (block.shape[r][c] === 1) {
+                    const x = c * cellSize;
+                    const y = r * cellSize;
+                    ctx.fillRect(x, y, cellSize, cellSize);
+                    ctx.strokeRect(x, y, cellSize, cellSize);
+                }
+            }
+        }
+    }
+    
+    darkenColor(color) {
+        // Simple color darkening function
+        const hex = color.replace('#', '');
+        const r = Math.max(0, parseInt(hex.substr(0, 2), 16) - 30);
+        const g = Math.max(0, parseInt(hex.substr(2, 2), 16) - 30);
+        const b = Math.max(0, parseInt(hex.substr(4, 2), 16) - 30);
+        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    }
+    
+    cleanupDrag() {
+        this.isDragging = false;
+        this.dragStartPosition = null;
+        this.dragCurrentPosition = null;
+        this.previewPosition = null;
+        
+        if (this.dragBlockElement) {
+            this.dragBlockElement.remove();
+            this.dragBlockElement = null;
+        }
+        
         this.drawBoard();
     }
     

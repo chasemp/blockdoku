@@ -117,6 +117,39 @@ export class BlockPalette {
                 this.rotateBlock(blockId);
             }
         });
+        
+        // Touch events for mobile drag and drop
+        document.addEventListener('touchstart', (e) => {
+            if (e.target.closest('.block-item')) {
+                const blockItem = e.target.closest('.block-item');
+                const blockId = blockItem.dataset.blockId;
+                this.selectBlock(blockId);
+                
+                // Store the touch for potential drag
+                this.touchStart = e.touches[0];
+                this.touchStartTime = Date.now();
+            }
+        }, { passive: true });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (this.touchStart && e.target.closest('.block-item')) {
+                const touch = e.touches[0];
+                const deltaX = Math.abs(touch.clientX - this.touchStart.clientX);
+                const deltaY = Math.abs(touch.clientY - this.touchStart.clientY);
+                const deltaTime = Date.now() - this.touchStartTime;
+                
+                // If moved more than 10px or 200ms has passed, consider it a drag
+                if (deltaX > 10 || deltaY > 10 || deltaTime > 200) {
+                    e.preventDefault();
+                    // The drag will be handled by the canvas touch events
+                }
+            }
+        }, { passive: false });
+        
+        document.addEventListener('touchend', (e) => {
+            this.touchStart = null;
+            this.touchStartTime = null;
+        }, { passive: true });
     }
     
     selectBlock(blockId) {
