@@ -111,6 +111,55 @@
             transform: translateY(-1px);
         }
         
+        .about-content {
+            display: grid;
+            gap: 2rem;
+        }
+        
+        .about-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .about-item h3 {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+        
+        .about-item p {
+            color: var(--text-color);
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+        
+        .about-item p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .about-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .about-item a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+        
+        .about-item strong {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+        
         @media (max-width: 768px) {
             .settings-container {
                 padding: 1rem;
@@ -144,6 +193,7 @@
             <a href="#" class="nav-item" data-section="difficulty">⚡ Difficulty</a>
             <a href="#" class="nav-item" data-section="scores">🏆 High Scores</a>
             <a href="#" class="nav-item" data-section="game">🎮 Game Settings</a>
+            <a href="#" class="nav-item" data-section="about">ℹ️ About</a>
         </div>
         
         <div class="settings-content">
@@ -268,6 +318,40 @@
                 <p>Install Blockdoku as a Progressive Web App for a better experience:</p>
                 <div id="install-button-container">
                     <!-- Install button will be dynamically added here -->
+                </div>
+            </div>
+            
+            <!-- About Section -->
+            <div class="settings-section" id="about-section">
+                <h2 class="section-title">About Blockdoku</h2>
+                <div class="about-content">
+                    <div class="about-item">
+                        <h3>Author</h3>
+                        <p>Chase Pettet</p>
+                    </div>
+                    
+                    <div class="about-item">
+                        <h3>Parent Domain</h3>
+                        <p><a href="https://523.life" target="_blank" rel="noopener noreferrer">523.life</a></p>
+                    </div>
+                    
+                    <div class="about-item">
+                        <h3>License</h3>
+                        <p>This project is licensed under the <strong>GNU Affero General Public License v3.0</strong></p>
+                        <p>The AGPL-3.0 is a strong copyleft license that requires anyone who distributes the software or provides it as a service to also make the source code available under the same license.</p>
+                        <p><a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener noreferrer">View full license text</a></p>
+                    </div>
+                    
+                    <div class="about-item">
+                        <h3>Source Code</h3>
+                        <p>This is a Progressive Web App (PWA) built with modern web technologies including Vite, vanilla JavaScript, and CSS3.</p>
+                        <p>The source code is available and open for contribution under the AGPL-3.0 license.</p>
+                    </div>
+                    
+                    <div class="about-item">
+                        <h3>Version</h3>
+                        <p>v1.0.0</p>
+                    </div>
                 </div>
             </div>
         </div>
