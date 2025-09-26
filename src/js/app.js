@@ -30,6 +30,11 @@ class BlockdokuGame {
         this.level = 1;
         this.currentTheme = 'light';
         
+        // Animation tracking
+        this.previousScore = 0;
+        this.previousLevel = 1;
+        this.previousCombo = 0;
+        
         // Difficulty settings
         this.difficulty = 'normal';
         this.enableHints = false;
@@ -806,32 +811,154 @@ class BlockdokuGame {
         // Check for completed lines
         const clearedLines = this.scoringSystem.checkAndClearLines(this.board);
         
-        // If any lines were cleared, process them
+        // If any lines were cleared, process them with animation
         if (clearedLines.rows.length > 0 || clearedLines.columns.length > 0 || clearedLines.squares.length > 0) {
-            const result = this.scoringSystem.clearLines(this.board, clearedLines);
-            this.board = result.board;
-            
-            // Update score and level
-            this.score = this.scoringSystem.getScore();
-            this.level = this.scoringSystem.getLevel();
-            
-            // Create visual effects (simplified without effects system for now)
-            this.createLineClearEffect(clearedLines);
-            
-            // Create score popup (simplified)
-            const centerX = this.canvas.width / 2;
-            const centerY = this.canvas.height / 2;
-            this.createScorePopup(centerX, centerY, result.scoreGained);
-            
-            // Create combo effect if applicable
-            const combo = this.scoringSystem.getCombo();
-            if (combo > 1) {
-                this.createComboEffect(combo, centerX, centerY + 50);
-            }
-            
-            // Update UI
-            this.updateUI();
+            // Start the line clear animation sequence
+            this.startLineClearAnimation(clearedLines);
         }
+    }
+    
+    startLineClearAnimation(clearedLines) {
+        // Give immediate feedback that clear was detected
+        this.showImmediateClearFeedback(clearedLines);
+        
+        // After a brief moment, highlight the blocks that will be cleared
+        setTimeout(() => {
+            this.highlightClearingBlocks(clearedLines);
+        }, 200);
+        
+        // After 2.5 seconds total, actually clear the lines and show effects
+        setTimeout(() => {
+            this.completeLineClear(clearedLines);
+        }, 2500);
+    }
+    
+    showImmediateClearFeedback(clearedLines) {
+        // Create immediate visual feedback - quick flash
+        this.ctx.save();
+        this.ctx.fillStyle = '#00ff00'; // Bright green flash
+        this.ctx.globalAlpha = 0.8;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.globalAlpha = 1.0;
+        this.ctx.restore();
+        
+        // Add a brief sound-like visual cue (pulsing border)
+        this.canvas.style.border = '3px solid #00ff00';
+        this.canvas.style.boxShadow = '0 0 20px #00ff00';
+        
+        // Remove the border effect quickly
+        setTimeout(() => {
+            this.canvas.style.border = '';
+            this.canvas.style.boxShadow = '';
+        }, 300);
+        
+        // Show immediate score popup
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+        this.showQuickClearNotification(centerX, centerY, clearedLines);
+    }
+    
+    showQuickClearNotification(x, y, clearedLines) {
+        // Show immediate notification of what was cleared
+        this.ctx.save();
+        
+        const totalClears = clearedLines.rows.length + clearedLines.columns.length + clearedLines.squares.length;
+        let message = '';
+        
+        if (totalClears === 1) {
+            if (clearedLines.rows.length > 0) message = 'ROW!';
+            else if (clearedLines.columns.length > 0) message = 'COLUMN!';
+            else if (clearedLines.squares.length > 0) message = 'SQUARE!';
+        } else {
+            message = `${totalClears} CLEARS!`;
+        }
+        
+        // Draw background
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        this.ctx.fillRect(x - 80, y - 20, 160, 40);
+        
+        // Draw border
+        this.ctx.strokeStyle = '#00ff00';
+        this.ctx.lineWidth = 3;
+        this.ctx.strokeRect(x - 80, y - 20, 160, 40);
+        
+        // Draw text
+        this.ctx.fillStyle = '#00ff00';
+        this.ctx.font = 'bold 24px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(message, x, y + 8);
+        
+        this.ctx.restore();
+        
+        // Fade out quickly
+        setTimeout(() => {
+            this.drawBoard();
+        }, 400);
+    }
+    
+    highlightClearingBlocks(clearedLines) {
+        // Draw the board with highlighted clearing blocks
+        this.drawBoard();
+        
+        const ctx = this.ctx;
+        const drawCellSize = this.actualCellSize || this.cellSize;
+        
+        ctx.save();
+        ctx.globalAlpha = 0.7;
+        
+        // Highlight clearing rows
+        clearedLines.rows.forEach(row => {
+            ctx.fillStyle = '#ffff00'; // Yellow highlight
+            ctx.fillRect(0, row * drawCellSize, this.canvas.width, drawCellSize);
+        });
+        
+        // Highlight clearing columns
+        clearedLines.columns.forEach(col => {
+            ctx.fillStyle = '#ffff00'; // Yellow highlight
+            ctx.fillRect(col * drawCellSize, 0, drawCellSize, this.canvas.height);
+        });
+        
+        // Highlight clearing 3x3 squares
+        clearedLines.squares.forEach(square => {
+            ctx.fillStyle = '#ffff00'; // Yellow highlight
+            const x = square.col * 3 * drawCellSize;
+            const y = square.row * 3 * drawCellSize;
+            ctx.fillRect(x, y, 3 * drawCellSize, 3 * drawCellSize);
+        });
+        
+        ctx.restore();
+    }
+    
+    completeLineClear(clearedLines) {
+        // Actually clear the lines
+        const result = this.scoringSystem.clearLines(this.board, clearedLines);
+        this.board = result.board;
+        
+        // Update score and level
+        this.score = this.scoringSystem.getScore();
+        this.level = this.scoringSystem.getLevel();
+        
+        // Create visual effects
+        this.createLineClearEffect(clearedLines);
+        
+        // Create score popup
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+        this.createScorePopup(centerX, centerY, result.scoreGained);
+        
+        // Create combo effect if applicable
+        const combo = this.scoringSystem.getCombo();
+        if (combo > 1) {
+            this.createComboEffect(combo, centerX, centerY + 50);
+        }
+        
+        // Update UI
+        this.updateUI();
+        
+        // Check for additional line clears after this one
+        setTimeout(() => {
+            this.checkLineClears();
+        }, 200);
     }
     
     newGame() {
@@ -846,6 +973,11 @@ class BlockdokuGame {
         this.level = 1;
         this.selectedBlock = null;
         this.previewPosition = null;
+        
+        // Reset animation tracking
+        this.previousScore = 0;
+        this.previousLevel = 1;
+        this.previousCombo = 0;
         // this.effectsSystem.clear();
         this.generateNewBlocks();
         this.drawBoard();
@@ -856,49 +988,227 @@ class BlockdokuGame {
     }
     
     updateUI() {
-        document.getElementById('score').textContent = this.score;
-        document.getElementById('level').textContent = this.level;
-        document.getElementById('combo').textContent = this.scoringSystem.getCombo();
+        const scoreElement = document.getElementById('score');
+        const levelElement = document.getElementById('level');
+        const comboElement = document.getElementById('combo');
+        
+        const currentCombo = this.scoringSystem.getCombo();
+        
+        // Check for first score gain
+        if (this.previousScore === 0 && this.score > 0) {
+            this.animateFirstScore(scoreElement);
+        } else if (this.score > this.previousScore) {
+            this.animateScoreIncrease(scoreElement);
+        }
+        
+        // Check for level change
+        if (this.level > this.previousLevel) {
+            this.animateLevelUp(levelElement);
+        }
+        
+        // Check for combo hit
+        if (currentCombo > this.previousCombo && currentCombo > 1) {
+            this.animateComboHit(comboElement);
+        }
+        
+        // Update the text content
+        scoreElement.textContent = this.score;
+        levelElement.textContent = this.level;
+        comboElement.textContent = currentCombo;
+        
+        // Update previous values
+        this.previousScore = this.score;
+        this.previousLevel = this.level;
+        this.previousCombo = currentCombo;
     }
     
-    // Simplified visual effects for line clearing
+    // Enhanced visual effects for line clearing
     createLineClearEffect(clearedLines) {
-        // Simple visual feedback - redraw the board with a flash effect
+        // Create a more dramatic flash effect
         this.ctx.fillStyle = '#ffff00';
-        this.ctx.globalAlpha = 0.3;
+        this.ctx.globalAlpha = 0.8;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.globalAlpha = 1.0;
         
-        // Redraw the board after a short delay
+        // Add a second flash for more impact
         setTimeout(() => {
-            this.drawBoard();
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.globalAlpha = 0.6;
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.globalAlpha = 1.0;
+            
+            // Redraw the board after the flash
+            setTimeout(() => {
+                this.drawBoard();
+            }, 150);
         }, 100);
     }
     
     createScorePopup(x, y, scoreGained) {
-        // Simple score popup using canvas text
-        this.ctx.fillStyle = '#00ff00';
-        this.ctx.font = 'bold 24px Arial';
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText(`+${scoreGained}`, x, y);
+        // Enhanced score popup with better visibility
+        this.ctx.save();
         
-        // Clear the popup after a delay
+        // Add background for better visibility
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        this.ctx.fillRect(x - 60, y - 20, 120, 40);
+        
+        // Add border
+        this.ctx.strokeStyle = '#00ff00';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(x - 60, y - 20, 120, 40);
+        
+        // Draw score text
+        this.ctx.fillStyle = '#00ff00';
+        this.ctx.font = 'bold 28px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(`+${scoreGained}`, x, y + 8);
+        
+        this.ctx.restore();
+        
+        // Animate the popup (fade out and move up)
+        let animationFrame = 0;
+        const animate = () => {
+            if (animationFrame < 30) { // 30 frames = ~0.5 seconds at 60fps
+                this.ctx.save();
+                this.ctx.globalAlpha = 1 - (animationFrame / 30);
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                this.ctx.fillRect(x - 60, y - 20 - animationFrame * 2, 120, 40);
+                this.ctx.strokeStyle = '#00ff00';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect(x - 60, y - 20 - animationFrame * 2, 120, 40);
+                this.ctx.fillStyle = '#00ff00';
+                this.ctx.font = 'bold 28px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(`+${scoreGained}`, x, y + 8 - animationFrame * 2);
+                this.ctx.restore();
+                
+                animationFrame++;
+                requestAnimationFrame(animate);
+            } else {
+                this.drawBoard();
+            }
+        };
+        
         setTimeout(() => {
-            this.drawBoard();
-        }, 1000);
+            requestAnimationFrame(animate);
+        }, 200);
     }
     
     createComboEffect(combo, x, y) {
-        // Simple combo effect using canvas text
-        this.ctx.fillStyle = '#ff6600';
-        this.ctx.font = 'bold 20px Arial';
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText(`${combo}x COMBO!`, x, y);
+        // Enhanced combo effect with animation
+        this.ctx.save();
         
-        // Clear the combo effect after a delay
+        // Add background for better visibility
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        this.ctx.fillRect(x - 80, y - 15, 160, 30);
+        
+        // Add border
+        this.ctx.strokeStyle = '#ff6600';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(x - 80, y - 15, 160, 30);
+        
+        // Draw combo text
+        this.ctx.fillStyle = '#ff6600';
+        this.ctx.font = 'bold 24px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(`${combo}x COMBO!`, x, y + 5);
+        
+        this.ctx.restore();
+        
+        // Animate the combo effect (pulse and fade)
+        let animationFrame = 0;
+        const animate = () => {
+            if (animationFrame < 60) { // 60 frames = ~1 second at 60fps
+                this.ctx.save();
+                
+                // Pulse effect
+                const pulse = 1 + Math.sin(animationFrame * 0.3) * 0.2;
+                this.ctx.scale(pulse, pulse);
+                
+                this.ctx.globalAlpha = 1 - (animationFrame / 60);
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                this.ctx.fillRect((x - 80) / pulse, (y - 15) / pulse, 160 / pulse, 30 / pulse);
+                this.ctx.strokeStyle = '#ff6600';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect((x - 80) / pulse, (y - 15) / pulse, 160 / pulse, 30 / pulse);
+                this.ctx.fillStyle = '#ff6600';
+                this.ctx.font = 'bold 24px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(`${combo}x COMBO!`, x / pulse, (y + 5) / pulse);
+                
+                this.ctx.restore();
+                
+                animationFrame++;
+                requestAnimationFrame(animate);
+            } else {
+                this.drawBoard();
+            }
+        };
+        
         setTimeout(() => {
-            this.drawBoard();
-        }, 1500);
+            requestAnimationFrame(animate);
+        }, 300);
+    }
+    
+    // UI Animation Methods
+    animateFirstScore(element) {
+        element.style.transition = 'all 0.6s ease-out';
+        element.style.transform = 'scale(1.5)';
+        element.style.color = '#00ff00';
+        element.style.textShadow = '0 0 10px #00ff00';
+        
+        setTimeout(() => {
+            element.style.transform = 'scale(1)';
+            element.style.color = '';
+            element.style.textShadow = '';
+        }, 600);
+    }
+    
+    animateScoreIncrease(element) {
+        element.style.transition = 'all 0.3s ease-out';
+        element.style.transform = 'scale(1.2)';
+        element.style.color = '#ffff00';
+        
+        setTimeout(() => {
+            element.style.transform = 'scale(1)';
+            element.style.color = '';
+        }, 300);
+    }
+    
+    animateLevelUp(element) {
+        element.style.transition = 'all 0.8s ease-out';
+        element.style.transform = 'scale(1.4) rotate(5deg)';
+        element.style.color = '#ff6600';
+        element.style.textShadow = '0 0 15px #ff6600';
+        
+        setTimeout(() => {
+            element.style.transform = 'scale(1) rotate(0deg)';
+            element.style.color = '';
+            element.style.textShadow = '';
+        }, 800);
+    }
+    
+    animateComboHit(element) {
+        element.style.transition = 'all 0.5s ease-out';
+        element.style.transform = 'scale(1.3)';
+        element.style.color = '#ff0066';
+        element.style.textShadow = '0 0 12px #ff0066';
+        
+        // Add a pulse effect
+        let pulseCount = 0;
+        const pulse = () => {
+            if (pulseCount < 3) {
+                element.style.transform = pulseCount % 2 === 0 ? 'scale(1.3)' : 'scale(1.1)';
+                pulseCount++;
+                setTimeout(pulse, 150);
+            } else {
+                element.style.transform = 'scale(1)';
+                element.style.color = '';
+                element.style.textShadow = '';
+            }
+        };
+        
+        setTimeout(pulse, 200);
     }
 
     // Storage Methods
