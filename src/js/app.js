@@ -64,15 +64,28 @@ class BlockdokuGame {
         const containerSize = Math.min(containerRect.width, containerRect.height);
         
         // Calculate cell size to perfectly fill the container
+        // Use Math.floor to ensure we don't exceed container bounds
         this.cellSize = Math.floor(containerSize / this.boardSize);
         
-        // Set canvas internal resolution to match container size exactly
+        // Calculate the actual grid size that will be drawn
+        const gridSize = this.cellSize * this.boardSize;
+        
+        // CRITICAL FIX: Always make canvas internal resolution match display size exactly
+        // This eliminates scaling mismatches between visual appearance and mouse coordinates
         this.canvas.width = containerSize;
         this.canvas.height = containerSize;
         
-        // Set canvas display size to match container size
+        // Set canvas display size to match (same as internal resolution)
         this.canvas.style.width = containerSize + 'px';
         this.canvas.style.height = containerSize + 'px';
+        
+        // Calculate actual cell size for the full container
+        // This ensures perfect grid alignment with mouse coordinates
+        this.actualCellSize = containerSize / this.boardSize;
+        
+        // Store both the integer cell size (for clean grid drawing) and actual cell size (for mouse events)
+        this.gridCellSize = this.cellSize; // For drawing grid lines cleanly
+        this.mouseCellSize = this.actualCellSize; // For mouse coordinate calculations
         
         // Ensure crisp rendering
         this.ctx.imageSmoothingEnabled = false;
@@ -260,8 +273,9 @@ class BlockdokuGame {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         
-        const col = Math.floor(x / this.cellSize);
-        const row = Math.floor(y / this.cellSize);
+        // Use the precise cell size that matches the actual canvas dimensions
+        const col = Math.floor(x / this.mouseCellSize);
+        const row = Math.floor(y / this.mouseCellSize);
         
         if (this.canPlaceBlock(row, col)) {
             this.placeBlock(row, col);
@@ -275,8 +289,9 @@ class BlockdokuGame {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         
-        const col = Math.floor(x / this.cellSize);
-        const row = Math.floor(y / this.cellSize);
+        // Use the precise cell size that matches the actual canvas dimensions
+        const col = Math.floor(x / this.mouseCellSize);
+        const row = Math.floor(y / this.mouseCellSize);
         
         this.previewPosition = { row, col };
         this.drawBoard();
@@ -324,7 +339,8 @@ class BlockdokuGame {
         }
         
         const ctx = this.ctx;
-        const cellSize = this.cellSize;
+        // Use the actual cell size that fills the entire canvas perfectly
+        const drawCellSize = this.actualCellSize || this.cellSize;
         
         // Clear canvas
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -333,59 +349,58 @@ class BlockdokuGame {
         ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--board-bg');
         ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Draw grid lines with precise pixel alignment
+        // Draw grid lines with precise alignment to fill entire canvas
         ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--grid-line');
         ctx.lineWidth = 1;
         
-        // Use the full canvas dimensions for grid
-        const canvasWidth = this.canvas.width;
-        const canvasHeight = this.canvas.height;
+        const gridWidth = this.canvas.width;
+        const gridHeight = this.canvas.height;
         
-        // Vertical lines - fill entire canvas height
+        // Vertical lines - perfectly spaced to fill entire canvas
         for (let i = 0; i <= this.boardSize; i++) {
-            const x = Math.floor(i * cellSize);
+            const x = Math.round(i * drawCellSize);
             ctx.beginPath();
             ctx.moveTo(x, 0);
-            ctx.lineTo(x, canvasHeight);
+            ctx.lineTo(x, gridHeight);
             ctx.stroke();
         }
         
-        // Horizontal lines - fill entire canvas width
+        // Horizontal lines - perfectly spaced to fill entire canvas
         for (let i = 0; i <= this.boardSize; i++) {
-            const y = Math.floor(i * cellSize);
+            const y = Math.round(i * drawCellSize);
             ctx.beginPath();
             ctx.moveTo(0, y);
-            ctx.lineTo(canvasWidth, y);
+            ctx.lineTo(gridWidth, y);
             ctx.stroke();
         }
         
-        // Draw 3x3 square borders (thicker lines) with precise alignment
+        // Draw 3x3 square borders (thicker lines) with perfect alignment
         ctx.lineWidth = 2;
         for (let i = 0; i <= 3; i++) {
-            const x = Math.floor(i * 3 * cellSize);
-            const y = Math.floor(i * 3 * cellSize);
+            const x = Math.round(i * 3 * drawCellSize);
+            const y = Math.round(i * 3 * drawCellSize);
             
             // Vertical 3x3 borders
             ctx.beginPath();
             ctx.moveTo(x, 0);
-            ctx.lineTo(x, canvasHeight);
+            ctx.lineTo(x, gridHeight);
             ctx.stroke();
             
             // Horizontal 3x3 borders
             ctx.beginPath();
             ctx.moveTo(0, y);
-            ctx.lineTo(canvasWidth, y);
+            ctx.lineTo(gridWidth, y);
             ctx.stroke();
         }
         
-        // Draw filled cells
+        // Draw filled cells using the precise cell size
         ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--block-color');
         for (let row = 0; row < this.boardSize; row++) {
             for (let col = 0; col < this.boardSize; col++) {
                 if (this.board[row][col] === 1) {
-                    const x = col * cellSize + 1;
-                    const y = row * cellSize + 1;
-                    const size = cellSize - 2;
+                    const x = Math.round(col * drawCellSize) + 1;
+                    const y = Math.round(row * drawCellSize) + 1;
+                    const size = Math.round(drawCellSize) - 2;
                     
                     ctx.fillRect(x, y, size, size);
                     
@@ -421,7 +436,8 @@ class BlockdokuGame {
         if (!this.selectedBlock || !this.previewPosition) return;
         
         const ctx = this.ctx;
-        const cellSize = this.cellSize;
+        // Use the actual cell size that matches canvas dimensions
+        const drawCellSize = this.actualCellSize || this.cellSize;
         const shape = this.selectedBlock.shape;
         const row = this.previewPosition.row;
         const col = this.previewPosition.col;
@@ -439,7 +455,7 @@ class BlockdokuGame {
             '#ff0000';
         ctx.lineWidth = 2;
         
-        // Draw preview block
+        // Draw preview block using precise positioning
         for (let r = 0; r < shape.length; r++) {
             for (let c = 0; c < shape[r].length; c++) {
                 if (shape[r][c] === 1) {
@@ -449,9 +465,9 @@ class BlockdokuGame {
                     // Check if block cell is within bounds
                     if (blockCol >= 0 && blockCol < this.boardSize && 
                         blockRow >= 0 && blockRow < this.boardSize) {
-                        const x = blockCol * cellSize + 1;
-                        const y = blockRow * cellSize + 1;
-                        const size = cellSize - 2;
+                        const x = Math.round(blockCol * drawCellSize) + 1;
+                        const y = Math.round(blockRow * drawCellSize) + 1;
+                        const size = Math.round(drawCellSize) - 2;
                         
                         ctx.fillRect(x, y, size, size);
                         ctx.strokeRect(x, y, size, size);
