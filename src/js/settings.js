@@ -31,6 +31,9 @@ class SettingsManager {
     loadSettings() {
         this.currentTheme = this.settings.theme || 'wood';
         this.currentDifficulty = this.settings.difficulty || 'normal';
+        
+        // Apply the loaded theme immediately
+        this.applyTheme(this.currentTheme);
     }
     
     setupEventListeners() {

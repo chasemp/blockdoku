@@ -13,6 +13,41 @@
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/themes/wood.css" id="theme-css">
+    <script>
+        // Function to update theme
+        function updateTheme() {
+            const savedSettings = localStorage.getItem('blockdoku-settings');
+            if (savedSettings) {
+                try {
+                    const settings = JSON.parse(savedSettings);
+                    if (settings.theme) {
+                        const themeLink = document.getElementById('theme-css');
+                        themeLink.href = `css/themes/${settings.theme}.css`;
+                    }
+                } catch (e) {
+                    console.log('Error parsing settings:', e);
+                }
+            }
+        }
+        
+        // Load current theme from localStorage on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add a small delay to ensure everything is loaded
+            setTimeout(updateTheme, 100);
+        });
+        
+        // Listen for theme changes from other pages
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'blockdoku-settings') {
+                updateTheme();
+            }
+        });
+        
+        // Also listen for focus events (when returning from main page)
+        window.addEventListener('focus', function() {
+            updateTheme();
+        });
+    </script>
     <style>
         .settings-container {
             max-width: 1200px;
@@ -206,15 +241,15 @@
                 <h2 class="section-title">Theme</h2>
                 <div class="theme-options">
                     <button class="theme-option" data-theme="wood">
-                        <span class="theme-preview wood-preview"></span>
+                        <span class="theme-preview wood-preview">W</span>
                         <span>Wood</span>
                     </button>
                     <button class="theme-option" data-theme="light">
-                        <span class="theme-preview light-preview"></span>
+                        <span class="theme-preview light-preview">L</span>
                         <span>Light</span>
                     </button>
                     <button class="theme-option" data-theme="dark">
-                        <span class="theme-preview dark-preview"></span>
+                        <span class="theme-preview dark-preview">D</span>
                         <span>Dark</span>
                     </button>
                 </div>
