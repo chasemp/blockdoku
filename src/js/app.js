@@ -154,7 +154,7 @@ class BlockdokuGame {
     async registerServiceWorker() {
         if ('serviceWorker' in navigator) {
             try {
-                const registration = await navigator.serviceWorker.register('/public/sw.js');
+                const registration = await navigator.serviceWorker.register('./sw.js');
                 console.log('PWA: Service Worker registered successfully', registration);
                 
                 // Check for updates
