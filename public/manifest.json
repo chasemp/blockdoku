@@ -2,10 +2,10 @@
   "name": "Blockdoku",
   "short_name": "Blockdoku",
   "description": "A Progressive Web App for playing Blockudoku with multiple themes and offline support",
-  "start_url": "/",
+  "start_url": "/splash.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#007bff",
+  "background_color": "#2c1810",
+  "theme_color": "#8d6e63",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
@@ -59,6 +59,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "/public/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [],
