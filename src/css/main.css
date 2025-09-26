@@ -23,7 +23,7 @@ body {
 
 .header {
     background: linear-gradient(135deg, var(--header-bg) 0%, var(--primary-color) 100%);
-    padding: 1.5rem 2rem;
+    padding: 1.65rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -46,7 +46,7 @@ body {
 }
 
 .app-logo {
-    height: 40px; /* Fixed reasonable height for logo */
+    height: 60px; /* Almost exactly the height of the header bar, barely contained */
     width: auto;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
     transition: transform 0.2s ease;
@@ -60,13 +60,13 @@ body {
 /* Responsive logo sizing */
 @media (max-width: 768px) {
     .app-logo {
-        height: 32px; /* Smaller logo on mobile */
+        height: 50px; /* Almost exactly the height of mobile header bar */
     }
 }
 
 @media (max-width: 480px) {
     .app-logo {
-        height: 28px; /* Even smaller logo on smallest screens */
+        height: 40px; /* Almost exactly the height of smallest mobile header bar */
     }
 }
 
@@ -81,14 +81,14 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 2rem;
+    padding: 4rem 2rem 2rem 2rem;
 }
 
 .game-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    gap: 2rem;
     width: 100%;
     max-width: 500px;
 }
@@ -145,7 +145,7 @@ body {
     flex-wrap: wrap;
     justify-content: center;
     background: linear-gradient(135deg, var(--header-bg) 0%, var(--cell-bg) 100%);
-    padding: 1rem 1.5rem;
+    padding: 0.75rem 1.25rem;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--border-color);
@@ -383,7 +383,7 @@ body {
 .game-area {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 2rem;
     align-items: center;
     width: 100%;
 }
@@ -419,7 +419,7 @@ body {
 /* Responsive design */
 @media (max-width: 768px) {
     .header {
-        padding: 0.75rem 1rem;
+        padding: 0.825rem 1rem;
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
@@ -437,7 +437,7 @@ body {
     }
     
     .main {
-        padding: 0.5rem;
+        padding: 3rem 0.5rem 0.5rem 0.5rem;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -450,20 +450,20 @@ body {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 0.75rem;
+        gap: 1.5rem;
     }
     
     .game-area {
         flex-direction: column;
         align-items: center;
-        gap: 0.75rem;
+        gap: 1.5rem;
     }
     
     .game-board-container {
-        width: 320px;
-        height: 320px;
-        max-width: 85vw;
-        max-height: 85vw;
+        width: 90vw;
+        height: 90vw;
+        max-width: 90vw;
+        max-height: 90vw;
         margin: 0 auto;
         order: 1; /* Game board first */
     }
@@ -471,8 +471,8 @@ body {
     #game-board {
         width: 100%;
         height: 100%;
-        max-width: 85vw;
-        max-height: 85vw;
+        max-width: 90vw;
+        max-height: 90vw;
     }
     
     .footer {
@@ -620,10 +620,10 @@ body {
     }
     
     .game-board-container {
-        width: 200px;
-        height: 200px;
-        max-width: 40vw;
-        max-height: 40vw;
+        width: 50vw;
+        height: 50vw;
+        max-width: 50vw;
+        max-height: 50vw;
         order: 1;
     }
     
@@ -651,7 +651,7 @@ body {
 
 @media (max-width: 480px) {
     .header {
-        padding: 0.5rem 0.75rem;
+        padding: 0.55rem 0.75rem;
     }
     
     .controls {
@@ -668,32 +668,32 @@ body {
     }
     
     .main {
-        padding: 0.25rem;
+        padding: 2rem 0.25rem 0.25rem 0.25rem;
         min-height: calc(100vh - 100px);
     }
     
     .game-container {
         max-width: 350px;
-        gap: 0.5rem;
+        gap: 1rem;
     }
     
     .game-board-container {
-        width: 280px;
-        height: 280px;
-        max-width: 80vw;
-        max-height: 80vw;
+        width: 90vw;
+        height: 90vw;
+        max-width: 90vw;
+        max-height: 90vw;
         margin: 0 auto;
     }
     
     #game-board {
         width: 100%;
         height: 100%;
-        max-width: 80vw;
-        max-height: 80vw;
+        max-width: 90vw;
+        max-height: 90vw;
     }
     
     .game-area {
-        gap: 0.5rem;
+        gap: 1rem;
     }
     
     .game-info {
