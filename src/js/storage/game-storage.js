@@ -125,7 +125,7 @@ export class GameStorage {
     getDefaultSettings() {
         return {
             theme: 'wood',
-            soundEnabled: true,
+            soundEnabled: false,
             animationsEnabled: true,
             difficulty: 'normal',
             autoSave: true,
@@ -219,7 +219,7 @@ export class GameStorage {
                 highScores: this.getHighScores(),
                 statistics: this.loadStatistics(),
                 exportDate: new Date().toISOString(),
-                version: '1.0.0'
+                version: '1.4.0'
             };
             return JSON.stringify(data, null, 2);
         } catch (error) {

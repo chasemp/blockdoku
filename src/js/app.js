@@ -20,6 +20,7 @@ import { DifficultyManager } from './difficulty/difficulty-manager.js';
 import { HintSystem } from './difficulty/hint-system.js';
 import { TimerSystem } from './difficulty/timer-system.js';
 import { DifficultySelector } from './ui/difficulty-selector.js';
+import { EffectsManager } from './effects/effects-manager.js';
 
 
 class BlockdokuGame {
@@ -62,6 +63,9 @@ class BlockdokuGame {
         this.hintSystem = new HintSystem(this, this.difficultyManager);
         this.timerSystem = new TimerSystem(this.difficultyManager);
         this.difficultySelector = new DifficultySelector(this, this.difficultyManager);
+        
+        // Effects system
+        this.effectsManager = new EffectsManager(this.canvas, this.ctx);
         this.selectedBlock = null;
         this.previewPosition = null;
         
@@ -241,12 +245,12 @@ class BlockdokuGame {
     }
     
     update() {
-        // this.effectsSystem.update();
+        this.effectsManager.update();
     }
     
     draw() {
         this.drawBoard();
-        // this.effectsSystem.render();
+        this.effectsManager.render();
     }
     
     setupEventListeners() {
@@ -272,6 +276,7 @@ class BlockdokuGame {
         const settingsToggle = document.getElementById('settings-toggle');
         if (settingsToggle) {
             settingsToggle.addEventListener('click', () => {
+                this.effectsManager.onButtonClick();
                 console.log('Settings button clicked - navigating to settings page');
                 // NOTE: Settings is a separate PAGE (settings.html), not a modal!
                 // The settings page contains: theme selection, difficulty settings, 
@@ -284,7 +289,10 @@ class BlockdokuGame {
         
         const newGameBtn = document.getElementById('new-game');
         if (newGameBtn) {
-            newGameBtn.addEventListener('click', () => this.newGame());
+            newGameBtn.addEventListener('click', () => {
+                this.effectsManager.onButtonClick();
+                this.newGame();
+            });
         } else {
             console.error('New game button not found!');
         }
@@ -292,7 +300,10 @@ class BlockdokuGame {
         // Difficulty button
         const difficultyBtn = document.getElementById('difficulty-btn');
         if (difficultyBtn) {
-            difficultyBtn.addEventListener('click', () => this.difficultySelector.show());
+            difficultyBtn.addEventListener('click', () => {
+                this.effectsManager.onButtonClick();
+                this.difficultySelector.show();
+            });
         } else {
             console.error('Difficulty button not found!');
         }
@@ -300,7 +311,10 @@ class BlockdokuGame {
         // Hint button
         const hintBtn = document.getElementById('hint-btn');
         if (hintBtn) {
-            hintBtn.addEventListener('click', () => this.hintSystem.showHint());
+            hintBtn.addEventListener('click', () => {
+                this.effectsManager.onButtonClick();
+                this.hintSystem.showHint();
+            });
         } else {
             console.error('Hint button not found!');
         }
@@ -515,6 +529,9 @@ class BlockdokuGame {
         // Check if we can place the block
         if (this.canPlaceBlock(adjustedRow, adjustedCol)) {
             this.placeBlock(adjustedRow, adjustedCol);
+        } else {
+            // Add error effects for invalid placement
+            this.effectsManager.onError();
         }
         
         // Clean up drag state
@@ -583,6 +600,9 @@ class BlockdokuGame {
             
             if (this.canPlaceBlock(adjustedRow, adjustedCol)) {
                 this.placeBlock(adjustedRow, adjustedCol);
+            } else {
+                // Add error effects for invalid placement
+                this.effectsManager.onError();
             }
         }
         
@@ -1125,14 +1145,18 @@ class BlockdokuGame {
         // Create visual effects
         this.createLineClearEffect(clearedLines);
         
-        // Create score popup
+        // Add line clear effects
         const centerX = this.canvas.width / 2;
         const centerY = this.canvas.height / 2;
+        this.effectsManager.onLineClear(centerX, centerY, clearedLines);
+        
+        // Create score popup
         this.createScorePopup(centerX, centerY, result.scoreGained);
         
         // Create combo effect if applicable
         if (combo > 1) {
             this.createComboEffect(combo, centerX, centerY + 50);
+            this.effectsManager.onCombo(centerX, centerY + 50, combo);
         }
         
         // Update UI
@@ -1418,6 +1442,11 @@ class BlockdokuGame {
         element.style.color = '#ff6600';
         element.style.textShadow = '0 0 15px #ff6600';
         
+        // Add level up effects
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+        this.effectsManager.onLevelUp(centerX, centerY);
+        
         setTimeout(() => {
             element.style.transform = 'scale(1) rotate(0deg)';
             element.style.color = '';
@@ -1490,7 +1519,7 @@ class BlockdokuGame {
         if (this.storage) {
             const settings = this.storage.loadSettings();
             this.currentTheme = settings.theme || 'light';
-            this.soundEnabled = settings.soundEnabled !== false;
+            this.soundEnabled = settings.soundEnabled === true;
             this.animationsEnabled = settings.animationsEnabled !== false;
             this.difficulty = settings.difficulty || 'normal';
             this.autoSave = settings.autoSave !== false;
@@ -1498,6 +1527,8 @@ class BlockdokuGame {
             this.enableTimer = settings.enableTimer || false;
             this.enableUndo = settings.enableUndo || false;
             this.showPoints = settings.showPoints || false;
+            this.particlesEnabled = settings.particlesEnabled !== false;
+            this.hapticEnabled = settings.hapticEnabled !== false;
             
             // Apply loaded theme
             this.applyTheme(this.currentTheme);
@@ -1506,6 +1537,9 @@ class BlockdokuGame {
             if (this.difficultyManager) {
                 this.difficultyManager.setDifficulty(this.difficulty);
             }
+            
+            // Apply effects settings
+            this.applyEffectsSettings();
             
             this.updateBlockPointsDisplay();
         }
@@ -1521,7 +1555,9 @@ class BlockdokuGame {
             enableHints: this.enableHints,
             enableTimer: this.enableTimer,
             enableUndo: this.enableUndo,
-            showPoints: this.showPoints
+            showPoints: this.showPoints,
+            particlesEnabled: this.particlesEnabled,
+            hapticEnabled: this.hapticEnabled
         };
         if (this.storage) {
             this.storage.saveSettings(settings);
@@ -1540,6 +1576,16 @@ class BlockdokuGame {
             }
         });
     }
+    
+    applyEffectsSettings() {
+        if (this.effectsManager) {
+            this.effectsManager.updateSettings({
+                particles: this.particlesEnabled !== false,
+                sound: this.soundEnabled === true,
+                haptic: this.hapticEnabled !== false
+            });
+        }
+    }
 
     applyTheme(theme) {
         this.currentTheme = theme;
@@ -1551,9 +1597,13 @@ class BlockdokuGame {
     // High Score Management
     checkHighScore() {
         const stats = this.getStats();
+        
+        // Always save statistics for every game
+        this.storage.saveStatistics(stats);
+        
+        // Only save high score if it qualifies
         if (this.storage.isHighScore(stats.score)) {
             this.storage.saveHighScore(stats);
-            this.storage.saveStatistics(stats);
             return true;
         }
         return false;
@@ -1644,7 +1694,7 @@ class BlockdokuGame {
         return {
             score: this.score,
             level: this.level,
-            linesCleared: this.scoringSystem.getTotalLinesCleared(),
+            linesCleared: this.scoringSystem.getLinesCleared(),
             combo: this.scoringSystem.getCombo(),
             maxCombo: this.scoringSystem.getMaxCombo()
         };
@@ -1939,6 +1989,11 @@ class BlockdokuGame {
         
         // Place the block on the board
         this.board = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);
+        
+        // Add placement effects
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+        this.effectsManager.onBlockPlace(centerX, centerY);
         
         // Remove the used block
         this.blockManager.removeBlock(this.selectedBlock.id);

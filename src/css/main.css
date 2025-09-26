@@ -1223,9 +1223,9 @@ body {
 
 .difficulty-option.selected {
     border-color: var(--primary-color);
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    background: var(--primary-color);
     color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .difficulty-header {
@@ -1372,9 +1372,9 @@ body {
 
 .theme-option.selected {
     border-color: var(--primary-color);
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    background: var(--primary-color);
     color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .theme-preview {
@@ -1433,9 +1433,9 @@ body {
 
 .settings-section .difficulty-option.selected {
     border-color: var(--primary-color);
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    background: var(--primary-color);
     color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .settings-section .difficulty-header {
@@ -1639,4 +1639,136 @@ body {
         font-size: 1.1rem;
         padding: 0.45rem;
     }
+}
+
+/* Share Button Styles */
+.share-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.5rem;
+}
+
+.share-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.share-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    position: relative;
+}
+
+/* Material Design Share Icon (Android) */
+.share-icon.material {
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/%3E%3C/svg%3E") no-repeat center;
+    mask-size: contain;
+}
+
+/* iOS Share Icon (square with arrow) */
+.share-icon.ios {
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 3h18v18H3V3zm2 2v14h14V5H5zm2 2h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2zm9-4l2-2 2 2v8h-4v-8z'/%3E%3C/svg%3E") no-repeat center;
+    mask-size: contain;
+}
+
+/* Fallback for other platforms */
+.share-icon:not(.material):not(.ios) {
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/%3E%3C/svg%3E") no-repeat center;
+    mask-size: contain;
+}
+
+/* PWA Install Button Styles */
+.pwa-install-item {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.pwa-install-button {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.pwa-install-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.pwa-install-button:active {
+    transform: translateY(0);
+}
+
+.pwa-install-button.installed {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.pwa-install-button.installed:hover {
+    background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+}
+
+.install-text {
+    font-weight: 600;
+}
+
+.install-status {
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.pwa-install-button.installed .install-text {
+    display: none;
+}
+
+.pwa-install-button.installed .install-status::before {
+    content: "✓ ";
+    margin-right: 0.25rem;
+}
+
+/* Copyright Notice */
+.copyright-notice {
+    position: fixed;
+    bottom: 10px;
+    right: 15px;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.copyright-notice p {
+    margin: 0;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+/* Ensure copyright is visible on different backgrounds */
+.copyright-notice p {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    backdrop-filter: blur(2px);
 }

@@ -253,6 +253,11 @@ export class BlockPalette {
                     this.selectedBlock = rotatedBlock;
                     this.dispatchSelectionEvent();
                 }
+                
+                // Add rotation effects
+                if (this.game && this.game.effectsManager) {
+                    this.game.effectsManager.onBlockRotate();
+                }
             }
         }
     }

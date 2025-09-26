@@ -113,6 +113,33 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
+        .share-button {
+            background: var(--primary-color, #007bff);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-left: 1rem;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .share-button:hover {
+            background: var(--primary-hover, #0056b3);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
         .settings-section {
             display: none;
         }
@@ -335,6 +362,18 @@
                 </div>
                 <div class="setting-item">
                     <label>
+                        <input type="checkbox" id="particles-enabled" />
+                        Particle effects
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="haptic-enabled" />
+                        Haptic feedback
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>
                         <input type="checkbox" id="auto-save" />
                         Auto-save game
                     </label>
@@ -344,6 +383,14 @@
                         <input type="checkbox" id="show-points" />
                         Show block points
                     </label>
+                </div>
+                
+                <!-- PWA Install Button -->
+                <div class="setting-item pwa-install-item">
+                    <button id="pwa-install-button" class="pwa-install-button">
+                        <span class="install-text">Install as PWA</span>
+                        <span class="install-status" id="install-status"></span>
+                    </button>
                 </div>
             </div>
             
@@ -358,16 +405,11 @@
             
             <!-- About Section -->
             <div class="settings-section" id="about-section">
-                <h2 class="section-title">About Blockdoku</h2>
+                <h2 class="section-title">About Blockdoku <button id="share-button" class="share-button" title="Share Blockdoku"><span class="share-icon"></span></button></h2>
                 <div class="about-content">
                     <div class="about-item">
                         <h3>Author</h3>
-                        <p>Chase Pettet</p>
-                    </div>
-                    
-                    <div class="about-item">
-                        <h3>Parent Domain</h3>
-                        <p><a href="https://523.life" target="_blank" rel="noopener noreferrer">523.life</a></p>
+                        <p>Chase Pettet, <a href="https://523.life" target="_blank" rel="noopener noreferrer">523.life</a></p>
                     </div>
                     
                     <div class="about-item">
@@ -385,11 +427,16 @@
                     
                     <div class="about-item">
                         <h3>Version</h3>
-                        <p>v1.0.0</p>
+                        <p>v1.3</p>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+    
+    <!-- Copyright Notice -->
+    <div class="copyright-notice">
+        <p>&copy; 2025 Chase Pettet</p>
     </div>
     
     <script type="module" src="js/settings.js"></script>

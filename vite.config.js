@@ -8,8 +8,8 @@ export default defineConfig({
   publicDir: '../public',
   base: './',
   build: {
-    outDir: '../dist',
-    emptyOutDir: true,
+    outDir: '../',
+    emptyOutDir: false,
     assetsDir: 'assets',
     rollupOptions: {
       input: {
