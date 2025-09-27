@@ -20,7 +20,8 @@ export class ScoringSystem {
         };
     }
     
-    checkAndClearLines(board) {
+    // Check for completed lines without clearing them
+    checkForCompletedLines(board) {
         const clearedLines = {
             rows: [],
             columns: [],
@@ -49,6 +50,12 @@ export class ScoringSystem {
                 }
             }
         }
+        
+        return clearedLines;
+    }
+
+    checkAndClearLines(board) {
+        const clearedLines = this.checkForCompletedLines(board);
         
         // Now process the clears and return the full result
         return this.applyClears(board, clearedLines);
