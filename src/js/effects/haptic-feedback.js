@@ -7,6 +7,9 @@ export class HapticFeedback {
     constructor() {
         this.isEnabled = true;
         this.isSupported = this.checkSupport();
+        this.userHasInteracted = false;
+        this.lastVibrationTime = 0;
+        this.vibrationThrottle = 100; // Minimum ms between vibrations
         this.vibrationPatterns = {
             light: [10],
             medium: [20],
@@ -19,6 +22,9 @@ export class HapticFeedback {
             combo: [25, 10, 25, 10, 25],
             buttonClick: [5]
         };
+        
+        // Listen for user interaction to enable haptic feedback
+        this.setupUserInteractionListener();
     }
     
     // Check if vibration is supported
@@ -26,14 +32,40 @@ export class HapticFeedback {
         return 'vibrate' in navigator;
     }
     
+    // Setup user interaction listener
+    setupUserInteractionListener() {
+        const enableHaptic = () => {
+            this.userHasInteracted = true;
+            // Remove listeners after first interaction
+            document.removeEventListener('click', enableHaptic);
+            document.removeEventListener('touchstart', enableHaptic);
+            document.removeEventListener('keydown', enableHaptic);
+        };
+        
+        document.addEventListener('click', enableHaptic, { once: true });
+        document.addEventListener('touchstart', enableHaptic, { once: true });
+        document.addEventListener('keydown', enableHaptic, { once: true });
+    }
+    
     // Enable/disable haptic feedback
     setEnabled(enabled) {
         this.isEnabled = enabled;
     }
     
+    // Manually enable haptic feedback (call after user interaction)
+    enableAfterInteraction() {
+        this.userHasInteracted = true;
+    }
+    
     // Trigger haptic feedback
     vibrate(pattern) {
-        if (!this.isEnabled || !this.isSupported) return;
+        if (!this.isEnabled || !this.isSupported || !this.userHasInteracted) return;
+        
+        // Throttle vibrations to prevent loops
+        const now = Date.now();
+        if (now - this.lastVibrationTime < this.vibrationThrottle) {
+            return;
+        }
         
         try {
             if (typeof pattern === 'string') {
@@ -41,6 +73,7 @@ export class HapticFeedback {
             }
             
             navigator.vibrate(pattern);
+            this.lastVibrationTime = now;
         } catch (error) {
             console.warn('Haptic feedback error:', error);
         }
@@ -93,5 +126,16 @@ export class HapticFeedback {
         if (this.isSupported) {
             navigator.vibrate(0);
         }
+    }
+    
+    // Debug method to check haptic feedback status
+    getStatus() {
+        return {
+            isEnabled: this.isEnabled,
+            isSupported: this.isSupported,
+            userHasInteracted: this.userHasInteracted,
+            lastVibrationTime: this.lastVibrationTime,
+            vibrationThrottle: this.vibrationThrottle
+        };
     }
 }

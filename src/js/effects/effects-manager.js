@@ -84,6 +84,8 @@ export class EffectsManager {
     // Button click effects
     onButtonClick() {
         if (this.settings.sound) this.sound.play('buttonClick');
+        // Enable haptic feedback after first user interaction
+        this.haptic.enableAfterInteraction();
         this.haptic.onButtonClick();
     }
     

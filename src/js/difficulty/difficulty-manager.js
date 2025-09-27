@@ -20,8 +20,6 @@ export class DifficultyManager {
                 scoreMultiplier: 1.5,
                 timeLimit: null,
                 hintsEnabled: true,
-                undoEnabled: true,
-                maxUndoMoves: 5,
                 blockGenerationDelay: 2000, // 2 seconds between new blocks
                 visualHints: true
             },
@@ -33,8 +31,6 @@ export class DifficultyManager {
                 scoreMultiplier: 1.0,
                 timeLimit: null,
                 hintsEnabled: false,
-                undoEnabled: true,
-                maxUndoMoves: 3,
                 blockGenerationDelay: 1500, // 1.5 seconds between new blocks
                 visualHints: false
             },
@@ -46,8 +42,6 @@ export class DifficultyManager {
                 scoreMultiplier: 0.8,
                 timeLimit: null,
                 hintsEnabled: false,
-                undoEnabled: false,
-                maxUndoMoves: 0,
                 blockGenerationDelay: 1000, // 1 second between new blocks
                 visualHints: false
             },
@@ -59,8 +53,6 @@ export class DifficultyManager {
                 scoreMultiplier: 0.5,
                 timeLimit: 300, // 5 minutes
                 hintsEnabled: false,
-                undoEnabled: false,
-                maxUndoMoves: 0,
                 blockGenerationDelay: 800, // 0.8 seconds between new blocks
                 visualHints: false,
                 moveLimit: 50 // Limited moves
@@ -123,13 +115,6 @@ export class DifficultyManager {
         return this.difficultySettings[this.currentDifficulty].hintsEnabled;
     }
     
-    isUndoEnabled() {
-        return this.difficultySettings[this.currentDifficulty].undoEnabled;
-    }
-    
-    getMaxUndoMoves() {
-        return this.difficultySettings[this.currentDifficulty].maxUndoMoves;
-    }
     
     getBlockGenerationDelay() {
         return this.difficultySettings[this.currentDifficulty].blockGenerationDelay;
@@ -177,7 +162,6 @@ export class DifficultyManager {
             description: settings.description,
             features: {
                 hints: settings.hintsEnabled,
-                undo: settings.undoEnabled,
                 timer: settings.timeLimit !== null,
                 moveLimit: settings.moveLimit !== null
             }

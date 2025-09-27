@@ -31,7 +31,15 @@ class BlockdokuGame {
         this.ctx = this.canvas.getContext('2d');
         this.boardSize = 9;
         this.cellSize = 0; // Will be calculated when canvas is ready
-        this.board = this.initializeBoard();
+        console.log('About to initialize board...');
+        try {
+            this.board = this.initializeBoard();
+            console.log('Board initialized in constructor:', this.board ? 'SUCCESS' : 'FAILED', 'Length:', this.board?.length);
+            console.log('Board contents:', this.board);
+        } catch (error) {
+            console.error('ERROR during board initialization:', error);
+            this.board = null;
+        }
         this.score = 0;
         this.level = 1;
         this.currentTheme = 'light';
@@ -46,7 +54,6 @@ class BlockdokuGame {
         this.difficulty = 'normal';
         this.enableHints = false;
         this.enableTimer = false;
-        this.enableUndo = false;
         this.moveLimit = null;
         this.timeLimit = null;
         
@@ -70,6 +77,8 @@ class BlockdokuGame {
         this.confirmationDialog = new ConfirmationDialog();
         this.selectedBlock = null;
         this.previewPosition = null;
+        this.isGameOver = false;
+        this.isInitialized = false;
         
         // Drag and drop state
         this.isDragging = false;
@@ -77,9 +86,19 @@ class BlockdokuGame {
         this.dragCurrentPosition = null;
         this.dragBlockElement = null;
         
-        this.loadSettings();
-        this.init();
-        this.setupResizeHandler();
+        try {
+            console.log('About to load settings...');
+            this.loadSettings();
+            console.log('Settings loaded, setting isInitialized...');
+            this.isInitialized = true; // Set early to prevent game over during init
+            console.log('About to call init()...');
+            this.init();
+            console.log('Init completed, setting up resize handler...');
+            this.setupResizeHandler();
+            console.log('Constructor completed successfully');
+        } catch (error) {
+            console.error('ERROR in constructor after board init:', error);
+        }
         
         // Listen for focus events to reload settings when returning from settings page
         window.addEventListener('focus', () => {
@@ -135,6 +154,19 @@ class BlockdokuGame {
         this.ctx.lineJoin = 'miter';
     }
 
+    initializeBoard() {
+        console.log('initializeBoard called, boardSize:', this.boardSize);
+        const board = [];
+        for (let row = 0; row < this.boardSize; row++) {
+            board[row] = [];
+            for (let col = 0; col < this.boardSize; col++) {
+                board[row][col] = 0; // 0 = empty, 1 = filled
+            }
+        }
+        console.log('initializeBoard created board with length:', board.length);
+        return board;
+    }
+
     setupResizeHandler() {
         window.addEventListener('resize', () => {
             this.resizeCanvas();
@@ -145,25 +177,17 @@ class BlockdokuGame {
         });
     }
     
-    initializeBoard() {
-        // Create 9x9 board with empty cells
-        const board = [];
-        for (let row = 0; row < this.boardSize; row++) {
-            board[row] = [];
-            for (let col = 0; col < this.boardSize; col++) {
-                board[row][col] = 0; // 0 = empty, 1 = filled
-            }
-        }
-        return board;
-    }
-    
     init() {
         console.log('Game init() called');
+        console.log('Board state at start of init():', this.board ? 'VALID' : 'UNDEFINED', 'Length:', this.board?.length);
         this.setupEventListeners();
         this.registerServiceWorker();
         // this.loadSettings();
         // this.loadGameState();
         this.generateNewBlocks();
+        
+        // Initialize timer system for current difficulty
+        this.timerSystem.initialize();
         
         // Wait for DOM to be fully ready before sizing and drawing
         setTimeout(() => {
@@ -175,6 +199,9 @@ class BlockdokuGame {
                 this.updateUI();
             });
         }, 100); // Increased delay to ensure DOM is fully ready
+        
+        // Mark as initialized before starting game loop
+        this.isInitialized = true;
         
         this.startGameLoop();
         
@@ -247,7 +274,24 @@ class BlockdokuGame {
     }
     
     update() {
+        // Don't update if game is over
+        if (this.isGameOver) return;
+        
         this.effectsManager.update();
+        
+        // Update hint system cooldown
+        if (this.hintSystem) {
+            this.hintSystem.update(16); // Assume 60fps, so ~16ms per frame
+        }
+        
+        // Update timer system
+        if (this.timerSystem) {
+            const timerStillRunning = this.timerSystem.update(16);
+            if (!timerStillRunning && this.timerSystem.isTimeUp() && this.isInitialized) {
+                this.handleTimeUp();
+            }
+            this.updateTimerDisplay();
+        }
     }
     
     draw() {
@@ -345,6 +389,7 @@ class BlockdokuGame {
             console.error('Hint button not found!');
         }
         
+        
         // Modal events (for remaining modals)
         const closeHighScores = document.getElementById('close-high-scores');
         if (closeHighScores) {
@@ -371,7 +416,6 @@ class BlockdokuGame {
         // Additional settings events
         document.getElementById('enable-hints').addEventListener('change', (e) => this.toggleSetting('hints', e.target.checked));
         document.getElementById('enable-timer').addEventListener('change', (e) => this.toggleSetting('timer', e.target.checked));
-        document.getElementById('enable-undo').addEventListener('change', (e) => this.toggleSetting('undo', e.target.checked));
         
         // Theme selection events
         document.querySelectorAll('.theme-option').forEach(option => {
@@ -440,6 +484,9 @@ class BlockdokuGame {
     }
 
     handleCanvasClick(e) {
+        // Don't handle clicks if game is over
+        if (this.isGameOver) return;
+        
         if (!this.selectedBlock) return;
         
         const rect = this.canvas.getBoundingClientRect();
@@ -489,6 +536,9 @@ class BlockdokuGame {
     handleTouchStart(e) {
         e.preventDefault();
         
+        // Don't handle touch events if game is over
+        if (this.isGameOver) return;
+        
         if (!this.selectedBlock) return;
         
         const touch = e.touches[0];
@@ -514,6 +564,9 @@ class BlockdokuGame {
     }
     
     handleTouchMove(e) {
+        // Don't handle touch events if game is over
+        if (this.isGameOver) return;
+        
         if (!this.isDragging || !this.selectedBlock) return;
         
         e.preventDefault();
@@ -540,6 +593,9 @@ class BlockdokuGame {
     
     handleTouchEnd(e) {
         e.preventDefault();
+        
+        // Don't handle touch events if game is over
+        if (this.isGameOver) return;
         
         if (!this.isDragging || !this.selectedBlock) return;
         
@@ -578,6 +634,9 @@ class BlockdokuGame {
     
     // Global touch event handlers for drag operation
     handleGlobalTouchMove(e) {
+        // Don't handle touch events if game is over
+        if (this.isGameOver) return;
+        
         if (!this.isDragging || !this.selectedBlock) return;
         
         e.preventDefault();
@@ -619,6 +678,9 @@ class BlockdokuGame {
     }
     
     handleGlobalTouchEnd(e) {
+        // Don't handle touch events if game is over
+        if (this.isGameOver) return;
+        
         if (!this.isDragging || !this.selectedBlock) return;
         
         e.preventDefault();
@@ -752,7 +814,15 @@ class BlockdokuGame {
     }
     
     canPlaceBlock(row, col) {
-        if (!this.selectedBlock) return false;
+        if (!this.selectedBlock) {
+            return false;
+        }
+        
+        if (!this.board) {
+            console.error('canPlaceBlock: Board is undefined! Reinitializing...');
+            this.board = this.initializeBoard();
+        }
+        
         return this.blockManager.canPlaceBlock(this.selectedBlock, row, col, this.board);
     }
     
@@ -837,8 +907,21 @@ class BlockdokuGame {
         }
         
         // Draw filled cells using the precise cell size
+        if (!this.board || !Array.isArray(this.board)) {
+            console.error('EMERGENCY: drawBoard - Board is not initialized properly, reinitializing...');
+            this.board = this.initializeBoard();
+            if (!this.board) {
+                console.error('FATAL: Could not initialize board in drawBoard');
+                return;
+            }
+        }
+        
         ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--block-color');
         for (let row = 0; row < this.boardSize; row++) {
+            if (!this.board[row] || !Array.isArray(this.board[row])) {
+                console.warn(`drawBoard: Board row ${row} is not initialized properly`);
+                continue;
+            }
             for (let col = 0; col < this.boardSize; col++) {
                 if (this.board[row][col] === 1) {
                     const x = Math.round(col * drawCellSize) + 1;
@@ -932,12 +1015,44 @@ class BlockdokuGame {
     
     checkLineClears() {
         // Check for completed lines
-        const clearedLines = this.scoringSystem.checkAndClearLines(this.board);
+        const clearResult = this.scoringSystem.checkAndClearLines(this.board);
+        
+        // Update board with cleared lines
+        this.board = clearResult.board;
         
         // If any lines were cleared, process them with animation
-        if (clearedLines.rows.length > 0 || clearedLines.columns.length > 0 || clearedLines.squares.length > 0) {
+        if (clearResult.clearedCount > 0) {
+            const clearedLines = clearResult.clearedLines;
+            
             // Show immediate visual feedback first
             this.showImmediateClearFeedback(clearedLines);
+            
+            // Handle combo effects
+            if (clearResult.isCombo) {
+                const comboMessage = `COMBO! ${clearResult.comboTypes.join(' + ').toUpperCase()}!`;
+                console.log(comboMessage);
+                
+                // Trigger special combo effects
+                this.effectsManager.onCombo(this.canvas.width / 2, this.canvas.height / 2, this.scoringSystem.getCombo());
+                
+                // Show floating combo text
+                this.effectsManager.particles.createFloatingText(
+                    this.canvas.width / 2, 
+                    this.canvas.height / 2 - 50, 
+                    comboMessage, 
+                    '#ffff00', 
+                    2500
+                );
+            }
+            
+            // Add time bonus for timer-enabled difficulties
+            if (this.timerSystem && this.difficultyManager.getTimeLimit() !== null) {
+                const timeBonus = this.timerSystem.calculateTimeBonus(clearedLines);
+                if (timeBonus > 0) {
+                    this.timerSystem.addTimeBonus(timeBonus);
+                    this.showTimeBonus(timeBonus);
+                }
+            }
             
             // Start the line clear animation sequence
             this.startLineClearAnimation(clearedLines);
@@ -1157,7 +1272,7 @@ class BlockdokuGame {
         this.pendingClears = null;
         
         // Actually clear the lines
-        const result = this.scoringSystem.clearLines(this.board, clearedLines);
+        const result = this.scoringSystem.applyClears(this.board, clearedLines);
         this.board = result.board;
         
         // Update score and level with difficulty multiplier
@@ -1204,6 +1319,8 @@ class BlockdokuGame {
         this.level = 1;
         this.selectedBlock = null;
         this.previewPosition = null;
+        this.isGameOver = false;
+        this.isInitialized = true;
         
         // Reset animation tracking
         this.previousScore = 0;
@@ -1229,6 +1346,7 @@ class BlockdokuGame {
         
         // Initialize difficulty systems
         this.timerSystem.initialize();
+        this.timerSystem.start();
         this.hintSystem.reset();
         
         // Start new game with new difficulty
@@ -1288,6 +1406,68 @@ class BlockdokuGame {
             }
         }
     }
+    
+    updateTimerDisplay() {
+        const timerDisplay = document.getElementById('timer-display');
+        const timerElement = document.getElementById('timer');
+        
+        if (timerDisplay && timerElement && this.timerSystem) {
+            const timerEnabled = this.difficultyManager.getTimeLimit() !== null;
+            timerDisplay.style.display = timerEnabled ? 'block' : 'none';
+            
+            if (timerEnabled) {
+                const timeRemaining = this.timerSystem.getTimeRemaining();
+                timerElement.textContent = this.timerSystem.formatTime(timeRemaining);
+                
+                // Remove all timer state classes
+                timerDisplay.classList.remove('warning', 'critical');
+                
+                // Add appropriate state class for LED styling and play warning sounds
+                if (this.timerSystem.isCriticalTime()) {
+                    if (!timerDisplay.classList.contains('critical')) {
+                        timerDisplay.classList.add('critical');
+                        this.effectsManager.sound.play('timeCritical');
+                    }
+                } else if (this.timerSystem.isWarningTime()) {
+                    if (!timerDisplay.classList.contains('warning')) {
+                        timerDisplay.classList.add('warning');
+                        this.effectsManager.sound.play('timeWarning');
+                    }
+                }
+                
+                // Reset any inline styles (let CSS handle the styling)
+                timerElement.style.color = '';
+                timerElement.style.textShadow = '';
+                timerElement.style.animation = '';
+            }
+        }
+    }
+    
+    handleTimeUp() {
+        // Game over due to time up
+        this.effectsManager.onError();
+        this.gameOver();
+    }
+    
+    showTimeBonus(bonusSeconds) {
+        // Show time bonus feedback
+        this.effectsManager.onScoreGain(bonusSeconds);
+        
+        // Create floating text for time bonus
+        const canvas = this.canvas;
+        const ctx = this.ctx;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        // Add floating text effect
+        this.effectsManager.particles.createFloatingText(
+            centerX, centerY - 50, 
+            `+${bonusSeconds}s`, 
+            '#00ff00', 
+            2000
+        );
+    }
+    
     
     updateDifficultyButton() {
         const difficultyBtn = document.getElementById('difficulty-btn');
@@ -1549,7 +1729,6 @@ class BlockdokuGame {
             this.autoSave = settings.autoSave !== false;
             this.enableHints = settings.enableHints || false;
             this.enableTimer = settings.enableTimer || false;
-            this.enableUndo = settings.enableUndo || false;
             this.showPoints = settings.showPoints || false;
             this.particlesEnabled = settings.particlesEnabled !== false;
             this.hapticEnabled = settings.hapticEnabled !== false;
@@ -1585,7 +1764,6 @@ class BlockdokuGame {
             autoSave: this.autoSave,
             enableHints: this.enableHints,
             enableTimer: this.enableTimer,
-            enableUndo: this.enableUndo,
             showPoints: this.showPoints,
             particlesEnabled: this.particlesEnabled,
             hapticEnabled: this.hapticEnabled
@@ -1658,29 +1836,16 @@ class BlockdokuGame {
         return this.storage.loadStatistics();
     }
 
-    // Game Over Detection
-    checkGameOver() {
-        if (this.blockManager.currentBlocks.length === 0) {
-            return; // No blocks to check
-        }
-        
-        // Check if any block can be placed anywhere on the board
-        for (let block of this.blockManager.currentBlocks) {
-            for (let row = 0; row < this.boardSize; row++) {
-                for (let col = 0; col < this.boardSize; col++) {
-                    if (this.blockManager.canPlaceBlock(block, row, col, this.board)) {
-                        return; // Game can continue
-                    }
-                }
-            }
-        }
-        
-        // No blocks can be placed - game over
-        this.gameOver();
-    }
 
     gameOver() {
+        // Prevent multiple game over calls
+        if (this.isGameOver) return;
+        this.isGameOver = true;
+        
         console.log('Game Over! Final Score:', this.score);
+        
+        // Stop the game loop
+        this.stopGameLoop();
         
         // Save high score and statistics
         const stats = this.getStats();
@@ -1693,42 +1858,112 @@ class BlockdokuGame {
         this.saveGameState();
     }
 
+    stopGameLoop() {
+        this.gameRunning = false;
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+    }
+
     showGameOverModal(stats) {
+        // Remove any existing game over modal
+        const existingModal = document.getElementById('game-over-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
         // Create a simple game over notification
         const modal = document.createElement('div');
+        modal.id = 'game-over-modal';
         modal.style.cssText = `
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
             font-family: Arial, sans-serif;
+        `;
+        
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+            background: var(--card-bg, #2c3e50);
+            color: var(--text-color, white);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--primary-color, #3498db);
         `;
         
         const isHighScore = this.storage.isHighScore(stats.score);
         
-        modal.innerHTML = `
-            <h2>Game Over!</h2>
-            <p>Final Score: ${stats.score}</p>
-            <p>Lines Cleared: ${stats.linesCleared}</p>
-            <p>Max Combo: ${stats.maxCombo}</p>
-            ${isHighScore ? '<p style="color: #ffd700;">🎉 New High Score! 🎉</p>' : ''}
-            <button onclick="this.parentElement.remove(); game.newGame();" 
-                    style="margin: 10px; padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                New Game
-            </button>
-            <button onclick="this.parentElement.remove();" 
-                    style="margin: 10px; padding: 10px 20px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                Close
-            </button>
+        modalContent.innerHTML = `
+            <h2 style="margin: 0 0 20px 0; color: var(--primary-color, #3498db);">Game Over!</h2>
+            <div style="margin: 15px 0;">
+                <p style="margin: 5px 0; font-size: 1.2em;"><strong>Final Score: ${stats.score}</strong></p>
+                <p style="margin: 5px 0;">Lines Cleared: ${stats.linesCleared}</p>
+                <p style="margin: 5px 0;">Max Combo: ${stats.maxCombo}</p>
+                ${isHighScore ? '<p style="color: #ffd700; font-weight: bold; margin: 10px 0;">🎉 New High Score! 🎉</p>' : ''}
+            </div>
+            <div style="margin-top: 25px;">
+                <button id="new-game-btn" style="margin: 5px; padding: 12px 24px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold;">
+                    New Game
+                </button>
+                <button id="close-modal-btn" style="margin: 5px; padding: 12px 24px; background: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold;">
+                    Close
+                </button>
+            </div>
         `;
         
+        modal.appendChild(modalContent);
         document.body.appendChild(modal);
+        
+        // Add proper event listeners
+        const newGameBtn = document.getElementById('new-game-btn');
+        const closeBtn = document.getElementById('close-modal-btn');
+        
+        const handleNewGame = () => {
+            modal.remove();
+            this.isGameOver = false;
+            this.newGame();
+        };
+        
+        const handleClose = () => {
+            modal.remove();
+        };
+        
+        newGameBtn.addEventListener('click', handleNewGame);
+        newGameBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleNewGame();
+        }, { passive: false });
+        
+        closeBtn.addEventListener('click', handleClose);
+        closeBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleClose();
+        }, { passive: false });
+        
+        // Prevent touch events from going through the modal
+        modal.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+        
+        modal.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+        
+        modal.addEventListener('touchend', (e) => {
+            e.preventDefault();
+        }, { passive: false });
     }
 
     getStats() {
@@ -1904,12 +2139,11 @@ class BlockdokuGame {
         // Update additional settings
         document.getElementById('enable-hints').checked = this.enableHints;
         document.getElementById('enable-timer').checked = this.enableTimer;
-        document.getElementById('enable-undo').checked = this.enableUndo;
     }
 
     async selectDifficulty(difficulty) {
         // Check if game is in progress (has blocks placed or score > 0)
-        const gameInProgress = this.score > 0 || this.board.some(row => row.some(cell => cell === 1));
+        const gameInProgress = this.score > 0 || (this.board && this.board.some(row => row.some(cell => cell === 1)));
         
         if (gameInProgress) {
             // Show confirmation dialog
@@ -1973,9 +2207,6 @@ class BlockdokuGame {
             case 'timer':
                 this.enableTimer = value;
                 break;
-            case 'undo':
-                this.enableUndo = value;
-                break;
         }
         this.saveSettings();
     }
@@ -1986,28 +2217,24 @@ class BlockdokuGame {
             case 'easy':
                 this.enableHints = true;
                 this.enableTimer = false;
-                this.enableUndo = true;
                 this.moveLimit = null;
                 this.timeLimit = null;
                 break;
             case 'normal':
                 this.enableHints = false;
                 this.enableTimer = false;
-                this.enableUndo = false;
                 this.moveLimit = null;
                 this.timeLimit = null;
                 break;
             case 'hard':
                 this.enableHints = false;
                 this.enableTimer = false;
-                this.enableUndo = false;
                 this.moveLimit = 50; // Limited moves
                 this.timeLimit = null;
                 break;
             case 'expert':
                 this.enableHints = false;
                 this.enableTimer = true;
-                this.enableUndo = false;
                 this.moveLimit = 30; // Very limited moves
                 this.timeLimit = 300; // 5 minutes
                 break;
@@ -2049,6 +2276,7 @@ class BlockdokuGame {
     placeBlock(row, col) {
         if (!this.canPlaceBlock(row, col)) return;
         
+        
         // Place the block on the board
         this.board = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);
         
@@ -2080,8 +2308,10 @@ class BlockdokuGame {
             this.generateNewBlocks();
         }
         
-        // Check for game over
-        this.checkGameOver();
+        // Check for game over (only if game is running)
+        if (!this.isGameOver) {
+            this.checkGameOver();
+        }
         
         // Auto-select the first available block
         this.autoSelectNextBlock();
@@ -2089,6 +2319,17 @@ class BlockdokuGame {
 
     // Enhanced game over detection with difficulty considerations
     checkGameOver() {
+        // EMERGENCY: If board is undefined, reinitialize it immediately
+        if (!this.board) {
+            console.error('EMERGENCY: Board is undefined in checkGameOver, reinitializing...');
+            this.board = this.initializeBoard();
+        }
+        
+        // Don't check for game over during initialization or if game is already over
+        if (!this.isInitialized || this.isGameOver) {
+            return;
+        }
+        
         if (this.blockManager.currentBlocks.length === 0) {
             return; // No blocks to check
         }

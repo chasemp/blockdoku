@@ -46,7 +46,15 @@ export class SoundManager {
             error: this.createErrorSound(),
             buttonClick: this.createButtonClickSound(),
             blockRotate: this.createBlockRotateSound(),
-            scoreGain: this.createScoreGainSound()
+            scoreGain: this.createScoreGainSound(),
+            timeWarning: this.createTimeWarningSound(),
+            timeCritical: this.createTimeCriticalSound(),
+            timeBonus: this.createTimeBonusSound(),
+            hint: this.createHintSound(),
+            undo: this.createUndoSound(),
+            redo: this.createRedoSound(),
+            perfect: this.createPerfectSound(),
+            chain: this.createChainSound()
         };
     }
     
@@ -175,6 +183,121 @@ export class SoundManager {
             const t = i / this.audioContext.sampleRate;
             const frequency = 500 + t * 200; // Rising pitch
             data[i] = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t * 6) * 0.25;
+        }
+        
+        return { buffer, volume: 0.5 };
+    }
+    
+    // Create time warning sound
+    createTimeWarningSound() {
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.2, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < data.length; i++) {
+            const t = i / this.audioContext.sampleRate;
+            const frequency = 300 + Math.sin(t * 10) * 50;
+            data[i] = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t * 4) * 0.3;
+        }
+        
+        return { buffer, volume: 0.6 };
+    }
+    
+    // Create time critical sound
+    createTimeCriticalSound() {
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.1, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < data.length; i++) {
+            const t = i / this.audioContext.sampleRate;
+            const frequency = 400 + Math.sin(t * 50) * 100;
+            data[i] = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t * 8) * 0.4;
+        }
+        
+        return { buffer, volume: 0.7 };
+    }
+    
+    // Create time bonus sound
+    createTimeBonusSound() {
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.15, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < data.length; i++) {
+            const t = i / this.audioContext.sampleRate;
+            const frequency = 200 + t * 600; // Rising pitch
+            data[i] = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t * 3) * 0.35;
+        }
+        
+        return { buffer, volume: 0.6 };
+    }
+    
+    // Create hint sound
+    createHintSound() {
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.25, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < data.length; i++) {
+            const t = i / this.audioContext.sampleRate;
+            const frequency = 150 + Math.sin(t * 8) * 30;
+            data[i] = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t * 2) * 0.2;
+        }
+        
+        return { buffer, volume: 0.4 };
+    }
+    
+    // Create undo sound
+    createUndoSound() {
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.08, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < data.length; i++) {
+            const t = i / this.audioContext.sampleRate;
+            const frequency = 400 - t * 200; // Falling pitch
+            data[i] = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t * 12) * 0.25;
+        }
+        
+        return { buffer, volume: 0.4 };
+    }
+    
+    // Create redo sound
+    createRedoSound() {
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.08, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < data.length; i++) {
+            const t = i / this.audioContext.sampleRate;
+            const frequency = 200 + t * 400; // Rising pitch
+            data[i] = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t * 12) * 0.25;
+        }
+        
+        return { buffer, volume: 0.4 };
+    }
+    
+    // Create perfect sound (for perfect clears)
+    createPerfectSound() {
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.6, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < data.length; i++) {
+            const t = i / this.audioContext.sampleRate;
+            const frequency = 100 + t * 800; // Rising pitch
+            const harmonic = Math.sin(2 * Math.PI * frequency * t) + 
+                           0.5 * Math.sin(2 * Math.PI * frequency * 2 * t) +
+                           0.25 * Math.sin(2 * Math.PI * frequency * 3 * t);
+            data[i] = harmonic * Math.exp(-t * 1.5) * 0.4;
+        }
+        
+        return { buffer, volume: 0.8 };
+    }
+    
+    // Create chain sound (for consecutive clears)
+    createChainSound() {
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.3, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < data.length; i++) {
+            const t = i / this.audioContext.sampleRate;
+            const frequency = 300 + Math.sin(t * 15) * 100;
+            data[i] = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t * 2) * 0.3;
         }
         
         return { buffer, volume: 0.5 };
