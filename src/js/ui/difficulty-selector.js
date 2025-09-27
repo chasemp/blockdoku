@@ -23,7 +23,12 @@ export class DifficultySelector {
         // Create overlay
         const overlay = document.createElement('div');
         overlay.className = 'difficulty-overlay';
-        overlay.addEventListener('click', () => this.hide());
+        const handleOverlayClick = () => this.hide();
+        overlay.addEventListener('click', handleOverlayClick);
+        overlay.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleOverlayClick();
+        }, { passive: false });
         
         // Create modal
         const modal = document.createElement('div');
@@ -49,7 +54,12 @@ export class DifficultySelector {
         const closeButton = document.createElement('button');
         closeButton.className = 'difficulty-close';
         closeButton.innerHTML = '×';
-        closeButton.addEventListener('click', () => this.hide());
+        const handleCloseClick = () => this.hide();
+        closeButton.addEventListener('click', handleCloseClick);
+        closeButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleCloseClick();
+        }, { passive: false });
         
         // Assemble modal
         modal.appendChild(header);
@@ -130,10 +140,16 @@ export class DifficultySelector {
         option.appendChild(icon);
         option.appendChild(content);
         
-        // Add click handler
-        option.addEventListener('click', async () => {
+        // Add click and touch handlers
+        const handleDifficultyClick = async () => {
             await this.selectDifficulty(difficulty.key);
-        });
+        };
+        
+        option.addEventListener('click', handleDifficultyClick);
+        option.addEventListener('touchstart', async (e) => {
+            e.preventDefault();
+            await handleDifficultyClick();
+        }, { passive: false });
         
         return option;
     }

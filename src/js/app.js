@@ -277,24 +277,36 @@ class BlockdokuGame {
         // Button events
         const settingsToggle = document.getElementById('settings-toggle');
         if (settingsToggle) {
-            settingsToggle.addEventListener('click', () => {
+            const handleSettingsClick = () => {
                 this.effectsManager.onButtonClick();
                 console.log('Settings button clicked - navigating to settings page');
                 // NOTE: Settings is a separate PAGE (settings.html), not a modal!
                 // The settings page contains: theme selection, difficulty settings, 
                 // high scores, game settings, and the PWA install button.
                 window.location.href = 'settings.html';
-            });
+            };
+            
+            settingsToggle.addEventListener('click', handleSettingsClick);
+            settingsToggle.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                handleSettingsClick();
+            }, { passive: false });
         } else {
             console.error('Settings toggle button not found!');
         }
         
         const newGameBtn = document.getElementById('new-game');
         if (newGameBtn) {
-            newGameBtn.addEventListener('click', () => {
+            const handleNewGameClick = () => {
                 this.effectsManager.onButtonClick();
                 this.newGame();
-            });
+            };
+            
+            newGameBtn.addEventListener('click', handleNewGameClick);
+            newGameBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                handleNewGameClick();
+            }, { passive: false });
         } else {
             console.error('New game button not found!');
         }
@@ -302,10 +314,16 @@ class BlockdokuGame {
         // Difficulty button
         const difficultyBtn = document.getElementById('difficulty-btn');
         if (difficultyBtn) {
-            difficultyBtn.addEventListener('click', () => {
+            const handleDifficultyClick = () => {
                 this.effectsManager.onButtonClick();
                 this.difficultySelector.show();
-            });
+            };
+            
+            difficultyBtn.addEventListener('click', handleDifficultyClick);
+            difficultyBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                handleDifficultyClick();
+            }, { passive: false });
         } else {
             console.error('Difficulty button not found!');
         }
@@ -313,10 +331,16 @@ class BlockdokuGame {
         // Hint button
         const hintBtn = document.getElementById('hint-btn');
         if (hintBtn) {
-            hintBtn.addEventListener('click', () => {
+            const handleHintClick = () => {
                 this.effectsManager.onButtonClick();
                 this.hintSystem.showHint();
-            });
+            };
+            
+            hintBtn.addEventListener('click', handleHintClick);
+            hintBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                handleHintClick();
+            }, { passive: false });
         } else {
             console.error('Hint button not found!');
         }

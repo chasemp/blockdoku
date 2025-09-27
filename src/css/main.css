@@ -1622,6 +1622,15 @@ html.light-theme .settings-section .difficulty-option.selected {
         user-select: none;
         -webkit-user-select: none;
         -webkit-touch-callout: none;
+        min-height: 44px; /* Minimum touch target size */
+        min-width: 44px;
+    }
+    
+    /* Ensure all interactive elements have proper touch targets */
+    button, .nav-item, .theme-option, .difficulty-option {
+        min-height: 44px;
+        min-width: 44px;
+        touch-action: manipulation;
     }
     
     .block-item:active {

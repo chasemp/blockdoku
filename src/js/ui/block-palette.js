@@ -122,6 +122,7 @@ export class BlockPalette {
         // Touch events for mobile drag and drop
         document.addEventListener('touchstart', (e) => {
             if (e.target.closest('.block-item')) {
+                e.preventDefault();
                 const blockItem = e.target.closest('.block-item');
                 const blockId = blockItem.dataset.blockId;
                 this.selectBlock(blockId);
@@ -135,7 +136,7 @@ export class BlockPalette {
                 blockItem.style.transform = 'scale(0.95)';
                 blockItem.style.transition = 'transform 0.1s ease';
             }
-        }, { passive: true });
+        }, { passive: false });
         
         document.addEventListener('touchmove', (e) => {
             if (this.touchStart && this.touchStartBlockId) {
