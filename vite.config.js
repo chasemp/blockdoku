@@ -20,8 +20,9 @@ export default defineConfig({
     }
   },
   server: {
-    port: 8080,
-    host: '0.0.0.0'
+    port: 3456, // Unique port for Blockdoku PWA to avoid conflicts
+    host: '0.0.0.0',
+    strictPort: true // Fail if port is in use instead of trying another port
   },
   plugins: [
     VitePWA({
