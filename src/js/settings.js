@@ -101,24 +101,42 @@ class SettingsManager {
     setupEventListeners() {
         // Navigation
         document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', (e) => {
+            const handleNavClick = (e) => {
                 e.preventDefault();
                 this.showSection(item.dataset.section);
-            });
+            };
+            
+            item.addEventListener('click', handleNavClick);
+            item.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                handleNavClick(e);
+            }, { passive: false });
         });
         
         // Theme selection
         document.querySelectorAll('.theme-option').forEach(option => {
-            option.addEventListener('click', (e) => {
+            const handleThemeClick = (e) => {
                 this.selectTheme(e.currentTarget.dataset.theme);
-            });
+            };
+            
+            option.addEventListener('click', handleThemeClick);
+            option.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                handleThemeClick(e);
+            }, { passive: false });
         });
         
         // Difficulty selection
         document.querySelectorAll('.difficulty-option').forEach(option => {
-            option.addEventListener('click', async (e) => {
+            const handleDifficultyClick = async (e) => {
                 await this.selectDifficulty(e.currentTarget.dataset.difficulty);
-            });
+            };
+            
+            option.addEventListener('click', handleDifficultyClick);
+            option.addEventListener('touchstart', async (e) => {
+                e.preventDefault();
+                await handleDifficultyClick(e);
+            }, { passive: false });
         });
         
         // Game settings
