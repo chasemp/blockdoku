@@ -134,6 +134,84 @@ createInstallButton() {
 
 ---
 
+### 📱 **Mobile Touch Event Handling**
+
+#### **The Critical Problem**
+- **`click` events don't work reliably on mobile** - especially for custom UI elements
+- **Touch events are different from mouse events** - require different handling
+- **`passive: true` prevents `preventDefault()`** - breaking touch interactions
+- **Desktop functionality must be preserved** - can't break existing mouse interactions
+
+#### **The Solution: Dual Event Handling**
+```javascript
+// ❌ PROBLEMATIC - Only works on desktop
+button.addEventListener('click', handleClick);
+
+// ✅ WORKING - Works on both desktop and mobile
+const handleClick = () => {
+    // Your click logic here
+    this.effectsManager.onButtonClick();
+    this.performAction();
+};
+
+button.addEventListener('click', handleClick);  // Desktop
+button.addEventListener('touchstart', (e) => {  // Mobile
+    e.preventDefault();
+    handleClick();  // Same function!
+}, { passive: false });
+```
+
+#### **Key Configuration Requirements**
+```javascript
+// ✅ Correct touch event setup
+element.addEventListener('touchstart', (e) => {
+    e.preventDefault();  // Prevent default touch behavior
+    handleAction();      // Call same handler as click
+}, { passive: false }); // Allow preventDefault to work
+```
+
+#### **What We Learned**
+1. **Always add `touchstart` alongside `click`** - don't replace, add
+2. **Use `passive: false`** - enables `preventDefault()` for custom behavior
+3. **Call the same handler function** - ensures consistent behavior
+4. **Test on actual mobile devices** - emulation isn't always accurate
+5. **Touch targets need minimum 44px** - Apple HIG recommendation
+
+#### **Elements That Need Touch Support**
+- ✅ **Buttons** (settings, new game, difficulty, hint)
+- ✅ **Interactive cards** (block palette items, difficulty options)
+- ✅ **Navigation items** (settings page navigation)
+- ✅ **Modal controls** (close buttons, confirmations)
+- ✅ **Canvas interactions** (already handled separately)
+
+#### **CSS Touch Optimizations**
+```css
+/* Ensure proper touch targets */
+@media (max-width: 768px) {
+    button, .nav-item, .theme-option, .difficulty-option {
+        min-height: 44px;
+        min-width: 44px;
+        touch-action: manipulation; /* Optimize touch scrolling */
+    }
+    
+    .block-item {
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+    }
+}
+```
+
+#### **Common Mistakes to Avoid**
+- ❌ **Only using `click` events** - won't work on mobile
+- ❌ **Using `passive: true`** - prevents custom touch behavior
+- ❌ **Different handlers for touch vs click** - creates inconsistent behavior
+- ❌ **Forgetting `preventDefault()`** - causes unwanted scrolling/zooming
+- ❌ **Not testing on real devices** - emulation misses touch nuances
+
+---
+
 ### 🎨 **Theme & Styling Lessons**
 
 #### **CSS Custom Properties for Theming**
@@ -222,11 +300,13 @@ createInstallButton() {
 ### 💡 **Key Takeaways**
 
 - **Mobile-first isn't just about screen size** - it's about touch, space efficiency, and user expectations
+- **Touch events are NOT the same as click events** - always add both for cross-platform compatibility
 - **Static imports are powerful but fragile** - use dynamic imports for optional features
 - **Pages beat modals for complex content** - especially on mobile
 - **Space is precious on mobile** - remove obvious text, maximize gameplay area
 - **Test early and often** - mobile issues are harder to fix later
 - **PWA features should enhance, not complicate** - focus on core experience first
+- **Touch targets must be 44px minimum** - Apple HIG guidelines for accessibility
 
 ---
 
