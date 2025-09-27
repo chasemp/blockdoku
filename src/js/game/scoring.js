@@ -50,7 +50,8 @@ export class ScoringSystem {
             }
         }
         
-        return clearedLines;
+        // Now process the clears and return the full result
+        return this.applyClears(board, clearedLines);
     }
     
     isRowComplete(board, row) {
@@ -75,7 +76,7 @@ export class ScoringSystem {
         return true;
     }
     
-    clearLines(board, clearedLines) {
+    applyClears(board, clearedLines) {
         let newBoard = board.map(row => [...row]); // Deep copy
         let totalCleared = 0;
         
@@ -106,12 +107,24 @@ export class ScoringSystem {
             totalCleared++;
         });
         
-        // Calculate score
+        // Check for combo (multiple different types of clears simultaneously)
+        const clearTypes = [];
+        if (clearedLines.rows.length > 0) clearTypes.push('row');
+        if (clearedLines.columns.length > 0) clearTypes.push('column');
+        if (clearedLines.squares.length > 0) clearTypes.push('square');
+        
+        // Calculate score and combo
         if (totalCleared > 0) {
             this.calculateScore(clearedLines);
             this.linesCleared += totalCleared;
-            this.combo++;
-            this.maxCombo = Math.max(this.maxCombo, this.combo);
+            
+            // A combo occurs when 2+ different types clear simultaneously
+            if (clearTypes.length >= 2) {
+                this.combo++;
+                this.maxCombo = Math.max(this.maxCombo, this.combo);
+            } else {
+                this.combo = 0; // Reset combo if no simultaneous different types
+            }
         } else {
             this.combo = 0;
         }
@@ -119,7 +132,10 @@ export class ScoringSystem {
         return {
             board: newBoard,
             clearedCount: totalCleared,
-            scoreGained: this.getLastScoreGained()
+            scoreGained: this.getLastScoreGained(),
+            isCombo: clearTypes.length >= 2,
+            comboTypes: clearTypes,
+            clearedLines: clearedLines // Include original clear information
         };
     }
     
@@ -131,9 +147,10 @@ export class ScoringSystem {
         scoreGained += clearedLines.columns.length * this.basePoints.line;
         scoreGained += clearedLines.squares.length * this.basePoints.square;
         
-        // Combo bonus
-        if (this.combo > 1) {
-            scoreGained += (this.combo - 1) * this.basePoints.combo;
+        // Combo bonus - now much more valuable since combos are harder to achieve
+        if (this.combo >= 1) {
+            // First combo is worth 200 points, each subsequent combo adds 100 more
+            scoreGained += 200 + ((this.combo - 1) * 100);
         }
         
         // Level multiplier

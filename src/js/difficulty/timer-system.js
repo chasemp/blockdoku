@@ -49,7 +49,7 @@ export class TimerSystem {
     }
     
     update() {
-        if (!this.isActive || this.isPaused || this.timeLimit === null) return;
+        if (!this.isActive || this.isPaused || this.timeLimit === null || this.startTime === 0) return true;
         
         const elapsed = Date.now() - this.startTime;
         this.timeRemaining = Math.max(0, this.timeLimit - Math.floor(elapsed / 1000));
@@ -71,7 +71,7 @@ export class TimerSystem {
     }
     
     isTimeUp() {
-        return this.timeRemaining <= 0;
+        return this.isActive && this.timeLimit !== null && this.startTime > 0 && this.timeRemaining <= 0;
     }
     
     isWarningTime() {

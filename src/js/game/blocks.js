@@ -184,13 +184,19 @@ export class BlockManager {
     }
     
     canPlaceBlock(block, row, col, board) {
-        const shape = block.shape;
-        const boardSize = board.length;
-        
-        // Validate inputs
-        if (!block || !shape || !board || !Array.isArray(board)) {
+        // Validate inputs first
+        if (!block || !board || !Array.isArray(board) || board.length === 0) {
+            console.warn('canPlaceBlock: Invalid inputs', { block, board });
             return false;
         }
+        
+        const shape = block.shape;
+        if (!shape || !Array.isArray(shape) || shape.length === 0) {
+            console.warn('canPlaceBlock: Invalid block shape', { block, shape });
+            return false;
+        }
+        
+        const boardSize = board.length;
         
         // Check if block fits within board boundaries
         if (row < 0 || col < 0 || 

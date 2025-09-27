@@ -82,10 +82,6 @@ class SettingsManager {
             enableTimer.checked = this.settings.enableTimer === true; // Default to false
         }
         
-        const enableUndo = document.getElementById('enable-undo');
-        if (enableUndo) {
-            enableUndo.checked = this.settings.enableUndo === true; // Default to false
-        }
         
         const autoSave = document.getElementById('auto-save');
         if (autoSave) {
@@ -148,9 +144,6 @@ class SettingsManager {
             this.updateSetting('enableTimer', e.target.checked);
         });
         
-        document.getElementById('enable-undo').addEventListener('change', (e) => {
-            this.updateSetting('enableUndo', e.target.checked);
-        });
         
         document.getElementById('sound-enabled').addEventListener('change', (e) => {
             this.updateSetting('soundEnabled', e.target.checked);
@@ -337,7 +330,6 @@ class SettingsManager {
     updateGameSettingsUI() {
         document.getElementById('enable-hints').checked = this.settings.enableHints || false;
         document.getElementById('enable-timer').checked = this.settings.enableTimer || false;
-        document.getElementById('enable-undo').checked = this.settings.enableUndo || false;
         document.getElementById('auto-save').checked = this.settings.autoSave !== false;
         document.getElementById('show-points').checked = this.settings.showPoints || false;
         
