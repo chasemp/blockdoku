@@ -1014,47 +1014,15 @@ class BlockdokuGame {
     }
     
     checkLineClears() {
-        // Check for completed lines
-        const clearResult = this.scoringSystem.checkAndClearLines(this.board);
+        // Check for completed lines (but don't clear yet)
+        const clearedLines = this.scoringSystem.checkForCompletedLines(this.board);
         
-        // Update board with cleared lines
-        this.board = clearResult.board;
-        
-        // If any lines were cleared, process them with animation
-        if (clearResult.clearedCount > 0) {
-            const clearedLines = clearResult.clearedLines;
-            
-            // Show immediate visual feedback first
+        // If any lines were cleared, start the animation sequence
+        if (clearedLines.rows.length > 0 || clearedLines.columns.length > 0 || clearedLines.squares.length > 0) {
+            // Show immediate visual feedback first (with original board intact for glow)
             this.showImmediateClearFeedback(clearedLines);
             
-            // Handle combo effects
-            if (clearResult.isCombo) {
-                const comboMessage = `COMBO! ${clearResult.comboTypes.join(' + ').toUpperCase()}!`;
-                console.log(comboMessage);
-                
-                // Trigger special combo effects
-                this.effectsManager.onCombo(this.canvas.width / 2, this.canvas.height / 2, this.scoringSystem.getCombo());
-                
-                // Show floating combo text
-                this.effectsManager.particles.createFloatingText(
-                    this.canvas.width / 2, 
-                    this.canvas.height / 2 - 50, 
-                    comboMessage, 
-                    '#ffff00', 
-                    2500
-                );
-            }
-            
-            // Add time bonus for timer-enabled difficulties
-            if (this.timerSystem && this.difficultyManager.getTimeLimit() !== null) {
-                const timeBonus = this.timerSystem.calculateTimeBonus(clearedLines);
-                if (timeBonus > 0) {
-                    this.timerSystem.addTimeBonus(timeBonus);
-                    this.showTimeBonus(timeBonus);
-                }
-            }
-            
-            // Start the line clear animation sequence
+            // Start the clearing animation with delay
             this.startLineClearAnimation(clearedLines);
         }
     }
@@ -1063,10 +1031,10 @@ class BlockdokuGame {
         // Start glow effect immediately
         this.highlightClearingBlocks(clearedLines);
         
-        // After 1 second, actually clear the lines and show effects
+        // After 0.75 seconds, actually clear the lines and show effects
         setTimeout(() => {
             this.completeLineClear(clearedLines);
-        }, 1000);
+        }, 750);
     }
     
     showImmediateClearFeedback(clearedLines) {
@@ -1105,14 +1073,14 @@ class BlockdokuGame {
         this.ctx.save();
         const drawCellSize = this.actualCellSize || this.cellSize;
         
-        // Set up enhanced glow effect
+        // Set up enhanced glow effect (reduced intensity)
         this.ctx.shadowColor = '#00ff00';
-        this.ctx.shadowBlur = 8;
+        this.ctx.shadowBlur = 4; // Reduced from 8 to 4
         this.ctx.strokeStyle = '#00ff00';
-        this.ctx.lineWidth = 2;
+        this.ctx.lineWidth = 1; // Reduced from 2 to 1
         
-        // Draw outer glow - more visible
-        this.ctx.globalAlpha = 0.8;
+        // Draw outer glow - more subtle
+        this.ctx.globalAlpha = 0.4; // Reduced from 0.8 to 0.4
         clearedLines.rows.forEach(row => {
             for (let col = 0; col < this.boardSize; col++) {
                 if (this.board[row][col] === 1) {
@@ -1134,8 +1102,9 @@ class BlockdokuGame {
         });
         
         clearedLines.squares.forEach(square => {
-            const startRow = square.row;
-            const startCol = square.col;
+            // Convert square indices to actual board coordinates
+            const startRow = square.row * 3;
+            const startCol = square.col * 3;
             for (let r = 0; r < 3; r++) {
                 for (let c = 0; c < 3; c++) {
                     const row = startRow + r;
@@ -1149,11 +1118,11 @@ class BlockdokuGame {
             }
         });
         
-        // Draw inner bright outline
+        // Draw inner bright outline (reduced intensity)
         this.ctx.shadowBlur = 0;
         this.ctx.strokeStyle = '#ffffff';
-        this.ctx.lineWidth = 1.5;
-        this.ctx.globalAlpha = 1.0;
+        this.ctx.lineWidth = 0.75; // Reduced from 1.5 to 0.75
+        this.ctx.globalAlpha = 0.5; // Reduced from 1.0 to 0.5
         
         clearedLines.rows.forEach(row => {
             for (let col = 0; col < this.boardSize; col++) {
@@ -1176,8 +1145,9 @@ class BlockdokuGame {
         });
         
         clearedLines.squares.forEach(square => {
-            const startRow = square.row;
-            const startCol = square.col;
+            // Convert square indices to actual board coordinates
+            const startRow = square.row * 3;
+            const startCol = square.col * 3;
             for (let r = 0; r < 3; r++) {
                 for (let c = 0; c < 3; c++) {
                     const row = startRow + r;
@@ -1533,9 +1503,9 @@ class BlockdokuGame {
         // Animate the popup (fade out and move up)
         let animationFrame = 0;
         const animate = () => {
-            if (animationFrame < 45) { // 45 frames = ~0.75 seconds at 60fps
+            if (animationFrame < 60) { // 60 frames = ~1.0 seconds at 60fps (increased from 45)
                 this.ctx.save();
-                this.ctx.globalAlpha = 1 - (animationFrame / 45);
+                this.ctx.globalAlpha = 1 - (animationFrame / 60);
                 this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
                 this.ctx.fillRect(x - 60, y - 20 - animationFrame * 2, 120, 40);
                 this.ctx.strokeStyle = '#00ff00';
