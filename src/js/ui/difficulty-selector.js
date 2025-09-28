@@ -209,6 +209,7 @@ export class DifficultySelector {
         }
         
         this.container.style.display = 'flex';
+        this.container.style.pointerEvents = 'auto';
         this.isVisible = true;
         
         // Animate in
@@ -222,6 +223,9 @@ export class DifficultySelector {
         
         this.container.classList.remove('show');
         this.isVisible = false;
+        
+        // Immediately disable interaction
+        this.container.style.pointerEvents = 'none';
         
         // Remove from DOM after animation
         setTimeout(() => {
@@ -247,10 +251,12 @@ export class DifficultySelector {
                 justify-content: center;
                 opacity: 0;
                 transition: opacity 0.3s ease;
+                pointer-events: none;
             }
             
             .difficulty-selector.show {
                 opacity: 1;
+                pointer-events: auto;
             }
             
             .difficulty-overlay {
@@ -261,6 +267,7 @@ export class DifficultySelector {
                 height: 100%;
                 background: rgba(0, 0, 0, 0.7);
                 backdrop-filter: blur(5px);
+                pointer-events: auto;
             }
             
             .difficulty-modal {
