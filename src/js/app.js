@@ -361,6 +361,15 @@ class BlockdokuGame {
             const handleDifficultyClick = () => {
                 this.effectsManager.onButtonClick();
                 this.difficultySelector.show();
+                // Ensure only one selector exists
+                const existing = document.querySelectorAll('#difficulty-selector');
+                if (existing.length > 1) {
+                    existing.forEach((el, idx) => {
+                        if (idx > 0 && el.parentNode) {
+                            el.parentNode.removeChild(el);
+                        }
+                    });
+                }
             };
             
             difficultyBtn.addEventListener('click', handleDifficultyClick);
