@@ -55,17 +55,20 @@ export class ConfirmationDialog {
                 width: 100%;
                 height: 100%;
                 background: rgba(0, 0, 0, 0.8);
-                display: flex;
+                display: none;
                 justify-content: center;
                 align-items: center;
                 z-index: 2000;
                 backdrop-filter: blur(5px);
                 opacity: 0;
                 transition: opacity 0.3s ease;
+                pointer-events: none;
             }
             
             .confirmation-dialog-overlay.show {
+                display: flex;
                 opacity: 1;
+                pointer-events: auto;
             }
             
             .confirmation-dialog {
