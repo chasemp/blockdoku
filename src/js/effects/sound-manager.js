@@ -9,6 +9,8 @@ export class SoundManager {
         this.isEnabled = false;
         this.volume = 0.5;
         this.sounds = {};
+        this.soundPresets = {};
+        this.customSoundMappings = {}; // Maps sound names to preset IDs
         
         this.init();
     }
@@ -17,11 +19,74 @@ export class SoundManager {
     init() {
         try {
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            this.createSoundPresets();
+            this.loadCustomSoundMappings();
             this.createSounds();
         } catch (error) {
             console.warn('Web Audio API not supported:', error);
             this.isEnabled = false;
         }
+    }
+    
+    // Load custom sound mappings from localStorage
+    loadCustomSoundMappings() {
+        try {
+            const saved = localStorage.getItem('blockdoku_sound_mappings');
+            if (saved) {
+                this.customSoundMappings = JSON.parse(saved);
+            }
+        } catch (error) {
+            console.warn('Failed to load sound mappings:', error);
+        }
+    }
+    
+    // Save custom sound mappings to localStorage
+    saveSoundMappings() {
+        try {
+            localStorage.setItem('blockdoku_sound_mappings', JSON.stringify(this.customSoundMappings));
+        } catch (error) {
+            console.warn('Failed to save sound mappings:', error);
+        }
+    }
+    
+    // Set custom sound for a specific effect
+    setCustomSound(soundName, presetId) {
+        if (presetId === 'default' || presetId === null) {
+            delete this.customSoundMappings[soundName];
+        } else {
+            this.customSoundMappings[soundName] = presetId;
+        }
+        this.saveSoundMappings();
+        this.createSounds(); // Recreate sounds with new mappings
+    }
+    
+    // Get available sound presets for user selection
+    getAvailablePresets() {
+        return {
+            default: { name: 'Default', description: 'Standard game sound' },
+            chime: { name: 'Chime', description: 'Gentle bell-like tone' },
+            beep: { name: 'Beep', description: 'Electronic beep' },
+            pop: { name: 'Pop', description: 'Quick pop sound' },
+            swoosh: { name: 'Swoosh', description: 'Whoosh effect' },
+            ding: { name: 'Ding', description: 'High-pitched ding' },
+            thud: { name: 'Thud', description: 'Low bass thump' },
+            click: { name: 'Click', description: 'Sharp click sound' }
+        };
+    }
+    
+    // Create sound presets that users can choose from
+    createSoundPresets() {
+        if (!this.audioContext) return;
+        
+        this.soundPresets = {
+            chime: this.createChimePreset(),
+            beep: this.createBeepPreset(),
+            pop: this.createPopPreset(),
+            swoosh: this.createSwooshPreset(),
+            ding: this.createDingPreset(),
+            thud: this.createThudPreset(),
+            click: this.createClickPreset()
+        };
     }
     
     // Enable/disable sound
@@ -38,24 +103,77 @@ export class SoundManager {
     createSounds() {
         if (!this.audioContext) return;
         
-        this.sounds = {
-            blockPlace: this.createBlockPlaceSound(),
-            lineClear: this.createLineClearSound(),
-            levelUp: this.createLevelUpSound(),
-            combo: this.createComboSound(),
-            error: this.createErrorSound(),
-            buttonClick: this.createButtonClickSound(),
-            blockRotate: this.createBlockRotateSound(),
-            scoreGain: this.createScoreGainSound(),
-            timeWarning: this.createTimeWarningSound(),
-            timeCritical: this.createTimeCriticalSound(),
-            timeBonus: this.createTimeBonusSound(),
-            hint: this.createHintSound(),
-            undo: this.createUndoSound(),
-            redo: this.createRedoSound(),
-            perfect: this.createPerfectSound(),
-            chain: this.createChainSound()
+        // Check if custom sound is mapped, otherwise use default
+        const getSound = (soundName, defaultCreator) => {
+            const presetId = this.customSoundMappings[soundName];
+            if (presetId && this.soundPresets[presetId]) {
+                return this.soundPresets[presetId];
+            }
+            return defaultCreator.call(this);
         };
+        
+        this.sounds = {
+            blockPlace: getSound('blockPlace', this.createBlockPlaceSound),
+            lineClear: getSound('lineClear', this.createLineClearSound),
+            levelUp: getSound('levelUp', this.createLevelUpSound),
+            combo: getSound('combo', this.createComboSound),
+            error: getSound('error', this.createErrorSound),
+            buttonClick: getSound('buttonClick', this.createButtonClickSound),
+            blockRotate: getSound('blockRotate', this.createBlockRotateSound),
+            scoreGain: getSound('scoreGain', this.createScoreGainSound),
+            timeWarning: getSound('timeWarning', this.createTimeWarningSound),
+            timeCritical: getSound('timeCritical', this.createTimeCriticalSound),
+            timeBonus: getSound('timeBonus', this.createTimeBonusSound),
+            hint: getSound('hint', this.createHintSound),
+            undo: getSound('undo', this.createUndoSound),
+            redo: getSound('redo', this.createRedoSound),
+            perfect: getSound('perfect', this.createPerfectSound),
+            chain: getSound('chain', this.createChainSound)
+        };
+    }
+    
+    // Get list of all customizable sound effects
+    getSoundEffects() {
+        return {
+            blockPlace: { name: 'Block Placement', description: 'When placing a block on the board' },
+            lineClear: { name: 'Line Clear', description: 'When clearing lines' },
+            levelUp: { name: 'Level Up', description: 'When advancing to next level' },
+            combo: { name: 'Combo', description: 'When achieving a combo' },
+            error: { name: 'Error', description: 'When an invalid action occurs' },
+            buttonClick: { name: 'Button Click', description: 'Button press feedback' },
+            blockRotate: { name: 'Block Rotate', description: 'When rotating a block' },
+            scoreGain: { name: 'Score Gain', description: 'When earning points' },
+            timeWarning: { name: 'Time Warning', description: 'Low time warning' },
+            timeCritical: { name: 'Time Critical', description: 'Very low time alert' },
+            timeBonus: { name: 'Time Bonus', description: 'Bonus time awarded' },
+            hint: { name: 'Hint', description: 'When using a hint' },
+            undo: { name: 'Undo', description: 'Undo action' },
+            redo: { name: 'Redo', description: 'Redo action' },
+            perfect: { name: 'Perfect Clear', description: 'Perfect board clear' },
+            chain: { name: 'Chain', description: 'Chain combo effect' }
+        };
+    }
+    
+    // Preview a sound preset
+    previewSound(presetId) {
+        if (!this.audioContext || !this.isEnabled) return;
+        
+        try {
+            const sound = presetId === 'default' ? this.createBlockPlaceSound() : this.soundPresets[presetId];
+            if (!sound) return;
+            
+            const source = this.audioContext.createBufferSource();
+            const gainNode = this.audioContext.createGain();
+            
+            source.buffer = sound.buffer;
+            source.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            gainNode.gain.value = this.volume * sound.volume;
+            source.start();
+        } catch (error) {
+            console.warn('Error previewing sound:', error);
+        }
     }
     
     // Play a sound effect
@@ -316,5 +434,104 @@ export class SoundManager {
             this.audioContext.close();
             this.init();
         }
+    }
+    
+    // ===== SOUND PRESET CREATORS =====
+    
+    // Chime preset - gentle bell-like tone
+    createChimePreset() {
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.3, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < data.length; i++) {
+            const t = i / this.audioContext.sampleRate;
+            const freq = 880; // A5 note
+            data[i] = Math.sin(2 * Math.PI * freq * t) * Math.exp(-t * 5) * 0.3 +
+                     0.5 * Math.sin(2 * Math.PI * freq * 2 * t) * Math.exp(-t * 5) * 0.3;
+        }
+        
+        return { buffer, volume: 0.7 };
+    }
+    
+    // Beep preset - electronic beep
+    createBeepPreset() {
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.1, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < data.length; i++) {
+            const t = i / this.audioContext.sampleRate;
+            data[i] = Math.sin(2 * Math.PI * 1200 * t) * Math.exp(-t * 15) * 0.3;
+        }
+        
+        return { buffer, volume: 0.6 };
+    }
+    
+    // Pop preset - quick pop sound
+    createPopPreset() {
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.08, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < data.length; i++) {
+            const t = i / this.audioContext.sampleRate;
+            const freq = 300 - t * 200;
+            data[i] = Math.sin(2 * Math.PI * freq * t) * Math.exp(-t * 20) * 0.4;
+        }
+        
+        return { buffer, volume: 0.7 };
+    }
+    
+    // Swoosh preset - whoosh effect
+    createSwooshPreset() {
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.2, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < data.length; i++) {
+            const t = i / this.audioContext.sampleRate;
+            const freq = 100 + t * 400;
+            data[i] = Math.sin(2 * Math.PI * freq * t) * Math.exp(-t * 6) * 0.25;
+        }
+        
+        return { buffer, volume: 0.5 };
+    }
+    
+    // Ding preset - high-pitched ding
+    createDingPreset() {
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.25, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < data.length; i++) {
+            const t = i / this.audioContext.sampleRate;
+            const freq = 1760; // A6 note
+            data[i] = Math.sin(2 * Math.PI * freq * t) * Math.exp(-t * 6) * 0.35;
+        }
+        
+        return { buffer, volume: 0.6 };
+    }
+    
+    // Thud preset - low bass thump
+    createThudPreset() {
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.12, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < data.length; i++) {
+            const t = i / this.audioContext.sampleRate;
+            const freq = 100 - t * 50;
+            data[i] = Math.sin(2 * Math.PI * freq * t) * Math.exp(-t * 12) * 0.5;
+        }
+        
+        return { buffer, volume: 0.8 };
+    }
+    
+    // Click preset - sharp click sound
+    createClickPreset() {
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.04, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < data.length; i++) {
+            const t = i / this.audioContext.sampleRate;
+            data[i] = Math.sin(2 * Math.PI * 1500 * t) * Math.exp(-t * 30) * 0.25;
+        }
+        
+        return { buffer, volume: 0.5 };
     }
 }
