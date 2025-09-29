@@ -8,8 +8,13 @@ export class ScoringSystem {
         this.score = 0;
         this.level = 1;
         this.linesCleared = 0;
-        this.combo = 0;
-        this.maxCombo = 0;
+        
+        // Dual combo tracking system
+        this.combo = 0;                    // Current streak combo
+        this.maxCombo = 0;                 // Maximum streak combo achieved
+        this.totalCombos = 0;              // Total cumulative combos (never resets)
+        this.maxTotalCombos = 0;           // Maximum total combos in a single game
+        
         // Detailed tracking for clears and scoring breakdown
         this.rowsClearedCount = 0;
         this.columnsClearedCount = 0;
@@ -271,11 +276,18 @@ export class ScoringSystem {
             
 			// A combo occurs when 2+ total clears happen in the same clear event
 			if (isComboEvent) {
+                // Update streak combo (resets when no combo)
                 this.combo++;
                 this.maxCombo = Math.max(this.maxCombo, this.combo);
+                
+                // Update total combos (never resets, cumulative)
+                this.totalCombos++;
+                this.maxTotalCombos = Math.max(this.maxTotalCombos, this.totalCombos);
+                
                 this.comboActivations++;
             } else {
-                this.combo = 0; // Reset combo if no simultaneous different types
+                this.combo = 0; // Reset streak combo if no simultaneous different types
+                // Note: totalCombos is never reset - it's cumulative
             }
         } else {
             this.combo = 0;
@@ -365,6 +377,14 @@ export class ScoringSystem {
         return this.maxCombo;
     }
     
+    getTotalCombos() {
+        return this.totalCombos;
+    }
+    
+    getMaxTotalCombos() {
+        return this.maxTotalCombos;
+    }
+    
     // Total number of times a combo has been activated during the current game
     getComboTotal() {
         return this.comboActivations;
@@ -378,8 +398,13 @@ export class ScoringSystem {
         this.score = 0;
         this.level = 1;
         this.linesCleared = 0;
+        
+        // Reset dual combo tracking
         this.combo = 0;
         this.maxCombo = 0;
+        this.totalCombos = 0;
+        this.maxTotalCombos = 0;
+        
         this.lastScoreGained = 0;
         this.rowsClearedCount = 0;
         this.columnsClearedCount = 0;
@@ -479,6 +504,8 @@ export class ScoringSystem {
             linesCleared: this.linesCleared,
             combo: this.combo,
             maxCombo: this.maxCombo,
+            totalCombos: this.totalCombos,
+            maxTotalCombos: this.maxTotalCombos,
             rowClears: this.rowsClearedCount,
             columnClears: this.columnsClearedCount,
             squareClears: this.squaresClearedCount,
