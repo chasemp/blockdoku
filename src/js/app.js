@@ -82,7 +82,7 @@ class BlockdokuGame {
         this.isInitialized = false;
         
         // Track combo display mode usage within a game (streak vs cumulative)
-        this.comboModeActive = 'streak';
+        this.comboModeActive = 'cumulative';
         this.comboModesUsed = new Set();
         
         // Drag and drop state
@@ -1497,7 +1497,7 @@ class BlockdokuGame {
             clearedLines,
             isCombo,
             combo,
-            (this.storage.loadSettings()?.comboDisplayMode) || 'streak'
+            (this.storage.loadSettings()?.comboDisplayMode) || 'cumulative'
         );
         
         // Create combo effect if applicable
@@ -1580,7 +1580,7 @@ class BlockdokuGame {
 
         // Determine which value to show based on settings
         const settings = this.storage.loadSettings();
-        const mode = settings.comboDisplayMode || 'streak';
+        const mode = settings.comboDisplayMode || 'cumulative';
         this.comboModeActive = mode;
         this.comboModesUsed.add(mode);
         
@@ -2446,8 +2446,8 @@ class BlockdokuGame {
 
         // Build combo summary based on which modes were used
         const modesUsedSet = new Set(stats.comboModesUsed || []);
-        const usedStreak = modesUsedSet.has('streak') || modesUsedSet.size === 0; // default to streak if unknown
-        const usedCumulative = modesUsedSet.has('cumulative');
+        const usedStreak = modesUsedSet.has('streak');
+        const usedCumulative = modesUsedSet.has('cumulative') || modesUsedSet.size === 0; // default to cumulative if unknown
         const comboSummary = usedStreak && usedCumulative
             ? `<p style=\"margin: 5px 0;\">Max Streak: ${stats.maxCombo}</p><p style=\"margin: 5px 0;\">Total Combos: ${stats.comboActivations || 0}</p>`
             : (usedCumulative
