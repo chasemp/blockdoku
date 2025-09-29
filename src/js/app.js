@@ -1240,12 +1240,13 @@ class BlockdokuGame {
         this.ctx.fillRect(x - 80, y - 20, 160, 40);
         
         // Draw border
-        this.ctx.strokeStyle = '#00ff00';
+        const notifGlow = this.getClearGlowColor();
+        this.ctx.strokeStyle = notifGlow;
         this.ctx.lineWidth = 3;
         this.ctx.strokeRect(x - 80, y - 20, 160, 40);
         
         // Draw text
-        this.ctx.fillStyle = '#00ff00';
+        this.ctx.fillStyle = notifGlow;
         this.ctx.font = 'bold 24px Arial';
         this.ctx.textAlign = 'center';
         this.ctx.fillText(message, x, y + 8);
