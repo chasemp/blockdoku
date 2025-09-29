@@ -372,17 +372,20 @@
             <!-- Game Settings Section -->
             <div class="settings-section" id="game-section">
                 <h2 class="section-title">Game Settings</h2>
-                <div class="setting-item">
-                    <label>
-                        <input type="radio" name="combo-display-mode" value="streak" id="combo-streak" />
-                        <span>Combo display: Streak</span>
-                    </label>
-                </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="radio" name="combo-display-mode" value="cumulative" id="combo-cumulative" />
-                        <span>Combo display: Cumulative</span>
-                    </label>
+                
+                <!-- Combo Display Settings -->
+                <div class="combo-display-settings">
+                    <h3>Combo Display</h3>
+                    <div class="combo-options">
+                        <label class="combo-option">
+                            <input type="radio" name="combo-display-mode" value="streak" id="combo-streak" />
+                            <span class="combo-label">Streak</span>
+                        </label>
+                        <label class="combo-option">
+                            <input type="radio" name="combo-display-mode" value="cumulative" id="combo-cumulative" />
+                            <span class="combo-label">Cumulative</span>
+                        </label>
+                    </div>
                 </div>
                 <div class="setting-item">
                     <label>
