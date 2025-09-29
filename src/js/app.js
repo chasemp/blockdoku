@@ -2894,7 +2894,8 @@ class BlockdokuGame {
         // Place the block on the board
         this.board = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);
         
-        // Do not award points for mere placement; points come only from clears
+        // Award 1 point for block placement (as documented in scoring.md)
+        this.scoringSystem.addPlacementPoints(this.scoringSystem.basePoints.single, this.difficultyManager.getScoreMultiplier());
         
         // Add placement effects
         const centerX = this.canvas.width / 2;
@@ -2906,12 +2907,10 @@ class BlockdokuGame {
         this.selectedBlock = null;
         this.previewPosition = null;
         
-        // Score will be updated when lines are cleared, not on placement
-        
-        // Update UI (but not score-related elements since score hasn't changed yet)
+        // Update UI to reflect the placement points
         this.blockPalette.updateBlocks(this.blockManager.currentBlocks);
         this.drawBoard();
-        // Don't call updateUI() here since score hasn't changed yet - let line clear handle it
+        this.updateUI(); // Update score display after placement points
         
         // Update placeability indicators immediately after block placement
         this.updatePlaceabilityIndicators();
