@@ -1,6 +1,7 @@
 import { GameStorage } from './storage/game-storage.js';
 import { PWAInstallManager } from './pwa/install.js';
 import { ConfirmationDialog } from './ui/confirmation-dialog.js';
+import { SoundManager } from './effects/sound-manager.js';
 // Build info is generated during build by scripts/generate-build-info.js.
 // If that generator is skipped, the About section will show fallback values.
 import { buildInfo } from './utils/build-info.js';
@@ -13,6 +14,7 @@ class SettingsManager {
         this.settings = this.storage.loadSettings();
         this.pwaInstallManager = null;
         this.confirmationDialog = new ConfirmationDialog();
+        this.soundManager = new SoundManager();
         
         this.init();
     }
@@ -255,7 +257,99 @@ class SettingsManager {
         // Load section-specific data
         if (sectionName === 'scores') {
             this.loadHighScores();
+        } else if (sectionName === 'sounds') {
+            this.loadSoundCustomization();
         }
+    }
+    
+    loadSoundCustomization() {
+        const container = document.getElementById('sound-customization-container');
+        if (!container) return;
+        
+        // Enable sound for previews
+        this.soundManager.setEnabled(true);
+        
+        const soundEffects = this.soundManager.getSoundEffects();
+        const presets = this.soundManager.getAvailablePresets();
+        const currentMappings = this.soundManager.customSoundMappings || {};
+        
+        let html = '';
+        
+        // Create UI for each sound effect
+        for (const [soundKey, soundInfo] of Object.entries(soundEffects)) {
+            const currentPreset = currentMappings[soundKey] || 'default';
+            
+            html += `
+                <div class="sound-effect-item">
+                    <div class="sound-effect-info">
+                        <h4>${soundInfo.name}</h4>
+                        <p>${soundInfo.description}</p>
+                    </div>
+                    <select class="sound-preset-select" data-sound="${soundKey}">
+                        <option value="default" ${currentPreset === 'default' ? 'selected' : ''}>Default</option>
+                        ${Object.entries(presets).map(([presetKey, presetInfo]) => 
+                            presetKey !== 'default' ? 
+                            `<option value="${presetKey}" ${currentPreset === presetKey ? 'selected' : ''}>${presetInfo.name}</option>` 
+                            : ''
+                        ).join('')}
+                    </select>
+                    <button class="sound-preview-btn" data-sound="${soundKey}">
+                        🔊 Preview
+                    </button>
+                </div>
+            `;
+        }
+        
+        html += `
+            <button class="sound-reset-all-btn" id="reset-all-sounds">
+                Reset All to Default
+            </button>
+        `;
+        
+        container.innerHTML = html;
+        
+        // Add event listeners for preset changes
+        container.querySelectorAll('.sound-preset-select').forEach(select => {
+            select.addEventListener('change', (e) => {
+                const soundKey = e.target.dataset.sound;
+                const presetId = e.target.value;
+                this.soundManager.setCustomSound(soundKey, presetId);
+            });
+        });
+        
+        // Add event listeners for preview buttons
+        container.querySelectorAll('.sound-preview-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const soundKey = e.currentTarget.dataset.sound;
+                this.soundManager.play(soundKey);
+            });
+        });
+        
+        // Add event listener for reset all button
+        const resetAllBtn = document.getElementById('reset-all-sounds');
+        if (resetAllBtn) {
+            resetAllBtn.addEventListener('click', async () => {
+                const confirmed = await this.confirmationDialog.show(
+                    'Reset all sound effects to their default sounds?'
+                );
+                if (confirmed) {
+                    this.resetAllSounds();
+                }
+            });
+        }
+    }
+    
+    resetAllSounds() {
+        // Clear all custom sound mappings
+        this.soundManager.customSoundMappings = {};
+        this.soundManager.saveSoundMappings();
+        this.soundManager.createSounds();
+        
+        // Reload the UI
+        this.loadSoundCustomization();
+        
+        // Show notification
+        this.showNotification('All sounds reset to default');
     }
     
     selectTheme(theme) {
