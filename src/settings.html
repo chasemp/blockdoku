@@ -269,19 +269,16 @@
             min-height: 0;
         }
         /* Settings page copyright override */
-        .copyright-notice {
-            position: static;
-            bottom: auto;
-            right: auto;
-            pointer-events: none;
-            margin: 2rem 0 0;
-            text-align: center;
-            width: 100%;
-        }
         .copyright-notice p {
             background: none;
             color: var(--text-muted);
             text-shadow: none;
+        }
+        .copyright-notice a {
+            color: var(--text-muted);
+        }
+        .copyright-notice a:hover {
+            color: var(--text-color);
         }
     </style>
 </head>
@@ -500,7 +497,7 @@
     
     <!-- Copyright Notice -->
     <div class="copyright-notice">
-        <p>&copy; 2025 Chase Pettet</p>
+        <p>&copy; Chase Pettet, <a href="http://523.life" target="_blank" rel="noopener noreferrer">523.life</a></p>
     </div>
     
     <script type="module" src="js/settings.js"></script>

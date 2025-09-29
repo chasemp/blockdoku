@@ -2283,11 +2283,14 @@ body.wood-theme .reset-stats-item {
 
 /* Copyright Notice */
 .copyright-notice {
-    position: fixed;
-    bottom: 10px;
-    right: 15px;
+    position: static;
+    bottom: auto;
+    right: auto;
     z-index: 1000;
     pointer-events: none;
+    margin: 2rem 0 0;
+    text-align: center;
+    width: 100%;
 }
 
 .copyright-notice p {
@@ -2305,4 +2308,16 @@ body.wood-theme .reset-stats-item {
     padding: 2px 6px;
     border-radius: 4px;
     backdrop-filter: blur(2px);
+}
+
+.copyright-notice a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    pointer-events: auto;
+    transition: color 0.2s ease;
+}
+
+.copyright-notice a:hover {
+    color: rgba(255, 255, 255, 1);
+    text-decoration: underline;
 }
