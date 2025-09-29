@@ -1937,31 +1937,62 @@ class BlockdokuGame {
         
         const isHighScore = this.storage.isHighScore(stats.score);
         
-        modalContent.innerHTML = `
-            <h2 style="margin: 0 0 20px 0; color: var(--primary-color, #3498db);">Game Over!</h2>
-            <div style="margin: 15px 0;">
-                <p style="margin: 5px 0; font-size: 1.2em;"><strong>Final Score: ${stats.score}</strong></p>
-                <p style="margin: 5px 0;">Lines Cleared: ${stats.linesCleared}</p>
-                <p style="margin: 5px 0;">Max Combo: ${stats.maxCombo}</p>
-                <p style="margin: 5px 0;">Difficulty: ${stats.difficulty?.toUpperCase?.() || this.difficulty.toUpperCase()}</p>
-                ${isHighScore ? '<p style="color: #ffd700; font-weight: bold; margin: 10px 0;">🎉 New High Score! 🎉</p>' : ''}
-            </div>
-            <div style="margin-top: 25px;">
-                <button id="new-game-btn" style="margin: 5px; padding: 12px 24px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold;">
-                    New Game
-                </button>
-                <button id="close-modal-btn" style="margin: 5px; padding: 12px 24px; background: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold;">
-                    Close
-                </button>
-            </div>
-        `;
+		// Build detailed stats and breakdown
+		const difficultyLabel = (stats.difficulty?.toUpperCase?.() || this.difficulty.toUpperCase());
+		const multiplier = stats.difficultyMultiplier || (this.difficultyManager?.getScoreMultiplier?.() || 1);
+		const breakdown = stats.breakdown || { linePoints: 0, squarePoints: 0, comboBonusPoints: 0 };
+		const clears = {
+			rows: stats.rowClears || 0,
+			columns: stats.columnClears || 0,
+			squares: stats.squareClears || 0
+		};
+
+		modalContent.innerHTML = `
+			<h2 style="margin: 0 0 20px 0; color: var(--primary-color, #3498db);">Game Over!</h2>
+			<div style="margin: 15px 0;">
+				<p style=\"margin: 5px 0; font-size: 1.2em;\"><strong>Final Score: ${stats.score}</strong></p>
+				<p style=\"margin: 5px 0;\">Level: ${stats.level}</p>
+				<p style=\"margin: 5px 0;\">Lines Cleared: ${stats.linesCleared}</p>
+				<p style=\"margin: 5px 0;\">Max Combo: ${stats.maxCombo}</p>
+				<p style=\"margin: 5px 0;\">Difficulty: ${difficultyLabel} (x${multiplier})</p>
+				${isHighScore ? '<p style="color: #ffd700; font-weight: bold; margin: 10px 0;">🎉 New High Score! 🎉</p>' : ''}
+			</div>
+			<div style=\"text-align: left; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);\">
+				<div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 10px;\">
+					<div>
+						<h3 style=\"margin: 0 0 6px 0; color: var(--primary-color, #3498db); font-size: 1em;\">Clears</h3>
+						<p style=\"margin: 4px 0;\">Rows: <strong>${clears.rows}</strong></p>
+						<p style=\"margin: 4px 0;\">Columns: <strong>${clears.columns}</strong></p>
+						<p style=\"margin: 4px 0;\">3x3 Squares: <strong>${clears.squares}</strong></p>
+					</div>
+					<div>
+						<h3 style=\"margin: 0 0 6px 0; color: var(--primary-color, #3498db); font-size: 1em;\">Score Breakdown</h3>
+						<p style=\"margin: 4px 0;\">Lines: <strong>${breakdown.linePoints.toLocaleString()}</strong></p>
+						<p style=\"margin: 4px 0;\">Squares: <strong>${breakdown.squarePoints.toLocaleString()}</strong></p>
+						<p style=\"margin: 4px 0;\">Combo Bonus: <strong>${breakdown.comboBonusPoints.toLocaleString()}</strong></p>
+					</div>
+				</div>
+			</div>
+			<div style="margin-top: 18px; display: flex; justify-content: center; flex-wrap: wrap;">
+				<button id="new-game-btn" style="margin: 5px; padding: 12px 24px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold;">
+					New Game
+				</button>
+				<button id="share-score-btn" style="margin: 5px; padding: 12px 24px; background: var(--primary-color, #3498db); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold;">
+					Share
+				</button>
+				<button id="close-modal-btn" style="margin: 5px; padding: 12px 24px; background: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold;">
+					Close
+				</button>
+			</div>
+		`;
         
         modal.appendChild(modalContent);
         document.body.appendChild(modal);
         
         // Add proper event listeners
-        const newGameBtn = document.getElementById('new-game-btn');
-        const closeBtn = document.getElementById('close-modal-btn');
+		const newGameBtn = document.getElementById('new-game-btn');
+		const closeBtn = document.getElementById('close-modal-btn');
+		const shareBtn = document.getElementById('share-score-btn');
         
         const handleNewGame = () => {
             modal.remove();
@@ -1984,6 +2015,30 @@ class BlockdokuGame {
             e.preventDefault();
             handleClose();
         }, { passive: false });
+
+		// Share handler
+		const shareHandler = async () => {
+			try {
+				const difficultyText = (stats.difficulty?.toUpperCase?.() || this.difficulty.toUpperCase());
+				const shareUrl = (window.location && window.location.origin) ? (window.location.origin + window.location.pathname) : (window.location.href || '');
+				const text = `I scored ${stats.score} in Blockdoku (${difficultyText}) — Level ${stats.level}, ${stats.linesCleared} lines, Max Combo ${stats.maxCombo}!`;
+				if (navigator.share) {
+					await navigator.share({ title: 'My Blockdoku Score', text, url: shareUrl });
+				} else if (navigator.clipboard && navigator.clipboard.writeText) {
+					await navigator.clipboard.writeText(`${text} ${shareUrl}`);
+					alert('Share link copied to clipboard!');
+				} else {
+					// Fallback prompt
+					window.prompt('Copy this to share:', `${text} ${shareUrl}`);
+				}
+			} catch (err) {
+				console.error('Share failed:', err);
+			}
+		};
+		if (shareBtn) {
+			shareBtn.addEventListener('click', shareHandler);
+			shareBtn.addEventListener('touchstart', (e) => { e.preventDefault(); shareHandler(); }, { passive: false });
+		}
         
         // Prevent touch events from going through the modal
         modal.addEventListener('touchstart', (e) => {
@@ -2000,13 +2055,21 @@ class BlockdokuGame {
     }
 
     getStats() {
+		const s = this.scoringSystem.getStats();
+		const difficultyMultiplier = this.difficultyManager?.getScoreMultiplier?.() || 1;
 		return {
 			score: this.score,
 			level: this.level,
-			linesCleared: this.scoringSystem.getLinesCleared(),
-			combo: this.scoringSystem.getCombo(),
-			maxCombo: this.scoringSystem.getMaxCombo(),
-			difficulty: this.difficulty
+			linesCleared: s.linesCleared,
+			combo: s.combo,
+			maxCombo: s.maxCombo,
+			rowClears: s.rowClears,
+			columnClears: s.columnClears,
+			squareClears: s.squareClears,
+			comboActivations: s.comboActivations,
+			breakdown: s.breakdownBase,
+			difficulty: this.difficulty,
+			difficultyMultiplier
 		};
     }
 

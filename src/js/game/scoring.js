@@ -10,6 +10,16 @@ export class ScoringSystem {
         this.linesCleared = 0;
         this.combo = 0;
         this.maxCombo = 0;
+        // Detailed tracking for clears and scoring breakdown
+        this.rowsClearedCount = 0;
+        this.columnsClearedCount = 0;
+        this.squaresClearedCount = 0;
+        this.comboActivations = 0; // Number of clear events that qualified as a combo (>=2 types)
+        this.pointsBreakdown = {
+            linePoints: 0,       // Points from row/column clears (base, before difficulty multiplier)
+            squarePoints: 0,     // Points from 3x3 square clears (base)
+            comboBonusPoints: 0  // Points from combo bonuses added in the moment of clear (base)
+        };
         
         // Scoring multipliers
         this.basePoints = {
@@ -122,6 +132,11 @@ export class ScoringSystem {
         
         // Calculate score and combo
         if (totalCleared > 0) {
+            // Update per-type clear counters
+            this.rowsClearedCount += clearedLines.rows.length;
+            this.columnsClearedCount += clearedLines.columns.length;
+            this.squaresClearedCount += clearedLines.squares.length;
+
             this.calculateScore(clearedLines);
             this.linesCleared += totalCleared;
             
@@ -129,6 +144,7 @@ export class ScoringSystem {
             if (clearTypes.length >= 2) {
                 this.combo++;
                 this.maxCombo = Math.max(this.maxCombo, this.combo);
+                this.comboActivations++;
             } else {
                 this.combo = 0; // Reset combo if no simultaneous different types
             }
@@ -150,9 +166,12 @@ export class ScoringSystem {
         let scoreGained = 0;
         
         // Base score for each type of clear
-        scoreGained += clearedLines.rows.length * this.basePoints.line;
-        scoreGained += clearedLines.columns.length * this.basePoints.line;
-        scoreGained += clearedLines.squares.length * this.basePoints.square;
+        const linePointsAdded = (clearedLines.rows.length + clearedLines.columns.length) * this.basePoints.line;
+        const squarePointsAdded = clearedLines.squares.length * this.basePoints.square;
+        scoreGained += linePointsAdded;
+        scoreGained += squarePointsAdded;
+        this.pointsBreakdown.linePoints += linePointsAdded;
+        this.pointsBreakdown.squarePoints += squarePointsAdded;
         
         // Combo bonus: apply +25 when the CURRENT clear includes 2+ different types
         const currentClearTypesCount = (clearedLines.rows.length > 0 ? 1 : 0)
@@ -160,6 +179,7 @@ export class ScoringSystem {
             + (clearedLines.squares.length > 0 ? 1 : 0);
         if (currentClearTypesCount >= 2) {
             scoreGained += 25;
+            this.pointsBreakdown.comboBonusPoints += 25;
         }
         
         // Level multiplier
@@ -222,6 +242,11 @@ export class ScoringSystem {
         this.combo = 0;
         this.maxCombo = 0;
         this.lastScoreGained = 0;
+        this.rowsClearedCount = 0;
+        this.columnsClearedCount = 0;
+        this.squaresClearedCount = 0;
+        this.comboActivations = 0;
+        this.pointsBreakdown = { linePoints: 0, squarePoints: 0, comboBonusPoints: 0 };
     }
     
     // Get detailed statistics
@@ -231,7 +256,16 @@ export class ScoringSystem {
             level: this.level,
             linesCleared: this.linesCleared,
             combo: this.combo,
-            maxCombo: this.maxCombo
+            maxCombo: this.maxCombo,
+            rowClears: this.rowsClearedCount,
+            columnClears: this.columnsClearedCount,
+            squareClears: this.squaresClearedCount,
+            comboActivations: this.comboActivations,
+            breakdownBase: {
+                linePoints: this.pointsBreakdown.linePoints,
+                squarePoints: this.pointsBreakdown.squarePoints,
+                comboBonusPoints: this.pointsBreakdown.comboBonusPoints
+            }
         };
     }
 }
