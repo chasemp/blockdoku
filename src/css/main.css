@@ -1812,7 +1812,8 @@ html.light-theme .settings-section .difficulty-option.selected {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
 }
 
-.setting-item input[type="checkbox"] {
+.setting-item input[type="checkbox"],
+.setting-item input[type="radio"] {
     margin-right: 0.75rem;
     width: 18px;
     height: 18px;
@@ -2063,6 +2064,13 @@ html.light-theme .settings-section .difficulty-option.selected {
     border-top: 1px solid var(--border-color);
 }
 
+/* Reset Statistics Button Styles */
+.reset-stats-item {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
 .pwa-install-button {
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
     color: white;
@@ -2114,6 +2122,38 @@ html.light-theme .settings-section .difficulty-option.selected {
 .pwa-install-button.installed .install-status::before {
     content: "✓ ";
     margin-right: 0.25rem;
+}
+
+.reset-stats-button {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.15);
+}
+
+.reset-stats-button:hover {
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
+}
+
+.reset-stats-button:active {
+    transform: translateY(0);
+}
+
+.reset-text {
+    font-weight: 600;
 }
 
 /* Copyright Notice */

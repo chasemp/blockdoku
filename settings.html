@@ -378,11 +378,14 @@
                 <h2 class="section-title">Game Settings</h2>
                 <div class="setting-item">
                     <label>
-                        <span>Combo display</span>
-                        <select id="combo-display-mode">
-                            <option value="streak">Streak</option>
-                            <option value="cumulative">Cumulative</option>
-                        </select>
+                        <input type="radio" name="combo-display-mode" value="streak" id="combo-streak" />
+                        <span>Combo display: Streak</span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="radio" name="combo-display-mode" value="cumulative" id="combo-cumulative" />
+                        <span>Combo display: Cumulative</span>
                     </label>
                 </div>
                 <div class="setting-item">
@@ -439,15 +442,18 @@
                         Show block points
                     </label>
                 </div>
-                <div class="setting-item">
-                    <button id="reset-stats" class="danger-button">Reset statistics</button>
-                </div>
-                
                 <!-- PWA Install Button -->
                 <div class="setting-item pwa-install-item">
                     <button id="pwa-install-button" class="pwa-install-button">
                         <span class="install-text">Install as PWA</span>
                         <span class="install-status" id="install-status"></span>
+                    </button>
+                </div>
+                
+                <!-- Reset Statistics Button -->
+                <div class="setting-item reset-stats-item">
+                    <button id="reset-stats" class="reset-stats-button">
+                        <span class="reset-text">Reset Statistics</span>
                     </button>
                 </div>
             </div>
