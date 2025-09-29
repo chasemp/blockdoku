@@ -56,7 +56,7 @@ export class ParticleSystem {
         if (!this.isEnabled) return;
         
         // Use theme color if no color specified
-        const themeColor = color || this.getThemeColor('--clear-glow-color', '#00ff00');
+        const themeColor = color || this.getThemeColor('--clear-glow-color', '#ff4444');
         this.particles.push(new GlowTrailParticle(x, y, themeColor));
     }
     
@@ -65,7 +65,7 @@ export class ParticleSystem {
         if (!this.isEnabled) return;
         
         // Use theme color if no color specified
-        const themeColor = color || this.getThemeColor('--clear-glow-color', '#00ff00');
+        const themeColor = color || this.getThemeColor('--clear-glow-color', '#ff4444');
         
         this.particles.push(new ScoreNumberParticle(x, y, score, themeColor));
     }
