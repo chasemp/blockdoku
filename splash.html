@@ -14,7 +14,7 @@
     <script>
         // Function to update theme
         function updateTheme() {
-            const savedSettings = localStorage.getItem('blockdoku-settings');
+            const savedSettings = localStorage.getItem('blockdoku_settings') || localStorage.getItem('blockdoku-settings');
             if (savedSettings) {
                 try {
                     const settings = JSON.parse(savedSettings);
@@ -35,7 +35,7 @@
         
         // Listen for theme changes from other pages
         window.addEventListener('storage', function(e) {
-            if (e.key === 'blockdoku-settings') {
+            if (e.key === 'blockdoku-settings' || e.key === 'blockdoku_settings') {
                 updateTheme();
             }
         });
@@ -286,10 +286,10 @@
             100% { opacity: 1; }
         }
     </style>
-  <script type="module" crossorigin src="./assets/splash-DybpqPaT.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/wood-CS1vos5M.js">
+  <script type="module" crossorigin src="./assets/splash-DODQJnai.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/wood-BSoGWpSl.js">
   <link rel="modulepreload" crossorigin href="./assets/build-info-Dwp5dZmk.js">
-  <link rel="stylesheet" crossorigin href="./assets/wood-dGYy0LCH.css">
+  <link rel="stylesheet" crossorigin href="./assets/wood-B_sWIlZE.css">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
     <!-- Background decorative elements -->
