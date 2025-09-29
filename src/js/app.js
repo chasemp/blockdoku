@@ -1578,9 +1578,11 @@ class BlockdokuGame {
         const currentCombo = this.scoringSystem.getCombo();
         const totalCombos = this.scoringSystem.getTotalCombos();
         
-        // Track both combo modes as used
-        this.comboModesUsed.add('streak');
-        this.comboModesUsed.add('cumulative');
+        // Determine which value to show based on settings
+        const settings = this.storage.loadSettings();
+        const mode = settings.comboDisplayMode || 'streak';
+        this.comboModeActive = mode;
+        this.comboModesUsed.add(mode);
         
         // Check for first score gain
         if (this.previousScore === 0 && this.score > 0) {
@@ -1603,9 +1605,13 @@ class BlockdokuGame {
         scoreElement.textContent = this.score;
         levelElement.textContent = this.level;
         
-        // Display both combo types: "Streak: X | Total: Y"
-        if (comboLabelElement) comboLabelElement.textContent = 'Combos';
-        comboElement.textContent = `Streak: ${currentCombo} | Total: ${totalCombos}`;
+        // Display selected combo type in scoreboard
+        if (comboLabelElement) comboLabelElement.textContent = 'Combo';
+        if (mode === 'cumulative') {
+            comboElement.textContent = totalCombos;
+        } else {
+            comboElement.textContent = currentCombo;
+        }
         
         // Update previous values
         this.previousScore = this.score;
@@ -2444,15 +2450,8 @@ class BlockdokuGame {
 			squares: stats.squareClears || 0
 		};
 
-        // Build combo summary based on which modes were used
-        const modesUsedSet = new Set(stats.comboModesUsed || []);
-        const usedStreak = modesUsedSet.has('streak') || modesUsedSet.size === 0; // default to streak if unknown
-        const usedCumulative = modesUsedSet.has('cumulative');
-        const comboSummary = usedStreak && usedCumulative
-            ? `<p style=\"margin: 5px 0;\">Max Streak: ${stats.maxCombo}</p><p style=\"margin: 5px 0;\">Total Combos: ${stats.comboActivations || 0}</p>`
-            : (usedCumulative
-                ? `<p style=\"margin: 5px 0;\">Total Combos: ${stats.comboActivations || 0}</p>`
-                : `<p style=\"margin: 5px 0;\">Max Streak: ${stats.maxCombo}</p>`);
+        // Always show both combo types in game over modal
+        const comboSummary = `<p style=\"margin: 5px 0;\">Max Streak: ${stats.maxCombo}</p><p style=\"margin: 5px 0;\">Total Combos: ${stats.totalCombos || 0}</p>`;
 
         modalContent.innerHTML = `
 			<h2 style="margin: 0 0 20px 0; color: var(--primary-color, #3498db);">Game Over!</h2>
@@ -2528,9 +2527,7 @@ class BlockdokuGame {
 			try {
 				const difficultyText = (stats.difficulty?.toUpperCase?.() || this.difficulty.toUpperCase());
 				const shareUrl = (window.location && window.location.origin) ? (window.location.origin + window.location.pathname) : (window.location.href || '');
-                const shareComboText = (usedStreak && usedCumulative)
-                    ? `Max Streak ${stats.maxCombo}, Total Combos ${stats.comboActivations || 0}`
-                    : (usedCumulative ? `Total Combos ${stats.comboActivations || 0}` : `Max Streak ${stats.maxCombo}`);
+                const shareComboText = `Max Streak ${stats.maxCombo}, Total Combos ${stats.totalCombos || 0}`;
                 const text = `I scored ${stats.score} in Blockdoku (${difficultyText}) — Level ${stats.level}, ${stats.linesCleared} lines, ${shareComboText}!`;
 				if (navigator.share) {
 					await navigator.share({ title: 'My Blockdoku Score', text, url: shareUrl });
@@ -2573,6 +2570,7 @@ class BlockdokuGame {
 			linesCleared: s.linesCleared,
 			combo: s.combo,
 			maxCombo: s.maxCombo,
+			totalCombos: s.totalCombos,
 			rowClears: s.rowClears,
 			columnClears: s.columnClears,
 			squareClears: s.squareClears,
@@ -2652,7 +2650,7 @@ class BlockdokuGame {
                 <div class="score-item">
                     <span class="rank">#${index + 1}</span>
                     <span class="score-value">${score.score.toLocaleString()}</span>
-                    <span class="score-details">Level ${score.level} • ${score.linesCleared} lines • ${score.date}</span>
+                    <span class="score-details">Level ${score.level} • ${score.linesCleared} lines • Max Streak: ${score.maxCombo || 0} • Total Combos: ${score.totalCombos || 0} • ${score.date}</span>
                 </div>
             `).join('');
         }
@@ -2677,8 +2675,12 @@ class BlockdokuGame {
 				<span class="stat-value">${stats.totalLinesCleared}</span>
             </div>
             <div class="stat-item">
-                <span class="stat-label">Max Combo:</span>
+                <span class="stat-label">Max Streak:</span>
                 <span class="stat-value">${stats.maxCombo}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total Combos:</span>
+                <span class="stat-value">${stats.totalCombos || 0}</span>
             </div>
         `;
     }

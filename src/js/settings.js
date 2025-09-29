@@ -679,8 +679,12 @@ class SettingsManager {
                 <span class="stat-value">${stats.totalLinesCleared || 0}</span>
             </div>
             <div class="stat-item">
-                <span class="stat-label">Max Combo:</span>
+                <span class="stat-label">Max Streak:</span>
                 <span class="stat-value">${stats.maxCombo || 0}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total Combos:</span>
+                <span class="stat-value">${stats.totalCombos || 0}</span>
             </div>
         `;
     }
