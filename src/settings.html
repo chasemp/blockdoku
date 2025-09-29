@@ -18,7 +18,7 @@
     <script>
         // Function to update theme
         function updateTheme() {
-            const savedSettings = localStorage.getItem('blockdoku-settings');
+            const savedSettings = localStorage.getItem('blockdoku_settings') || localStorage.getItem('blockdoku-settings');
             if (savedSettings) {
                 try {
                     const settings = JSON.parse(savedSettings);
@@ -55,7 +55,7 @@
         
         // Listen for theme changes from other pages
         window.addEventListener('storage', function(e) {
-            if (e.key === 'blockdoku-settings') {
+            if (e.key === 'blockdoku_settings' || e.key === 'blockdoku-settings') {
                 updateTheme();
             }
         });

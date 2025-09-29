@@ -256,7 +256,7 @@ class SettingsManager {
     
     async selectDifficulty(difficulty) {
         // Check if there's a game in progress by looking at localStorage
-        const gameState = localStorage.getItem('blockdoku_game_state');
+		const gameState = localStorage.getItem('blockdoku_game_data') || localStorage.getItem('blockdoku_game_state');
         let gameInProgress = false;
         
         if (gameState) {

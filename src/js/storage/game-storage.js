@@ -9,6 +9,13 @@ export class GameStorage {
         this.settingsKey = 'blockdoku_settings';
         this.highScoresKey = 'blockdoku_high_scores';
         this.maxHighScores = 10;
+
+		// Ensure upgrades preserve existing data by migrating legacy keys once
+		try {
+			this.migrateLegacyKeys();
+		} catch (e) {
+			console.warn('Storage migration skipped due to error:', e);
+		}
     }
 
     // Game State Management
@@ -255,4 +262,65 @@ export class GameStorage {
             return false;
         }
     }
+
+	// Internal: migrate older key names to canonical keys so upgrades preserve data
+	migrateLegacyKeys() {
+		const MIGRATION_FLAG = 'blockdoku_migrated_v1';
+		if (localStorage.getItem(MIGRATION_FLAG) === 'true') {
+			return;
+		}
+
+		// Settings key: 'blockdoku-settings' -> 'blockdoku_settings'
+		try {
+			const legacySettings = localStorage.getItem('blockdoku-settings');
+			const hasCanonicalSettings = localStorage.getItem(this.settingsKey) !== null;
+			if (!hasCanonicalSettings && legacySettings) {
+				localStorage.setItem(this.settingsKey, legacySettings);
+				localStorage.removeItem('blockdoku-settings');
+			}
+		} catch (e) {}
+
+		// Game state key: 'blockdoku_game_state' -> 'blockdoku_game_data'
+		try {
+			const legacyGameState = localStorage.getItem('blockdoku_game_state');
+			const hasCanonicalGameState = localStorage.getItem(this.storageKey) !== null;
+			if (!hasCanonicalGameState && legacyGameState) {
+				localStorage.setItem(this.storageKey, legacyGameState);
+				localStorage.removeItem('blockdoku_game_state');
+			}
+		} catch (e) {}
+
+		// High scores possible legacy variants
+		try {
+			const candidates = ['blockdoku_highscores', 'blockdoku_high-scores'];
+			const hasCanonicalScores = localStorage.getItem(this.highScoresKey) !== null;
+			if (!hasCanonicalScores) {
+				for (const key of candidates) {
+					const val = localStorage.getItem(key);
+					if (val) {
+						localStorage.setItem(this.highScoresKey, val);
+						localStorage.removeItem(key);
+						break;
+					}
+				}
+			}
+		} catch (e) {}
+
+		// Statistics possible legacy variants
+		try {
+			const hasCanonicalStats = localStorage.getItem('blockdoku_statistics') !== null;
+			if (!hasCanonicalStats) {
+				const legacyStats = localStorage.getItem('blockdoku_stats');
+				if (legacyStats) {
+					localStorage.setItem('blockdoku_statistics', legacyStats);
+					localStorage.removeItem('blockdoku_stats');
+				}
+			}
+		} catch (e) {}
+
+		// Mark migration complete
+		try {
+			localStorage.setItem(MIGRATION_FLAG, 'true');
+		} catch (e) {}
+	}
 }
