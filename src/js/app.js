@@ -1183,10 +1183,7 @@ class BlockdokuGame {
         // Redraw board to show glow effect
         this.drawBoard();
         
-        // Show immediate score popup
-        const centerX = this.canvas.width / 2;
-        const centerY = this.canvas.height / 2;
-        this.showQuickClearNotification(centerX, centerY, clearedLines);
+        // Note: Score popup will be shown in completeLineClear when clearance actually happens
     }
     
     drawClearingBlockGlow(clearedLines, options = {}) {
