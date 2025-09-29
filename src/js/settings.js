@@ -190,6 +190,23 @@ class SettingsManager {
                 this.shareGame();
             });
         }
+
+        // Reset statistics button
+        const resetStatsBtn = document.getElementById('reset-stats');
+        if (resetStatsBtn) {
+            resetStatsBtn.addEventListener('click', async () => {
+                const confirmed = await this.confirmationDialog.show(
+                    'This will permanently delete your game statistics (games played, totals, best score). Your high scores and settings will not be affected. Continue?'
+                );
+                if (!confirmed) return;
+                this.storage.clearStatistics();
+                // Refresh stats section if visible
+                try {
+                    this.loadHighScores();
+                } catch {}
+                this.showNotification('Statistics reset');
+            });
+        }
     }
     
     showSection(sectionName) {
