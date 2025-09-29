@@ -302,7 +302,7 @@
             border-radius: 8px;
             padding: 1rem;
             display: grid;
-            grid-template-columns: 1fr auto auto;
+            grid-template-columns: 1fr auto auto auto;
             gap: 1rem;
             align-items: center;
         }
@@ -366,6 +366,36 @@
             transform: translateY(0);
         }
         
+        .sound-mute-btn {
+            padding: 0.5rem;
+            background: var(--secondary-color, #666);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+        }
+        
+        .sound-mute-btn:hover {
+            background: var(--secondary-hover, #555);
+            transform: translateY(-1px);
+        }
+        
+        .sound-mute-btn.muted {
+            background: var(--error-color, #dc3545);
+        }
+        
+        .sound-mute-btn.muted:hover {
+            background: var(--error-hover, #c82333);
+        }
+        
         .sound-reset-all-btn {
             padding: 0.75rem 1.5rem;
             background: var(--secondary-color, #666);
@@ -391,7 +421,8 @@
             }
             
             .sound-preset-select,
-            .sound-preview-btn {
+            .sound-preview-btn,
+            .sound-mute-btn {
                 width: 100%;
                 justify-content: center;
             }
