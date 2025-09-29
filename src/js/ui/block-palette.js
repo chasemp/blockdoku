@@ -221,10 +221,17 @@ export class BlockPalette {
     }
     
     startDragFromPalette(touch) {
+        // Get the block that's actually being dragged
+        const draggedBlock = this.blockManager.getBlockById(this.touchStartBlockId);
+        if (!draggedBlock) return;
+        
+        // Auto-select the block being dragged
+        this.selectBlock(this.touchStartBlockId);
+        
         // Notify the game that we're starting a drag from the palette
         const dragEvent = new CustomEvent('blockDragStart', {
             detail: {
-                block: this.selectedBlock,
+                block: draggedBlock,
                 touch: touch
             }
         });
