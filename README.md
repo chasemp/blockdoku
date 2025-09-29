@@ -6,6 +6,7 @@ A Progressive Web App for playing Blockudoku with multiple themes, local storage
 
 - 🎮 **Classic Blockudoku Gameplay**: Combine Sudoku and block placement mechanics
 - 🎨 **Multiple Themes**: Light, Dark, and Wood (soft wood tones) modes
+- 🔊 **Sound Customization**: Choose from 8 presets for each of 16 sound effects
 - 💾 **Local Storage**: Game history and high scores saved locally
 - 📱 **PWA Support**: Installable on mobile and desktop devices
 - 🎯 **Difficulty Levels**: Adjustable game difficulty
@@ -99,6 +100,28 @@ blockdoku_pwa/
 ├── tests/                 # Test files
 └── PROJECT_PLAN.md        # Detailed development plan
 ```
+
+## Sound Customization
+
+The app features a comprehensive sound customization system that allows users to personalize each of the 16 game sound effects. 
+
+### Available Presets
+- **Default** - Original game sounds
+- **Chime** - Gentle bell-like tones
+- **Beep** - Electronic beeps
+- **Pop** - Quick pop sounds
+- **Swoosh** - Whoosh effects
+- **Ding** - High-pitched dings
+- **Thud** - Low bass thumps
+- **Click** - Sharp click sounds
+
+### Customizable Effects
+All 16 sound effects can be customized including block placement, line clears, combos, level ups, timer warnings, and UI interactions.
+
+**Documentation:**
+- [Sound Customization Overview](./SOUND_CUSTOMIZATION.md)
+- [User Guide](./USER_GUIDE_SOUND_CUSTOMIZATION.md)
+- [Implementation Notes](./IMPLEMENTATION_NOTES.md)
 
 ## Contributing
 
