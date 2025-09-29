@@ -9,6 +9,8 @@ export class GameStorage {
         this.settingsKey = 'blockdoku_settings';
         this.highScoresKey = 'blockdoku_high_scores';
         this.maxHighScores = 10;
+        // Migrate any legacy keys to current canonical keys
+        this.migrateLegacyKeys();
     }
 
     // Game State Management
@@ -253,6 +255,32 @@ export class GameStorage {
         } catch (error) {
             console.error('Failed to import data:', error);
             return false;
+        }
+    }
+
+    // Migrate legacy localStorage keys so upgrades preserve user data
+    migrateLegacyKeys() {
+        try {
+            // Settings: 'blockdoku-settings' (legacy) -> 'blockdoku_settings' (current)
+            const legacySettingsKey = 'blockdoku-settings';
+            const legacySettings = localStorage.getItem(legacySettingsKey);
+            const currentSettings = localStorage.getItem(this.settingsKey);
+            if (legacySettings && !currentSettings) {
+                localStorage.setItem(this.settingsKey, legacySettings);
+                // Keep legacy key temporarily for listeners; do not remove abruptly
+            }
+
+            // Game state: 'blockdoku_game_state' (legacy) -> 'blockdoku_game_data' (current)
+            const legacyGameKey = 'blockdoku_game_state';
+            const legacyGame = localStorage.getItem(legacyGameKey);
+            const currentGame = localStorage.getItem(this.storageKey);
+            if (legacyGame && !currentGame) {
+                // Basic structural compatibility move
+                localStorage.setItem(this.storageKey, legacyGame);
+                // Do not remove legacy immediately; harmless to leave for now
+            }
+        } catch (error) {
+            console.warn('GameStorage migration skipped due to error:', error);
         }
     }
 }
