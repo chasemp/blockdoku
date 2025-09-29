@@ -157,8 +157,7 @@ export class BlockPalette {
                         // Add dragging visual feedback
                         const blockItem = document.querySelector(`[data-block-id="${this.touchStartBlockId}"]`);
                         if (blockItem) {
-                            blockItem.style.opacity = '0.7';
-                            blockItem.style.transform = 'scale(1.1)';
+                            blockItem.classList.add('dragging');
                         }
                     }
                 }
@@ -170,9 +169,9 @@ export class BlockPalette {
                 // Reset visual feedback
                 const blockItem = document.querySelector(`[data-block-id="${this.touchStartBlockId}"]`);
                 if (blockItem) {
+                    blockItem.classList.remove('dragging');
                     blockItem.style.transform = '';
                     blockItem.style.transition = '';
-                    blockItem.style.opacity = '';
                 }
                 
                 this.touchStart = null;
@@ -187,9 +186,9 @@ export class BlockPalette {
                 // Reset visual feedback
                 const blockItem = document.querySelector(`[data-block-id="${this.touchStartBlockId}"]`);
                 if (blockItem) {
+                    blockItem.classList.remove('dragging');
                     blockItem.style.transform = '';
                     blockItem.style.transition = '';
-                    blockItem.style.opacity = '';
                 }
                 
                 this.touchStart = null;
