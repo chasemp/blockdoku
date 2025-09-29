@@ -301,6 +301,202 @@ class SettingsManager {
         // Enable sound for previews
         this.soundManager.setEnabled(true);
         
+        const groupedEffects = this.soundManager.getGroupedSoundEffects();
+        const presets = this.soundManager.getAvailablePresets();
+        const groupedSettings = this.soundManager.getGroupedSoundSettings();
+        
+        let html = '';
+        
+        // Create UI for each sound group
+        for (const [groupKey, groupInfo] of Object.entries(groupedEffects)) {
+            const currentPreset = groupedSettings[groupKey] || 'default';
+            const isMixed = currentPreset === 'mixed';
+            const isMuted = currentPreset === 'none';
+            
+            html += `
+                <div class="sound-group-item">
+                    <div class="sound-group-info">
+                        <h4>${groupInfo.name}</h4>
+                        <p>${groupInfo.description}</p>
+                        <div class="sound-group-details">
+                            <small>Includes: ${groupInfo.sounds.length} sound${groupInfo.sounds.length !== 1 ? 's' : ''}</small>
+                            ${isMixed ? '<small class="mixed-indicator">⚠️ Mixed presets</small>' : ''}
+                        </div>
+                    </div>
+                    <div class="sound-group-controls">
+                        <select class="sound-group-preset-select" data-group="${groupKey}">
+                            <option value="default" ${currentPreset === 'default' ? 'selected' : ''}>Default</option>
+                            <option value="none" ${currentPreset === 'none' ? 'selected' : ''}>None</option>
+                            ${Object.entries(presets).map(([presetKey, presetInfo]) => 
+                                presetKey !== 'default' ? 
+                                `<option value="${presetKey}" ${currentPreset === presetKey ? 'selected' : ''}>${presetInfo.name}</option>` 
+                                : ''
+                            ).join('')}
+                        </select>
+                        <button class="sound-group-preview-btn" data-group="${groupKey}">
+                            🔊 Preview
+                        </button>
+                        <button class="sound-group-mute-btn ${isMuted ? 'muted' : ''}" data-group="${groupKey}" title="${isMuted ? 'Unmute' : 'Mute'}">
+                            ${isMuted ? '🔇' : '🔊'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        html += `
+            <div class="sound-group-actions">
+                <button class="sound-reset-all-btn" id="reset-all-sounds">
+                    Reset All to Default
+                </button>
+                <button class="sound-advanced-btn" id="show-advanced-sounds">
+                    Advanced Individual Settings
+                </button>
+            </div>
+        `;
+        
+        container.innerHTML = html;
+        
+        // Add event listeners for grouped preset changes
+        container.querySelectorAll('.sound-group-preset-select').forEach(select => {
+            select.addEventListener('change', (e) => {
+                const groupKey = e.target.dataset.group;
+                const presetId = e.target.value;
+                this.soundManager.setGroupedSoundSettings(groupKey, presetId);
+                
+                // Update mute button state
+                const muteBtn = e.target.parentElement.querySelector('.sound-group-mute-btn');
+                if (muteBtn) {
+                    if (presetId === 'none') {
+                        muteBtn.classList.add('muted');
+                        muteBtn.textContent = '🔇';
+                        muteBtn.title = 'Unmute';
+                    } else {
+                        muteBtn.classList.remove('muted');
+                        muteBtn.textContent = '🔊';
+                        muteBtn.title = 'Mute';
+                    }
+                }
+                
+                // Update mixed indicator
+                const groupItem = e.target.closest('.sound-group-item');
+                const mixedIndicator = groupItem.querySelector('.mixed-indicator');
+                if (presetId === 'mixed') {
+                    if (!mixedIndicator) {
+                        const details = groupItem.querySelector('.sound-group-details');
+                        details.innerHTML += '<small class="mixed-indicator">⚠️ Mixed presets</small>';
+                    }
+                } else if (mixedIndicator) {
+                    mixedIndicator.remove();
+                }
+            });
+        });
+        
+        // Add event listeners for grouped preview buttons
+        container.querySelectorAll('.sound-group-preview-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const groupKey = e.currentTarget.dataset.group;
+                const select = e.currentTarget.parentElement.querySelector('.sound-group-preset-select');
+                const selectedPreset = select.value;
+                
+                if (selectedPreset === 'none') {
+                    // Show a brief visual feedback for "none" option
+                    const originalText = btn.textContent;
+                    btn.textContent = '🔇 Silent';
+                    btn.style.opacity = '0.6';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.opacity = '1';
+                    }, 500);
+                } else {
+                    this.soundManager.previewGroupedSound(groupKey);
+                }
+            });
+        });
+        
+        // Add event listeners for grouped mute buttons
+        container.querySelectorAll('.sound-group-mute-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const groupKey = e.currentTarget.dataset.group;
+                const select = e.currentTarget.parentElement.querySelector('.sound-group-preset-select');
+                const currentPreset = select.value;
+                
+                if (currentPreset === 'none') {
+                    // Unmute: set to default
+                    select.value = 'default';
+                    this.soundManager.setGroupedSoundSettings(groupKey, 'default');
+                    btn.classList.remove('muted');
+                    btn.textContent = '🔊';
+                    btn.title = 'Mute';
+                } else {
+                    // Mute: set to none
+                    select.value = 'none';
+                    this.soundManager.setGroupedSoundSettings(groupKey, 'none');
+                    btn.classList.add('muted');
+                    btn.textContent = '🔇';
+                    btn.title = 'Unmute';
+                }
+            });
+        });
+        
+        // Add event listener for reset all button
+        const resetAllBtn = document.getElementById('reset-all-sounds');
+        if (resetAllBtn) {
+            resetAllBtn.addEventListener('click', async () => {
+                const confirmed = await this.confirmationDialog.show(
+                    'Reset all sound effects to their default sounds?'
+                );
+                if (confirmed) {
+                    this.resetAllSounds();
+                }
+            });
+        }
+        
+        // Add event listener for advanced settings button
+        const advancedBtn = document.getElementById('show-advanced-sounds');
+        if (advancedBtn) {
+            advancedBtn.addEventListener('click', () => {
+                this.toggleAdvancedSoundSettings();
+            });
+        }
+    }
+    
+    resetAllSounds() {
+        // Clear all custom sound mappings
+        this.soundManager.customSoundMappings = {};
+        this.soundManager.saveSoundMappings();
+        this.soundManager.createSounds();
+        
+        // Reload the UI
+        this.loadSoundCustomization();
+        
+        // Show notification
+        this.showNotification('All sounds reset to default');
+    }
+    
+    toggleAdvancedSoundSettings() {
+        const container = document.getElementById('sound-customization-container');
+        if (!container) return;
+        
+        // Check if we're currently showing advanced settings
+        const isAdvanced = container.querySelector('.sound-effect-item');
+        
+        if (isAdvanced) {
+            // Switch back to grouped view
+            this.loadSoundCustomization();
+        } else {
+            // Switch to advanced individual settings
+            this.loadAdvancedSoundCustomization();
+        }
+    }
+    
+    loadAdvancedSoundCustomization() {
+        const container = document.getElementById('sound-customization-container');
+        if (!container) return;
+        
+        // Enable sound for previews
+        this.soundManager.setEnabled(true);
+        
         const soundEffects = this.soundManager.getSoundEffects();
         const presets = this.soundManager.getAvailablePresets();
         const currentMappings = this.soundManager.customSoundMappings || {};
@@ -338,13 +534,23 @@ class SettingsManager {
         }
         
         html += `
-            <button class="sound-reset-all-btn" id="reset-all-sounds">
-                Reset All to Default
-            </button>
+            <div class="sound-group-actions">
+                <button class="sound-reset-all-btn" id="reset-all-sounds">
+                    Reset All to Default
+                </button>
+                <button class="sound-advanced-btn" id="show-advanced-sounds">
+                    Back to Grouped Settings
+                </button>
+            </div>
         `;
         
         container.innerHTML = html;
         
+        // Add event listeners for individual sound effects (reuse existing logic)
+        this.setupIndividualSoundEventListeners(container);
+    }
+    
+    setupIndividualSoundEventListeners(container) {
         // Add event listeners for preset changes
         container.querySelectorAll('.sound-preset-select').forEach(select => {
             select.addEventListener('change', (e) => {
@@ -427,19 +633,14 @@ class SettingsManager {
                 }
             });
         }
-    }
-    
-    resetAllSounds() {
-        // Clear all custom sound mappings
-        this.soundManager.customSoundMappings = {};
-        this.soundManager.saveSoundMappings();
-        this.soundManager.createSounds();
         
-        // Reload the UI
-        this.loadSoundCustomization();
-        
-        // Show notification
-        this.showNotification('All sounds reset to default');
+        // Add event listener for back to grouped button
+        const backBtn = document.getElementById('show-advanced-sounds');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                this.toggleAdvancedSoundSettings();
+            });
+        }
     }
     
     selectTheme(theme) {

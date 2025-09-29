@@ -296,6 +296,59 @@
             gap: 1rem;
         }
         
+        .sound-group-item {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .sound-group-info h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--text-color);
+        }
+        
+        .sound-group-info p {
+            margin: 0 0 0.5rem 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .sound-group-details {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .sound-group-details small {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        
+        .mixed-indicator {
+            color: var(--warning-color, #ffa500) !important;
+            font-weight: 500;
+        }
+        
+        .sound-group-controls {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .sound-group-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
         .sound-effect-item {
             background: var(--bg-color);
             border: 1px solid var(--border-color);
@@ -414,7 +467,80 @@
             transform: translateY(-1px);
         }
         
+        .sound-advanced-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--accent-color, #007bff);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .sound-advanced-btn:hover {
+            background: var(--accent-hover, #0056b3);
+            transform: translateY(-1px);
+        }
+        
+        .sound-group-preset-select,
+        .sound-group-preview-btn,
+        .sound-group-mute-btn {
+            padding: 0.5rem;
+            background: var(--secondary-color, #666);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .sound-group-preset-select {
+            background: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 0.75rem;
+        }
+        
+        .sound-group-preview-btn:hover,
+        .sound-group-mute-btn:hover {
+            background: var(--secondary-hover, #555);
+            transform: translateY(-1px);
+        }
+        
+        .sound-group-mute-btn.muted {
+            background: var(--danger-color, #dc3545);
+        }
+        
+        .sound-group-mute-btn.muted:hover {
+            background: var(--danger-hover, #c82333);
+        }
+        
         @media (max-width: 768px) {
+            .sound-group-item {
+                padding: 1rem;
+            }
+            
+            .sound-group-controls {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .sound-group-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
             .sound-effect-item {
                 grid-template-columns: 1fr;
                 gap: 0.75rem;
@@ -422,7 +548,10 @@
             
             .sound-preset-select,
             .sound-preview-btn,
-            .sound-mute-btn {
+            .sound-mute-btn,
+            .sound-group-preset-select,
+            .sound-group-preview-btn,
+            .sound-group-mute-btn {
                 width: 100%;
                 justify-content: center;
             }
