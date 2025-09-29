@@ -81,7 +81,7 @@ export class EffectsManager {
     
     // Score gain effects
     onScoreGain(x, y, score) {
-        const themeColor = this.getThemeColor('--clear-glow-color', '#00ff00');
+        const themeColor = this.getThemeColor('--clear-glow-color', '#ff4444');
         this.particles.createScoreNumber(x, y, score, themeColor);
         if (this.settings.sound) this.sound.play('scoreGain');
     }
@@ -107,7 +107,7 @@ export class EffectsManager {
     
     // Glow trail for block movement
     onBlockMove(x, y, color = null) {
-        const themeColor = color || this.getThemeColor('--clear-glow-color', '#00ff00');
+        const themeColor = color || this.getThemeColor('--clear-glow-color', '#ff4444');
         this.particles.createGlowTrail(x, y, themeColor);
     }
     

@@ -815,7 +815,7 @@ class BlockdokuGame {
     }
 
     getClearGlowColor() {
-        return this.getThemeColor('--clear-glow-color', '#00ff00');
+        return this.getThemeColor('--clear-glow-color', '#ff4444');
     }
     
     cleanupDrag() {
@@ -1281,25 +1281,26 @@ class BlockdokuGame {
         
         const ctx = this.ctx;
         const drawCellSize = this.actualCellSize || this.cellSize;
+        const glowColor = this.getClearGlowColor();
         
         ctx.save();
         ctx.globalAlpha = 0.7;
         
         // Highlight clearing rows
         clearedLines.rows.forEach(row => {
-            ctx.fillStyle = '#ffff00'; // Yellow highlight
+            ctx.fillStyle = glowColor; // Theme-based highlight
             ctx.fillRect(0, row * drawCellSize, this.canvas.width, drawCellSize);
         });
         
         // Highlight clearing columns
         clearedLines.columns.forEach(col => {
-            ctx.fillStyle = '#ffff00'; // Yellow highlight
+            ctx.fillStyle = glowColor; // Theme-based highlight
             ctx.fillRect(col * drawCellSize, 0, drawCellSize, this.canvas.height);
         });
         
         // Highlight clearing 3x3 squares
         clearedLines.squares.forEach(square => {
-            ctx.fillStyle = '#ffff00'; // Yellow highlight
+            ctx.fillStyle = glowColor; // Theme-based highlight
             const x = square.col * 3 * drawCellSize;
             const y = square.row * 3 * drawCellSize;
             ctx.fillRect(x, y, 3 * drawCellSize, 3 * drawCellSize);
@@ -1555,7 +1556,7 @@ class BlockdokuGame {
         this.effectsManager.particles.createFloatingText(
             centerX, centerY - 50, 
             `+${bonusSeconds}s`, 
-            '#00ff00', 
+            this.getClearGlowColor(), 
             2000
         );
     }
@@ -1582,7 +1583,8 @@ class BlockdokuGame {
     // Enhanced visual effects for line clearing
     createLineClearEffect(clearedLines) {
         // Create a more dramatic flash effect
-        this.ctx.fillStyle = '#ffff00';
+        const glowColor = this.getClearGlowColor();
+        this.ctx.fillStyle = glowColor;
         this.ctx.globalAlpha = 0.8;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.globalAlpha = 1.0;
@@ -1610,7 +1612,8 @@ class BlockdokuGame {
         this.ctx.fillRect(x - 60, y - 20, 120, 40);
         
         // Add border
-        this.ctx.strokeStyle = '#00ff00';
+        const glowColor = this.getClearGlowColor();
+        this.ctx.strokeStyle = glowColor;
         this.ctx.lineWidth = 2;
         this.ctx.strokeRect(x - 60, y - 20, 120, 40);
         
@@ -1623,7 +1626,7 @@ class BlockdokuGame {
         const contextText = parts.length ? parts.join(' + ') : 'Placement';
 
         // Primary score text
-        this.ctx.fillStyle = '#00ff00';
+        this.ctx.fillStyle = glowColor;
         this.ctx.font = 'bold 22px Arial';
         this.ctx.textAlign = 'center';
         this.ctx.fillText(`+${scoreGained}`, x, y);
@@ -1644,10 +1647,10 @@ class BlockdokuGame {
                 this.ctx.globalAlpha = 1 - (animationFrame / 60);
                 this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
                 this.ctx.fillRect(x - 70, y - 24 - animationFrame * 2, 140, 48);
-                this.ctx.strokeStyle = '#00ff00';
+                this.ctx.strokeStyle = glowColor;
                 this.ctx.lineWidth = 2;
                 this.ctx.strokeRect(x - 70, y - 24 - animationFrame * 2, 140, 48);
-                this.ctx.fillStyle = '#00ff00';
+                this.ctx.fillStyle = glowColor;
                 this.ctx.font = 'bold 22px Arial';
                 this.ctx.textAlign = 'center';
                 this.ctx.fillText(`+${scoreGained}`, x, y - 4 - animationFrame * 2);
@@ -1731,8 +1734,9 @@ class BlockdokuGame {
     animateFirstScore(element) {
         element.style.transition = 'all 0.6s ease-out';
         element.style.transform = 'scale(1.5)';
-        element.style.color = '#00ff00';
-        element.style.textShadow = '0 0 10px #00ff00';
+        const glowColor = this.getClearGlowColor();
+        element.style.color = glowColor;
+        element.style.textShadow = `0 0 10px ${glowColor}`;
         
         setTimeout(() => {
             element.style.transform = 'scale(1)';
@@ -1744,7 +1748,7 @@ class BlockdokuGame {
     animateScoreIncrease(element) {
         element.style.transition = 'all 0.3s ease-out';
         element.style.transform = 'scale(1.2)';
-        element.style.color = '#ffff00';
+        element.style.color = this.getClearGlowColor();
         
         setTimeout(() => {
             element.style.transform = 'scale(1)';
