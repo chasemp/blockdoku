@@ -32,6 +32,23 @@
             </div>
         </header>
         
+        <!-- Utility Bar (between header and score bar) -->
+        <div class="utility-bar" id="utility-bar">
+            <div class="utility-left" id="utility-left"></div>
+            <div class="utility-center">
+                <div id="personal-bests" class="personal-bests" style="display: none;"></div>
+            </div>
+            <div class="utility-right" id="utility-right">
+                <div class="timer" id="timer-display" style="display: none;">
+                    <span>TIME</span>
+                    <span id="timer">5:00</span>
+                </div>
+                <div class="hint-controls" id="hint-controls" style="display: none;">
+                    <button id="hint-btn" class="btn btn-hint">💡 Hint</button>
+                </div>
+            </div>
+        </div>
+        
         <main class="main">
             <div class="game-container">
                 <div class="game-info">
@@ -46,13 +63,6 @@
                     <div class="combo">
                         <span>Combo </span>
                         <span id="combo">0</span>
-                    </div>
-                    <div class="timer" id="timer-display" style="display: none;">
-                        <span>TIME</span>
-                        <span id="timer">5:00</span>
-                    </div>
-                    <div class="hint-controls" id="hint-controls" style="display: none;">
-                        <button id="hint-btn" class="btn btn-hint">💡 Hint</button>
                     </div>
                 </div>
                 
