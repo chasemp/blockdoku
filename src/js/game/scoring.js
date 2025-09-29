@@ -162,7 +162,7 @@ export class ScoringSystem {
             this.columnsClearedCount += clearedLines.columns.length;
             this.squaresClearedCount += clearedLines.squares.length;
 
-            this.calculateScore(clearedLines);
+            this.calculateScore(clearedLines, isComboEvent);
             this.linesCleared += totalCleared;
             
 			// A combo occurs when 2+ total clears happen in the same clear event
@@ -187,7 +187,7 @@ export class ScoringSystem {
         };
     }
     
-    calculateScore(clearedLines) {
+    calculateScore(clearedLines, isComboEvent = false) {
         let scoreGained = 0;
         
         // Base score for each type of clear
