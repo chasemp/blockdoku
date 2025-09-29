@@ -247,6 +247,14 @@ class SettingsManager {
             });
         }
 
+        // Share scores button
+        const shareScoresButton = document.getElementById('share-scores-button');
+        if (shareScoresButton) {
+            shareScoresButton.addEventListener('click', () => {
+                this.shareHighScores();
+            });
+        }
+
         // Reset statistics button
         const resetStatsBtn = document.getElementById('reset-stats');
         if (resetStatsBtn) {
@@ -716,6 +724,61 @@ class SettingsManager {
         }).catch(() => {
             // If clipboard fails, show URL in alert
             alert(`Share this game: ${url}`);
+        });
+    }
+
+    shareHighScores() {
+        const highScores = this.storage.getHighScores();
+        const stats = this.storage.loadStatistics();
+        
+        if (highScores.length === 0) {
+            this.showNotification('No high scores to share yet!');
+            return;
+        }
+
+        // Format high scores for sharing
+        let scoresText = '🏆 Blockdoku High Scores\n\n';
+        
+        highScores.slice(0, 5).forEach((score, index) => {
+            const difficulty = (score.difficulty || 'normal').toUpperCase();
+            const date = new Date(score.date).toLocaleDateString();
+            scoresText += `#${index + 1} ${score.score.toLocaleString()} (${difficulty}) - Level ${score.level} - ${date}\n`;
+        });
+        
+        // Add statistics
+        scoresText += `\n📊 Statistics:\n`;
+        scoresText += `Games Played: ${stats.gamesPlayed}\n`;
+        scoresText += `Total Score: ${stats.totalScore.toLocaleString()}\n`;
+        scoresText += `Best Score: ${stats.bestScore.toLocaleString()}\n`;
+        scoresText += `Max Combo: ${stats.maxCombo}\n`;
+        
+        const url = 'https://blockdoku.523.life';
+        const title = 'My Blockdoku High Scores';
+        
+        if (navigator.share) {
+            // Use native Web Share API if available
+            navigator.share({
+                title: title,
+                text: scoresText,
+                url: url
+            }).catch(err => {
+                console.log('Error sharing scores:', err);
+                this.fallbackShareScores(scoresText, url, title);
+            });
+        } else {
+            // Fallback to clipboard and notification
+            this.fallbackShareScores(scoresText, url, title);
+        }
+    }
+
+    fallbackShareScores(scoresText, url, title) {
+        // Copy to clipboard
+        navigator.clipboard.writeText(`${scoresText}\n\nPlay Blockdoku: ${url}`).then(() => {
+            // Show a temporary notification
+            this.showNotification('High scores copied to clipboard!');
+        }).catch(() => {
+            // If clipboard fails, show scores in alert
+            alert(`${scoresText}\n\nPlay Blockdoku: ${url}`);
         });
     }
     
