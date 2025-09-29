@@ -57,6 +57,12 @@ class SettingsManager {
             soundEnabled.checked = this.settings.soundEnabled === true; // Default to false
         }
         
+        // Sound effects in sounds section
+        const soundEnabledSounds = document.getElementById('sound-enabled-sounds-section');
+        if (soundEnabledSounds) {
+            soundEnabledSounds.checked = this.settings.soundEnabled === true; // Default to false
+        }
+        
         // Animations
         const animationsEnabled = document.getElementById('animations-enabled');
         if (animationsEnabled) {
@@ -168,7 +174,25 @@ class SettingsManager {
         
         document.getElementById('sound-enabled').addEventListener('change', (e) => {
             this.updateSetting('soundEnabled', e.target.checked);
+            // Also update the sound toggle in sounds section to keep them in sync
+            const soundsSectionToggle = document.getElementById('sound-enabled-sounds-section');
+            if (soundsSectionToggle) {
+                soundsSectionToggle.checked = e.target.checked;
+            }
         });
+        
+        // Sound toggle in sounds section
+        const soundEnabledSounds = document.getElementById('sound-enabled-sounds-section');
+        if (soundEnabledSounds) {
+            soundEnabledSounds.addEventListener('change', (e) => {
+                this.updateSetting('soundEnabled', e.target.checked);
+                // Also update the other sound toggle to keep them in sync
+                const otherSoundToggle = document.getElementById('sound-enabled');
+                if (otherSoundToggle) {
+                    otherSoundToggle.checked = e.target.checked;
+                }
+            });
+        }
         
         document.getElementById('animations-enabled').addEventListener('change', (e) => {
             this.updateSetting('animationsEnabled', e.target.checked);
@@ -287,6 +311,7 @@ class SettingsManager {
                     </div>
                     <select class="sound-preset-select" data-sound="${soundKey}">
                         <option value="default" ${currentPreset === 'default' ? 'selected' : ''}>Default</option>
+                        <option value="none" ${currentPreset === 'none' ? 'selected' : ''}>None</option>
                         ${Object.entries(presets).map(([presetKey, presetInfo]) => 
                             presetKey !== 'default' ? 
                             `<option value="${presetKey}" ${currentPreset === presetKey ? 'selected' : ''}>${presetInfo.name}</option>` 
@@ -321,7 +346,21 @@ class SettingsManager {
         container.querySelectorAll('.sound-preview-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const soundKey = e.currentTarget.dataset.sound;
-                this.soundManager.play(soundKey);
+                const select = e.currentTarget.parentElement.querySelector('.sound-preset-select');
+                const selectedPreset = select.value;
+                
+                if (selectedPreset === 'none') {
+                    // Show a brief visual feedback for "none" option
+                    const originalText = btn.textContent;
+                    btn.textContent = '🔇 Silent';
+                    btn.style.opacity = '0.6';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.opacity = '1';
+                    }, 500);
+                } else {
+                    this.soundManager.play(soundKey);
+                }
             });
         });
         
