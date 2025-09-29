@@ -1826,9 +1826,11 @@ class BlockdokuGame {
         // Stop the game loop
         this.stopGameLoop();
         
-        // Save high score and statistics
-        const stats = this.getStats();
-        this.checkHighScore();
+		// Save high score and statistics
+		const stats = this.getStats();
+		this.checkHighScore();
+		// Proactively refresh any visible high scores UI
+		this.loadHighScores();
         
         // Show game over modal or notification
         this.showGameOverModal(stats);
@@ -1946,13 +1948,14 @@ class BlockdokuGame {
     }
 
     getStats() {
-        return {
-            score: this.score,
-            level: this.level,
-            linesCleared: this.scoringSystem.getLinesCleared(),
-            combo: this.scoringSystem.getCombo(),
-            maxCombo: this.scoringSystem.getMaxCombo()
-        };
+		return {
+			score: this.score,
+			level: this.level,
+			linesCleared: this.scoringSystem.getLinesCleared(),
+			combo: this.scoringSystem.getCombo(),
+			maxCombo: this.scoringSystem.getMaxCombo(),
+			difficulty: this.difficulty
+		};
     }
 
     // High Scores Display
@@ -2030,7 +2033,7 @@ class BlockdokuGame {
         
         // Display statistics
         const stats = this.getStatistics();
-        statsDisplay.innerHTML = `
+		statsDisplay.innerHTML = `
             <div class="stat-item">
                 <span class="stat-label">Games Played:</span>
                 <span class="stat-value">${stats.gamesPlayed}</span>
@@ -2044,8 +2047,8 @@ class BlockdokuGame {
                 <span class="stat-value">${stats.bestScore.toLocaleString()}</span>
             </div>
             <div class="stat-item">
-                <span class="stat-label">Total Lines:</span>
-                <span class="stat-value">${stats.totalLines}</span>
+				<span class="stat-label">Total Lines:</span>
+				<span class="stat-value">${stats.totalLinesCleared}</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Max Combo:</span>
