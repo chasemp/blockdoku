@@ -29,6 +29,15 @@
                             document.head.appendChild(themeLink);
                         }
                         themeLink.href = `css/themes/${settings.theme}.css`;
+
+                        // If Vite injected a wood stylesheet into built HTML, disable it when switching away
+                        try {
+                            const builtWoodLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+                                .filter(l => (l.getAttribute('href') || '').includes('/assets/wood-') || (l.href || '').includes('/assets/wood-'));
+                            builtWoodLinks.forEach(l => {
+                                l.disabled = settings.theme !== 'wood';
+                            });
+                        } catch (e) {}
                     }
                 } catch (e) {
                     console.log('Error parsing settings:', e);
@@ -248,7 +257,7 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="./assets/settings-uKLsQKm9.js"></script>
+  <script type="module" crossorigin src="./assets/settings-AbriGX7E.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/wood-CS1vos5M.js">
   <link rel="modulepreload" crossorigin href="./assets/confirmation-dialog-oQSc4aXZ.js">
   <link rel="modulepreload" crossorigin href="./assets/build-info-Dwp5dZmk.js">

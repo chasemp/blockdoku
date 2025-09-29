@@ -31,6 +31,15 @@
                             document.head.appendChild(themeLink);
                         }
                         themeLink.href = `css/themes/${settings.theme}.css`;
+
+                        // If Vite injected a wood stylesheet into built HTML, disable it when switching away
+                        try {
+                            const builtWoodLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+                                .filter(l => (l.getAttribute('href') || '').includes('/assets/wood-') || (l.href || '').includes('/assets/wood-'));
+                            builtWoodLinks.forEach(l => {
+                                l.disabled = settings.theme !== 'wood';
+                            });
+                        } catch (e) {}
                     }
                 } catch (e) {
                     console.log('Error parsing settings:', e);
