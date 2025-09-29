@@ -1116,11 +1116,18 @@ class BlockdokuGame {
     }
     
     checkLineClears() {
+        // Don't check for clears if we're already in the middle of a clearing animation
+        if (this.pendingClears) {
+            console.log('Skipping line clear check - animation in progress');
+            return;
+        }
+        
         // Check for completed lines (but don't clear yet)
         const clearedLines = this.scoringSystem.checkForCompletedLines(this.board);
         
         // If any lines were cleared, start the animation sequence
         if (clearedLines.rows.length > 0 || clearedLines.columns.length > 0 || clearedLines.squares.length > 0) {
+            console.log('Lines detected for clearing:', clearedLines);
             // Show immediate visual feedback first (with original board intact for glow)
             this.showImmediateClearFeedback(clearedLines);
             
@@ -1351,18 +1358,27 @@ class BlockdokuGame {
     }
     
     completeLineClear(clearedLines) {
-        // Clear pending clears state
-        this.pendingClears = null;
-        
-        // Actually clear the lines
-        const result = this.scoringSystem.applyClears(this.board, clearedLines);
-        this.board = result.board;
-        
-        // Update score and level with difficulty multiplier
-        const baseScore = this.scoringSystem.getScore();
-        const combo = this.scoringSystem.getCombo();
-        this.score = this.difficultyManager.calculateScore(baseScore, combo);
-        this.level = this.scoringSystem.getLevel();
+        try {
+            // Clear pending clears state
+            this.pendingClears = null;
+            
+            // Actually clear the lines
+            const result = this.scoringSystem.applyClears(this.board, clearedLines);
+            this.board = result.board;
+            
+            // Update score and level with difficulty multiplier
+            const baseScore = this.scoringSystem.getScore();
+            const combo = this.scoringSystem.getCombo();
+            this.score = this.difficultyManager.calculateScore(baseScore, combo);
+            this.level = this.scoringSystem.getLevel();
+            
+            console.log('Line clear completed successfully. New score:', this.score, 'New level:', this.level);
+        } catch (error) {
+            console.error('Error during line clear completion:', error);
+            // Reset pending clears state even if there was an error
+            this.pendingClears = null;
+            return;
+        }
         
         // Create visual effects
         this.createLineClearEffect(clearedLines);
@@ -2547,6 +2563,11 @@ class BlockdokuGame {
             this.saveGameState();
         }
         
+        // Clear any active placeability indicators before theme switch
+        if (this.blockPalette && this.blockPalette.clearPlaceability) {
+            this.blockPalette.clearPlaceability();
+        }
+        
         this.currentTheme = theme;
         this.applyTheme(theme);
         this.updateThemeUI();
@@ -2555,6 +2576,11 @@ class BlockdokuGame {
         // Redraw the board with new theme colors
         if (this.gameRunning) {
             this.drawBoard();
+            
+            // Wait for CSS variables to be available before updating placeability indicators
+            setTimeout(() => {
+                this.updatePlaceabilityIndicators();
+            }, 100);
         }
     }
 
