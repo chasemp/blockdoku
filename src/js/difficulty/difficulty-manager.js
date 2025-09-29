@@ -145,9 +145,9 @@ export class DifficultyManager {
     }
     
     calculateScore(baseScore, combo = 1) {
+        // Combo bonus is handled within ScoringSystem now; only apply difficulty multiplier
         const multiplier = this.getScoreMultiplier();
-        const comboBonus = combo > 1 ? (combo - 1) * this.gameRules.basePoints.combo : 0;
-        return Math.floor((baseScore + comboBonus) * multiplier);
+        return Math.floor(baseScore * multiplier);
     }
     
     shouldGenerateNewBlocks(score, level) {
