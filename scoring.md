@@ -18,7 +18,7 @@ The Blockdoku game features a comprehensive scoring system that rewards strategi
 ### Scoring Formula
 
 ```
-Final Score = (Base Points × Current Level × Difficulty Multiplier) + Combo Bonus
+Final Score = (Base Points × Difficulty Multiplier) + Combo Bonus
 ```
 
 ## Combo System
@@ -67,13 +67,9 @@ The game uses a compounding progression where each level's point range increases
 - Level 1 range: 100 points
 - Each subsequent level: Previous range × 1.05 (rounded)
 
-### Level Multiplier
+### Fixed Point Awards
 
-Your current level acts as a multiplier for all base points:
-- Level 1: 1x multiplier
-- Level 2: 2x multiplier
-- Level 3: 3x multiplier
-- And so on...
+Point awards remain constant regardless of level. This ensures that level progression becomes more challenging as you advance, requiring more strategic play to achieve higher levels.
 
 ## Difficulty System
 
@@ -104,8 +100,7 @@ Your current level acts as a multiplier for all base points:
 - Base square points: 1 × 20 = 20 points
 - Combo bonus: 5 × (4-1) = 15 points
 - **Subtotal:** 80 points
-- **Level multiplier:** 80 × 3 = 240 points
-- **Difficulty multiplier:** 240 × 1.0 = **240 final points**
+- **Difficulty multiplier:** 80 × 1.0 = **80 final points**
 
 ### Example 2: Expert Difficulty, Level 5
 
@@ -115,8 +110,7 @@ Your current level acts as a multiplier for all base points:
 - Base line points: (1 + 1) × 15 = 30 points
 - Combo bonus: 5 × (2-1) = 5 points
 - **Subtotal:** 35 points
-- **Level multiplier:** 35 × 5 = 175 points
-- **Difficulty multiplier:** 175 × 0.5 = **87 final points**
+- **Difficulty multiplier:** 35 × 0.5 = **17 final points**
 
 ### Example 3: Easy Difficulty, Level 2
 
@@ -126,8 +120,7 @@ Your current level acts as a multiplier for all base points:
 - Base line points: 3 × 15 = 45 points
 - Combo bonus: 5 × (3-1) = 10 points
 - **Subtotal:** 55 points
-- **Level multiplier:** 55 × 2 = 110 points
-- **Difficulty multiplier:** 110 × 1.5 = **165 final points**
+- **Difficulty multiplier:** 55 × 1.5 = **82 final points**
 
 ## Detailed Tracking
 
@@ -155,7 +148,7 @@ The scoring system tracks comprehensive statistics:
 ### Maximizing Score
 
 1. **Aim for combos**: Clear multiple line types simultaneously
-2. **Higher levels = more points**: Focus on leveling up through consistent play
+2. **Consistent play**: Focus on steady progress to reach higher levels
 3. **Difficulty choice matters**: Easy gives more points but may feel less challenging
 4. **Square clears are valuable**: 20 base points vs 15 for lines
 
