@@ -1340,8 +1340,10 @@ class BlockdokuGame {
         const scoreElement = document.getElementById('score');
         const levelElement = document.getElementById('level');
         const comboElement = document.getElementById('combo');
+        const comboTotalElement = document.getElementById('combo-total');
         
         const currentCombo = this.scoringSystem.getCombo();
+        const totalCombos = this.scoringSystem.getComboTotal ? this.scoringSystem.getComboTotal() : this.scoringSystem.comboActivations || 0;
         
         // Check for first score gain
         if (this.previousScore === 0 && this.score > 0) {
@@ -1364,6 +1366,9 @@ class BlockdokuGame {
         scoreElement.textContent = this.score;
         levelElement.textContent = this.level;
         comboElement.textContent = currentCombo;
+        if (comboTotalElement) {
+            comboTotalElement.textContent = totalCombos;
+        }
         
         // Update previous values
         this.previousScore = this.score;
