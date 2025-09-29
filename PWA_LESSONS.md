@@ -369,4 +369,37 @@ const savedSettings = localStorage.getItem('blockdoku_settings')
 - Verify upgrade on real devices: install previous version, play, upgrade, and confirm settings/stats persist.
 
 
+### 🔖 Versioning & About Page Build Info
+
+#### Our Versioning Scheme
+- **Semantic Version + Build Metadata**: `MAJOR.MINOR.PATCH+BUILD`
+- **Example**: `1.4.0+20250929-0506`
+  - `1.4.0`: From `package.json`.
+  - `20250929-0506`: Build identifier `YYYYMMDD-HHMM` generated at build time.
+
+#### How It’s Generated
+- The script `scripts/generate-build-info.js` runs on `prebuild` and `postbuild`.
+- It writes `build-info.json` to the repo root and `src/` with fields:
+```json
+{
+  "version": "1.4.0",
+  "buildId": "20250929-0506",
+  "buildDate": "2025-09-29T05:06:53.188Z",
+  "fullVersion": "1.4.0+20250929-0506"
+}
+```
+- It also writes a plain-text file named `build` at the repo root containing the exact `fullVersion` (e.g., `1.4.0+20250929-0506`).
+
+#### How It’s Displayed (Settings → About)
+- **Version**: `v{fullVersion}` (e.g., `v1.4.0+20250929-0506`).
+- **Build**: `{buildId} ({localized build date/time})`.
+- The page elements are `#version-display` and `#build-info`, updated by the settings script after build info loads.
+
+#### Why This Helps
+- **Traceability**: Unique build ID per deployment.
+- **Supportability**: Users can report exact build from Settings → About.
+- **Automation**: CI/CD and release notes can reference the same build string.
+
+---
+
 *This document was created during the development of Blockdoku PWA and should be updated with new lessons learned from future projects.*

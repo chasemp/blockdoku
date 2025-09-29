@@ -49,12 +49,21 @@ function writeBuildInfo() {
     const buildInfo = generateBuildInfo();
     const srcPath = path.join(__dirname, '..', 'src', 'build-info.json');
     const rootPath = path.join(__dirname, '..', 'build-info.json');
+    const buildFilePath = path.join(__dirname, '..', 'build');
     
     // Write to src directory for development
     fs.writeFileSync(srcPath, JSON.stringify(buildInfo, null, 2));
     
     // Write to root directory for production builds
     fs.writeFileSync(rootPath, JSON.stringify(buildInfo, null, 2));
+    
+    // Also write a plain-text build file with fullVersion for quick reference
+    try {
+        fs.writeFileSync(buildFilePath, `${buildInfo.fullVersion}\n`);
+        console.log(`Build file written: ${buildFilePath}`);
+    } catch (err) {
+        console.warn('Failed to write build file:', err);
+    }
     
     console.log(`Build info generated: ${buildInfo.fullVersion}`);
     console.log(`Build date: ${buildInfo.buildDate}`);
