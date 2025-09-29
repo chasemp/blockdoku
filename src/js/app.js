@@ -871,6 +871,8 @@ class BlockdokuGame {
         if (!this.board) {
             console.error('canPlaceBlock: Board is undefined! Reinitializing...');
             this.board = this.initializeBoard();
+            // Update placeability indicators after emergency board reinitialization
+            this.updatePlaceabilityIndicators();
         }
         
         return this.blockManager.canPlaceBlock(this.selectedBlock, row, col, this.board);
@@ -964,6 +966,8 @@ class BlockdokuGame {
                 console.error('FATAL: Could not initialize board in drawBoard');
                 return;
             }
+            // Update placeability indicators after emergency board reinitialization
+            this.updatePlaceabilityIndicators();
         }
         
         ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--block-color');
@@ -1353,6 +1357,9 @@ class BlockdokuGame {
         // Update UI
         this.updateUI();
         
+        // Update placeability indicators immediately after line clears
+        this.updatePlaceabilityIndicators();
+        
         // Check for additional line clears after this one
         setTimeout(() => {
             this.checkLineClears();
@@ -1375,6 +1382,9 @@ class BlockdokuGame {
         this.isInitialized = true;
         this.comboModeActive = 'streak';
         this.comboModesUsed = new Set();
+        
+        // Update placeability indicators for new game
+        this.updatePlaceabilityIndicators();
         
         // Reset animation tracking
         this.previousScore = 0;
@@ -1874,6 +1884,10 @@ class BlockdokuGame {
             if (savedState.selectedBlock) {
                 this.selectedBlock = savedState.selectedBlock;
             }
+            
+            // Update placeability indicators after loading game state
+            this.updatePlaceabilityIndicators();
+            
             console.log('Game state loaded successfully');
         } else {
             console.log('No saved game state found');
@@ -2595,6 +2609,9 @@ class BlockdokuGame {
         this.drawBoard();
         this.updateUI();
         
+        // Update placeability indicators immediately after block placement
+        this.updatePlaceabilityIndicators();
+        
         // Check for line clears
         this.checkLineClears();
         
@@ -2623,6 +2640,8 @@ class BlockdokuGame {
         if (!this.board) {
             console.error('EMERGENCY: Board is undefined in checkGameOver, reinitializing...');
             this.board = this.initializeBoard();
+            // Update placeability indicators after emergency board reinitialization
+            this.updatePlaceabilityIndicators();
         }
         
         // Don't check for game over during initialization or if game is already over
