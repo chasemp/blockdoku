@@ -109,7 +109,7 @@ class BlockdokuGame {
         
         // Listen for storage changes to detect difficulty changes from settings page
         window.addEventListener('storage', (e) => {
-            if (e.key === 'blockdoku-settings') {
+            if (e.key === 'blockdoku-settings' || e.key === 'blockdoku_settings') {
                 this.loadSettings();
                 this.updateDifficultyButton();
                 this.renderPersonalBests();
@@ -450,7 +450,7 @@ class BlockdokuGame {
         
         // Listen for settings changes from settings page
         window.addEventListener('storage', (e) => {
-            if (e.key === 'blockdoku-settings') {
+            if (e.key === 'blockdoku-settings' || e.key === 'blockdoku_settings') {
                 this.loadSettings();
                 this.updateHintControls();
             }
