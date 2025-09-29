@@ -2709,10 +2709,10 @@ class BlockdokuGame {
         
         // Score will be updated when lines are cleared, not on placement
         
-        // Update UI
+        // Update UI (but not score-related elements since score hasn't changed yet)
         this.blockPalette.updateBlocks(this.blockManager.currentBlocks);
         this.drawBoard();
-        this.updateUI();
+        // Don't call updateUI() here since score hasn't changed yet - let line clear handle it
         
         // Update placeability indicators immediately after block placement
         this.updatePlaceabilityIndicators();
