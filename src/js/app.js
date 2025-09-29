@@ -1777,10 +1777,15 @@ class BlockdokuGame {
 
     applyTheme(theme) {
         this.currentTheme = theme;
-        const themeLink = document.getElementById('theme-css');
-        if (themeLink) {
-            themeLink.href = `css/themes/${theme}.css`;
+        let themeLink = document.getElementById('theme-css');
+        if (!themeLink) {
+            // Create a resilient theme link if missing (e.g., after build transforms)
+            themeLink = document.createElement('link');
+            themeLink.rel = 'stylesheet';
+            themeLink.id = 'theme-css';
+            document.head.appendChild(themeLink);
         }
+        themeLink.href = `css/themes/${theme}.css`;
         // Warm up other theme links (helps after build)
         const light = document.getElementById('theme-css-light');
         const dark = document.getElementById('theme-css-dark');
@@ -2169,10 +2174,15 @@ class BlockdokuGame {
     }
 
     applyTheme(theme) {
-        const themeLink = document.getElementById('theme-css');
-        if (themeLink) {
-            themeLink.href = `css/themes/${theme}.css`;
+        let themeLink = document.getElementById('theme-css');
+        if (!themeLink) {
+            // Create a resilient theme link if missing (e.g., after build transforms)
+            themeLink = document.createElement('link');
+            themeLink.rel = 'stylesheet';
+            themeLink.id = 'theme-css';
+            document.head.appendChild(themeLink);
         }
+        themeLink.href = `css/themes/${theme}.css`;
         
         // Set data-theme attribute for CSS selectors
         document.documentElement.setAttribute('data-theme', theme);
