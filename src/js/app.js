@@ -1424,12 +1424,12 @@ class BlockdokuGame {
         // Update the text content
         scoreElement.textContent = this.score;
         levelElement.textContent = this.level;
+        // Always show label as singular 'Combo', switch value per mode
+        if (comboLabelElement) comboLabelElement.textContent = 'Combo';
         if (mode === 'cumulative') {
             comboElement.textContent = totalCombos;
-            if (comboLabelElement) comboLabelElement.textContent = 'Combos ';
         } else {
             comboElement.textContent = currentCombo;
-            if (comboLabelElement) comboLabelElement.textContent = 'Combo ';
         }
         
         // Update previous values
