@@ -211,6 +211,16 @@ export class GameStorage {
         }
     }
 
+    clearStatistics() {
+        try {
+            localStorage.removeItem('blockdoku_statistics');
+            return true;
+        } catch (error) {
+            console.error('Failed to clear statistics:', error);
+            return false;
+        }
+    }
+
     getStorageSize() {
         try {
             let totalSize = 0;
