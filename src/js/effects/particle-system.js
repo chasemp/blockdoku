@@ -23,6 +23,16 @@ export class ParticleSystem {
         }
     }
     
+    // Get theme color from CSS custom properties
+    getThemeColor(varName, fallback) {
+        try {
+            const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+            return value || fallback;
+        } catch (e) {
+            return fallback;
+        }
+    }
+    
     // Create sparkle effect for block placement
     createSparkles(x, y, count = 8) {
         if (!this.isEnabled) return;
@@ -42,17 +52,22 @@ export class ParticleSystem {
     }
     
     // Create glow trail for block movement
-    createGlowTrail(x, y, color = '#00ff00') {
+    createGlowTrail(x, y, color = null) {
         if (!this.isEnabled) return;
         
-        this.particles.push(new GlowTrailParticle(x, y, color));
+        // Use theme color if no color specified
+        const themeColor = color || this.getThemeColor('--clear-glow-color', '#00ff00');
+        this.particles.push(new GlowTrailParticle(x, y, themeColor));
     }
     
     // Create score number animation
-    createScoreNumber(x, y, score, color = '#00ff00') {
+    createScoreNumber(x, y, score, color = null) {
         if (!this.isEnabled) return;
         
-        this.particles.push(new ScoreNumberParticle(x, y, score, color));
+        // Use theme color if no color specified
+        const themeColor = color || this.getThemeColor('--clear-glow-color', '#00ff00');
+        
+        this.particles.push(new ScoreNumberParticle(x, y, score, themeColor));
     }
     
     // Create level up celebration
