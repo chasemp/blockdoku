@@ -2298,11 +2298,7 @@ class BlockdokuGame {
         // Place the block on the board
         this.board = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);
         
-        // Add placement points immediately (block point value)
-        const placementPoints = (this.selectedBlock && this.selectedBlock.points) ? this.selectedBlock.points : 0;
-        if (placementPoints > 0) {
-            this.scoringSystem.addPlacementPoints(placementPoints);
-        }
+        // Do not award points for mere placement; points come only from clears
         
         // Add placement effects
         const centerX = this.canvas.width / 2;
