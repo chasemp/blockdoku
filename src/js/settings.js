@@ -1,6 +1,8 @@
 import { GameStorage } from './storage/game-storage.js';
 import { PWAInstallManager } from './pwa/install.js';
 import { ConfirmationDialog } from './ui/confirmation-dialog.js';
+// Build info is generated during build by scripts/generate-build-info.js.
+// If that generator is skipped, the About section will show fallback values.
 import { buildInfo } from './utils/build-info.js';
 
 class SettingsManager {
@@ -418,6 +420,8 @@ class SettingsManager {
     }
     
     updateBuildInfo() {
+        // NOTE: This UI depends on build-info.json being generated during build.
+        // Ensure the generate-build-info script runs (npm prebuild/postbuild).
         // Wait for build info to load, then update display
         const checkBuildInfo = () => {
             if (buildInfo.isLoaded()) {

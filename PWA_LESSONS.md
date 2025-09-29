@@ -371,6 +371,8 @@ const savedSettings = localStorage.getItem('blockdoku_settings')
 
 ### 🔖 Versioning & About Page Build Info
 
+> Critical: The site depends on the build-info generator running during builds. If it does not run, the Settings → About page will show dev fallback values and build traceability is lost.
+
 #### Our Versioning Scheme
 - **Semantic Version + Build Metadata**: `MAJOR.MINOR.PATCH+BUILD`
 - **Example**: `1.4.0+20250929-0506`
