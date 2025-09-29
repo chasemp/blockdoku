@@ -106,6 +106,9 @@ export class SoundManager {
         // Check if custom sound is mapped, otherwise use default
         const getSound = (soundName, defaultCreator) => {
             const presetId = this.customSoundMappings[soundName];
+            if (presetId === 'none') {
+                return null; // No sound for this effect
+            }
             if (presetId && this.soundPresets[presetId]) {
                 return this.soundPresets[presetId];
             }
@@ -159,6 +162,8 @@ export class SoundManager {
         if (!this.audioContext || !this.isEnabled) return;
         
         try {
+            if (presetId === 'none') return; // No sound to preview
+            
             const sound = presetId === 'default' ? this.createBlockPlaceSound() : this.soundPresets[presetId];
             if (!sound) return;
             
@@ -182,6 +187,8 @@ export class SoundManager {
         
         try {
             const sound = this.sounds[soundName];
+            if (sound === null) return; // No sound for this effect (none option)
+            
             const source = this.audioContext.createBufferSource();
             const gainNode = this.audioContext.createGain();
             
