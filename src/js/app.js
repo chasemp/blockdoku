@@ -2707,18 +2707,12 @@ class BlockdokuGame {
         this.selectedBlock = null;
         this.previewPosition = null;
         
-        // Update score/level immediately after placement points
-        {
-            const baseScore = this.scoringSystem.getScore();
-            const combo = this.scoringSystem.getCombo();
-            this.score = this.difficultyManager.calculateScore(baseScore, combo);
-            this.level = this.scoringSystem.getLevel();
-        }
+        // Score will be updated when lines are cleared, not on placement
         
-        // Update UI
+        // Update UI (but not score-related elements since score hasn't changed yet)
         this.blockPalette.updateBlocks(this.blockManager.currentBlocks);
         this.drawBoard();
-        this.updateUI();
+        // Don't call updateUI() here since score hasn't changed yet - let line clear handle it
         
         // Update placeability indicators immediately after block placement
         this.updatePlaceabilityIndicators();
