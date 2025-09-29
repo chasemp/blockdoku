@@ -840,7 +840,17 @@ class BlockdokuGame {
     }
 
     getClearGlowColor() {
-        return this.getThemeColor('--clear-glow-color');
+        try {
+            return this.getThemeColor('--clear-glow-color');
+        } catch (error) {
+            // Fallback colors for each theme if CSS variable is not available
+            const fallbackColors = {
+                'light': '#00ff00',
+                'dark': '#ff4444', 
+                'wood': '#00aaff'
+            };
+            return fallbackColors[this.currentTheme] || '#00ff00';
+        }
     }
     
     cleanupDrag() {
@@ -1898,8 +1908,22 @@ class BlockdokuGame {
             this.board = savedState.board || this.initializeBoard();
             this.score = savedState.score || 0;
             this.level = savedState.level || 1;
+            
+            // Fully synchronize scoring system state
             this.scoringSystem.score = this.score;
             this.scoringSystem.level = this.level;
+            
+            // Restore additional scoring system state if available
+            if (savedState.scoringState) {
+                this.scoringSystem.linesCleared = savedState.scoringState.linesCleared || 0;
+                this.scoringSystem.combo = savedState.scoringState.combo || 0;
+                this.scoringSystem.maxCombo = savedState.scoringState.maxCombo || 0;
+                this.scoringSystem.rowsClearedCount = savedState.scoringState.rowsClearedCount || 0;
+                this.scoringSystem.columnsClearedCount = savedState.scoringState.columnsClearedCount || 0;
+                this.scoringSystem.squaresClearedCount = savedState.scoringState.squaresClearedCount || 0;
+                this.scoringSystem.comboActivations = savedState.scoringState.comboActivations || 0;
+                this.scoringSystem.pointsBreakdown = savedState.scoringState.pointsBreakdown || { linePoints: 0, squarePoints: 0, comboBonusPoints: 0 };
+            }
             
             if (savedState.currentBlocks) {
                 this.blockManager.currentBlocks = savedState.currentBlocks;
@@ -1939,7 +1963,17 @@ class BlockdokuGame {
             score: this.score,
             level: this.level,
             currentBlocks: this.blockManager.currentBlocks,
-            selectedBlock: this.selectedBlock
+            selectedBlock: this.selectedBlock,
+            scoringState: {
+                linesCleared: this.scoringSystem.linesCleared,
+                combo: this.scoringSystem.combo,
+                maxCombo: this.scoringSystem.maxCombo,
+                rowsClearedCount: this.scoringSystem.rowsClearedCount,
+                columnsClearedCount: this.scoringSystem.columnsClearedCount,
+                squaresClearedCount: this.scoringSystem.squaresClearedCount,
+                comboActivations: this.scoringSystem.comboActivations,
+                pointsBreakdown: this.scoringSystem.pointsBreakdown
+            }
         };
         console.log('Saving game state:', gameState);
         this.storage.saveGameState(gameState);
@@ -2054,6 +2088,14 @@ class BlockdokuGame {
         // Also add class to body as fallback
         document.body.className = document.body.className.replace(/light-theme|dark-theme|wood-theme/g, '');
         document.body.classList.add(`${theme}-theme`);
+        
+        // Clear any pending clearing effects when switching themes
+        this.pendingClears = null;
+        
+        // Redraw the board with new theme colors after a small delay to ensure CSS is loaded
+        setTimeout(() => {
+            this.render();
+        }, 50);
         
         this.saveSettings();
     }
@@ -2500,37 +2542,20 @@ class BlockdokuGame {
     }
 
     selectTheme(theme) {
+        // Save current game state before switching themes
+        if (this.gameRunning) {
+            this.saveGameState();
+        }
+        
         this.currentTheme = theme;
         this.applyTheme(theme);
         this.updateThemeUI();
         this.saveSettings();
-    }
-
-    applyTheme(theme) {
-        let themeLink = document.getElementById('theme-css');
-        if (!themeLink) {
-            // Create a resilient theme link if missing (e.g., after build transforms)
-            themeLink = document.createElement('link');
-            themeLink.rel = 'stylesheet';
-            themeLink.id = 'theme-css';
-            document.head.appendChild(themeLink);
+        
+        // Redraw the board with new theme colors
+        if (this.gameRunning) {
+            this.drawBoard();
         }
-        themeLink.href = `css/themes/${theme}.css`;
-        // If Vite injected a wood stylesheet into built HTML, disable it when switching away
-        try {
-            const builtWoodLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
-                .filter(l => (l.getAttribute('href') || '').includes('/assets/wood-') || (l.href || '').includes('/assets/wood-'));
-            builtWoodLinks.forEach(l => {
-                l.disabled = theme !== 'wood';
-            });
-        } catch {}
-        
-        // Set data-theme attribute for CSS selectors
-        document.documentElement.setAttribute('data-theme', theme);
-        
-        // Also add class to body as fallback
-        document.body.className = document.body.className.replace(/light-theme|dark-theme|wood-theme/g, '');
-        document.body.classList.add(`${theme}-theme`);
     }
 
     updateThemeUI() {
