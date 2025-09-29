@@ -48,6 +48,7 @@ class BlockdokuGame {
         this.previousScore = 0;
         this.previousLevel = 1;
         this.previousCombo = 0;
+        this.previousTotalCombos = 0;
         this.pendingClears = null; // Track blocks that are about to be cleared
         
         // Difficulty settings
@@ -1537,6 +1538,7 @@ class BlockdokuGame {
         this.previousScore = 0;
         this.previousLevel = 1;
         this.previousCombo = 0;
+        this.previousTotalCombos = 0;
         // this.effectsSystem.clear();
         this.generateNewBlocks();
         this.drawBoard();
@@ -1591,9 +1593,16 @@ class BlockdokuGame {
             this.animateLevelUp(levelElement);
         }
         
-        // Check for combo hit
-        if (currentCombo > this.previousCombo && currentCombo >= 1) {
-            this.animateComboHit(comboElement);
+        // Check for combo hit based on the active display mode
+        const previousTotalCombos = this.previousTotalCombos || 0;
+        if (mode === 'cumulative') {
+            if (totalCombos > previousTotalCombos && totalCombos >= 1) {
+                this.animateComboHit(comboElement);
+            }
+        } else {
+            if (currentCombo > this.previousCombo && currentCombo >= 1) {
+                this.animateComboHit(comboElement);
+            }
         }
         
         // Update the text content
@@ -1612,6 +1621,7 @@ class BlockdokuGame {
         this.previousScore = this.score;
         this.previousLevel = this.level;
         this.previousCombo = currentCombo;
+        this.previousTotalCombos = totalCombos;
         
         // Update hint controls visibility
         this.updateHintControls();
