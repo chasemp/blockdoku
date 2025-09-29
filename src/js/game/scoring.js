@@ -30,13 +30,12 @@ export class ScoringSystem {
         };
 
         // Compounding level progression settings
-        // baseThreshold: points required to reach level 2 from level 1
-        // stepIncrease: incremental step per level in percent (e.g., 0.05 = 5%)
-        // Example: L2 = ceil(L1 * (1 + 1*step)), L3 = ceil(L2 * (1 + 2*step)), ...
+        // Each level has a range of points, with ranges increasing by 5% each level
+        // Level 1: 0-100, Level 2: 101-206, Level 3: 207-317, etc.
         this.levelProgression = {
-            baseThreshold: 195,
-            stepIncrease: 0.05,
-            roundingMode: 'ceil'
+            baseRange: 100,        // Points range for level 1
+            stepIncrease: 0.05,    // 5% increase in range per level
+            roundingMode: 'round'  // Round ranges to nearest integer
         };
     }
     
@@ -274,23 +273,24 @@ export class ScoringSystem {
         }
     }
 
-    // Compute threshold to reach a given level (level 2 is first threshold)
+    // Compute threshold to reach a given level using compounding ranges
+    // Level 1: 0-100, Level 2: 101-205, Level 3: 206-315, etc.
     getLevelThreshold(level) {
-        const base = this.levelProgression.baseThreshold;
-        const step = this.levelProgression.stepIncrease;
-        const rounding = this.levelProgression.roundingMode;
-        if (level <= 1) return 0; // already at or below level 1
-        if (level === 2) return base; // Level 2 uses the base threshold directly
+        if (level <= 1) return 0; // Level 1 starts at 0
         
-        let threshold = base;
-        // For level n (where n > 2), apply multipliers for i = 1..(n-2) on successive thresholds
-        // Level 3: base * (1 + 1*step)
-        // Level 4: base * (1 + 1*step) * (1 + 2*step)
-        // Level 5: base * (1 + 1*step) * (1 + 2*step) * (1 + 3*step)
-        for (let i = 1; i <= level - 2; i++) {
-            const incrementFactor = 1 + i * step;
-            threshold = this.applyRounding(threshold * incrementFactor, rounding);
+        const baseRange = this.levelProgression.baseRange; // 100
+        const stepIncrease = this.levelProgression.stepIncrease; // 0.05
+        const rounding = this.levelProgression.roundingMode;
+        
+        let threshold = 101; // Level 2 starts at 101
+        let currentRange = baseRange; // 100
+        
+        // Calculate threshold for each level by accumulating ranges
+        for (let lvl = 2; lvl < level; lvl++) {
+            currentRange = this.applyRounding(currentRange * (1 + stepIncrease), rounding);
+            threshold += currentRange; // Add range for next level start
         }
+        
         return threshold;
     }
 
