@@ -163,6 +163,7 @@ export class GameStorage {
                 totalScore: (existingStats.totalScore || 0) + stats.score,
                 totalLinesCleared: (existingStats.totalLinesCleared || 0) + stats.linesCleared,
                 maxCombo: Math.max(existingStats.maxCombo || 0, stats.maxCombo),
+                totalCombos: (existingStats.totalCombos || 0) + (stats.totalCombos || 0),
                 bestScore: Math.max(existingStats.bestScore || 0, stats.score),
                 lastPlayed: Date.now()
             };
@@ -182,6 +183,7 @@ export class GameStorage {
                 totalScore: 0,
                 totalLinesCleared: 0,
                 maxCombo: 0,
+                totalCombos: 0,
                 bestScore: 0,
                 lastPlayed: null
             };
@@ -192,6 +194,7 @@ export class GameStorage {
                 totalScore: 0,
                 totalLinesCleared: 0,
                 maxCombo: 0,
+                totalCombos: 0,
                 bestScore: 0,
                 lastPlayed: null
             };
