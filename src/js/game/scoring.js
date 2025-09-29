@@ -280,10 +280,15 @@ export class ScoringSystem {
         const step = this.levelProgression.stepIncrease;
         const rounding = this.levelProgression.roundingMode;
         if (level <= 1) return 0; // already at or below level 1
+        if (level === 2) return base; // Level 2 uses the base threshold directly
+        
         let threshold = base;
-        // For level n, apply multipliers for i = 1..(n-2) on successive thresholds
-        for (let i = 2; i <= level; i++) {
-            const incrementFactor = 1 + (i - 1) * step;
+        // For level n (where n > 2), apply multipliers for i = 1..(n-2) on successive thresholds
+        // Level 3: base * (1 + 1*step)
+        // Level 4: base * (1 + 1*step) * (1 + 2*step)
+        // Level 5: base * (1 + 1*step) * (1 + 2*step) * (1 + 3*step)
+        for (let i = 1; i <= level - 2; i++) {
+            const incrementFactor = 1 + i * step;
             threshold = this.applyRounding(threshold * incrementFactor, rounding);
         }
         return threshold;
