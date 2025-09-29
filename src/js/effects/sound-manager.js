@@ -157,6 +157,37 @@ export class SoundManager {
         };
     }
     
+    // Get grouped sound effects for simplified settings
+    getGroupedSoundEffects() {
+        return {
+            neutral: {
+                name: 'Neutral Events',
+                description: 'General gameplay actions like block placement and UI interactions',
+                sounds: ['blockPlace', 'blockRotate', 'buttonClick', 'undo', 'redo']
+            },
+            positive: {
+                name: 'Positive Events', 
+                description: 'Achievements, rewards, and successful actions',
+                sounds: ['lineClear', 'levelUp', 'combo', 'scoreGain', 'perfect', 'chain', 'timeBonus']
+            },
+            warning: {
+                name: 'Warning Events',
+                description: 'Time pressure alerts and urgent notifications',
+                sounds: ['timeWarning', 'timeCritical']
+            },
+            error: {
+                name: 'Error Events',
+                description: 'Mistakes and invalid actions',
+                sounds: ['error']
+            },
+            helper: {
+                name: 'Helper Events',
+                description: 'Assistance and guidance features',
+                sounds: ['hint']
+            }
+        };
+    }
+    
     // Preview a sound preset
     previewSound(presetId) {
         if (!this.audioContext || !this.isEnabled) return;
@@ -540,5 +571,54 @@ export class SoundManager {
         }
         
         return { buffer, volume: 0.5 };
+    }
+    
+    // Get grouped sound settings
+    getGroupedSoundSettings() {
+        const groupedSettings = {};
+        const groupedEffects = this.getGroupedSoundEffects();
+        const currentMappings = this.customSoundMappings || {};
+        
+        for (const [groupKey, groupInfo] of Object.entries(groupedEffects)) {
+            // Check if all sounds in the group have the same preset
+            const groupPresets = groupInfo.sounds.map(soundKey => 
+                currentMappings[soundKey] || 'default'
+            );
+            const uniquePresets = [...new Set(groupPresets)];
+            
+            if (uniquePresets.length === 1) {
+                groupedSettings[groupKey] = uniquePresets[0];
+            } else {
+                groupedSettings[groupKey] = 'mixed';
+            }
+        }
+        
+        return groupedSettings;
+    }
+    
+    // Set grouped sound settings
+    setGroupedSoundSettings(groupKey, presetId) {
+        const groupedEffects = this.getGroupedSoundEffects();
+        const groupInfo = groupedEffects[groupKey];
+        
+        if (!groupInfo) return;
+        
+        // Apply the preset to all sounds in the group
+        for (const soundKey of groupInfo.sounds) {
+            this.setCustomSoundMapping(soundKey, presetId);
+        }
+    }
+    
+    // Preview a grouped sound (plays the first sound in the group)
+    previewGroupedSound(groupKey) {
+        const groupedEffects = this.getGroupedSoundEffects();
+        const groupInfo = groupedEffects[groupKey];
+        
+        if (!groupInfo || groupInfo.sounds.length === 0) return;
+        
+        // Preview the first sound in the group
+        const firstSound = groupInfo.sounds[0];
+        const currentPreset = this.customSoundMappings?.[firstSound] || 'default';
+        this.previewSound(currentPreset);
     }
 }
