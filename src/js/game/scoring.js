@@ -28,6 +28,16 @@ export class ScoringSystem {
             square: 20,
             combo: 5
         };
+
+        // Compounding level progression settings
+        // baseThreshold: points required to reach level 2 from level 1
+        // stepIncrease: incremental step per level in percent (e.g., 0.05 = 5%)
+        // Example: L2 = ceil(L1 * (1 + 1*step)), L3 = ceil(L2 * (1 + 2*step)), ...
+        this.levelProgression = {
+            baseThreshold: 195,
+            stepIncrease: 0.05,
+            roundingMode: 'ceil'
+        };
     }
     
     // Check for completed lines without clearing them
@@ -194,12 +204,9 @@ export class ScoringSystem {
         
         this.score += scoreGained;
         this.lastScoreGained = scoreGained;
-        
-        // Level up every 100 points (reduced 10x to keep pace consistent)
-        const newLevel = Math.floor(this.score / 100) + 1;
-        if (newLevel > this.level) {
-            this.level = newLevel;
-        }
+
+        // Update level using compounding thresholds
+        this.updateLevelFromScore();
     }
     
     // Add points for placing a block (no line clears required)
@@ -210,12 +217,9 @@ export class ScoringSystem {
         // Placement points are not level-multiplied
         this.score += gained;
         this.lastScoreGained = gained;
-        
-        // Update level based on total score (level up every 100 points)
-        const newLevel = Math.floor(this.score / 100) + 1;
-        if (newLevel > this.level) {
-            this.level = newLevel;
-        }
+
+        // Update level using compounding thresholds
+        this.updateLevelFromScore();
     }
     
     getLastScoreGained() {
@@ -254,6 +258,49 @@ export class ScoringSystem {
         this.squaresClearedCount = 0;
         this.comboActivations = 0;
         this.pointsBreakdown = { linePoints: 0, squarePoints: 0, comboBonusPoints: 0 };
+    }
+
+    // ---------- Level Progression Helpers ----------
+    applyRounding(value, mode) {
+        switch (mode) {
+            case 'ceil': return Math.ceil(value);
+            case 'floor': return Math.floor(value);
+            case 'round': return Math.round(value);
+            default: return value;
+        }
+    }
+
+    // Compute threshold to reach a given level (level 2 is first threshold)
+    getLevelThreshold(level) {
+        const base = this.levelProgression.baseThreshold;
+        const step = this.levelProgression.stepIncrease;
+        const rounding = this.levelProgression.roundingMode;
+        if (level <= 1) return 0; // already at or below level 1
+        let threshold = base;
+        // For level n, apply multipliers for i = 1..(n-2) on successive thresholds
+        for (let i = 2; i <= level; i++) {
+            const incrementFactor = 1 + (i - 1) * step;
+            threshold = this.applyRounding(threshold * incrementFactor, rounding);
+        }
+        return threshold;
+    }
+
+    // Derive level from total score using compounding thresholds
+    updateLevelFromScore() {
+        let newLevel = 1;
+        // Prevent infinite loops by capping to a reasonable max level
+        const maxLevels = 200;
+        for (let lvl = 2; lvl <= maxLevels; lvl++) {
+            const th = this.getLevelThreshold(lvl);
+            if (this.score >= th) {
+                newLevel = lvl;
+                continue;
+            }
+            break;
+        }
+        if (newLevel > this.level) {
+            this.level = newLevel;
+        }
     }
     
     // Get detailed statistics
