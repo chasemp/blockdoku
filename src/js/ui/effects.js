@@ -11,6 +11,16 @@ export class EffectsSystem {
         this.cellSize = 50;
     }
     
+    // Get theme color from CSS custom properties
+    getThemeColor(varName, fallback) {
+        try {
+            const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+            return value || fallback;
+        } catch (e) {
+            return fallback;
+        }
+    }
+    
     // Create line clear animation
     createLineClearEffect(clearedLines, duration = 500) {
         const animation = {
@@ -130,7 +140,7 @@ export class EffectsSystem {
         
         ctx.save();
         ctx.globalAlpha = alpha;
-        ctx.fillStyle = '#00ff00';
+        ctx.fillStyle = this.getThemeColor('--clear-glow-color', '#00ff00');
         ctx.font = 'bold 24px Arial';
         ctx.textAlign = 'center';
         ctx.fillText(`+${animation.score}`, animation.x, y);
