@@ -97,6 +97,13 @@ class SettingsManager {
         if (showHighScore) {
             showHighScore.checked = this.settings.showHighScore === true; // Default to false
         }
+
+        // Combo display mode
+        const comboMode = document.getElementById('combo-display-mode');
+        if (comboMode) {
+            const mode = this.settings.comboDisplayMode || 'streak';
+            comboMode.value = mode;
+        }
     }
     
     setupEventListeners() {
@@ -171,6 +178,14 @@ class SettingsManager {
         if (showHighScore) {
             showHighScore.addEventListener('change', (e) => {
                 this.updateSetting('showHighScore', e.target.checked);
+            });
+        }
+
+        const comboMode = document.getElementById('combo-display-mode');
+        if (comboMode) {
+            comboMode.addEventListener('change', (e) => {
+                const value = e.target.value === 'cumulative' ? 'cumulative' : 'streak';
+                this.updateSetting('comboDisplayMode', value);
             });
         }
         
