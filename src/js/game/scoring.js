@@ -80,6 +80,89 @@ export class ScoringSystem {
         return this.applyClears(board, clearedLines, difficultyMultiplier);
     }
     
+    // Calculate score for clears without modifying state
+    // Returns the score that would be gained, including all bonuses
+    calculateScoreForClears(clearedLines, difficultyMultiplier = 1.0) {
+        let scoreGained = 0;
+        
+        // Base score for each type of clear
+        const linePointsAdded = (clearedLines.rows.length + clearedLines.columns.length) * this.basePoints.line;
+        const squarePointsAdded = clearedLines.squares.length * this.basePoints.square;
+        scoreGained += linePointsAdded;
+        scoreGained += squarePointsAdded;
+        
+        // Check if this is a combo event
+        const clearTypes = [];
+        if (clearedLines.rows.length > 0) clearTypes.push('row');
+        if (clearedLines.columns.length > 0) clearTypes.push('column');
+        if (clearedLines.squares.length > 0) clearTypes.push('square');
+        const totalClears = clearedLines.rows.length + clearedLines.columns.length + clearedLines.squares.length;
+        const isComboEvent = clearTypes.length >= 2 || totalClears >= 2;
+        
+        // Combo bonus scaling by total simultaneous clears
+        if (isComboEvent) {
+            const comboBonus = 20 * (totalClears - 1);
+            scoreGained += comboBonus;
+        }
+        
+        // Apply level multiplier and difficulty multiplier
+        scoreGained *= this.level;
+        scoreGained = Math.floor(scoreGained * difficultyMultiplier);
+        
+        return {
+            scoreGained,
+            isComboEvent,
+            clearTypes,
+            totalClears
+        };
+    }
+    
+    // Clear lines from board without updating score
+    // Returns the new board state and clear information
+    clearLinesFromBoard(board, clearedLines) {
+        console.log('ScoringSystem.clearLinesFromBoard called with:', { board, clearedLines });
+        let newBoard = board.map(row => [...row]); // Deep copy
+        let totalCleared = 0;
+        
+        // Clear rows
+        clearedLines.rows.forEach(row => {
+            console.log(`Clearing row ${row}`);
+            newBoard[row] = new Array(board[0].length).fill(0);
+            totalCleared++;
+        });
+        
+        // Clear columns
+        clearedLines.columns.forEach(col => {
+            console.log(`Clearing column ${col}`);
+            for (let row = 0; row < board.length; row++) {
+                newBoard[row][col] = 0;
+            }
+            totalCleared++;
+        });
+        
+        // Clear 3x3 squares
+        clearedLines.squares.forEach(square => {
+            console.log(`Clearing square at row ${square.row}, col ${square.col}`);
+            const startRow = square.row * 3;
+            const startCol = square.col * 3;
+            
+            for (let r = startRow; r < startRow + 3; r++) {
+                for (let c = startCol; c < startCol + 3; c++) {
+                    newBoard[r][c] = 0;
+                }
+            }
+            totalCleared++;
+        });
+        
+        console.log(`Total cleared: ${totalCleared}`);
+        
+        return {
+            board: newBoard,
+            clearedCount: totalCleared,
+            clearedLines: clearedLines
+        };
+    }
+    
     isRowComplete(board, row) {
         return board[row].every(cell => cell === 1);
     }
