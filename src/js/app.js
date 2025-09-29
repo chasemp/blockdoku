@@ -1380,19 +1380,14 @@ class BlockdokuGame {
             // Actually clear the lines
             console.log('Applying clears to board...');
             const previousScore = this.scoringSystem.getScore();
-            result = this.scoringSystem.applyClears(this.board, clearedLines);
+            const difficultyMultiplier = this.difficultyManager.getScoreMultiplier();
+            result = this.scoringSystem.applyClears(this.board, clearedLines, difficultyMultiplier);
             console.log('Clears applied, result:', result);
             this.board = result.board;
             
-            // Update score and level with difficulty multiplier
-            const baseScore = this.scoringSystem.getScore();
-            const newlyGainedScore = baseScore - previousScore;
-            const difficultyMultiplier = this.difficultyManager.getScoreMultiplier();
-            const adjustedNewScore = Math.floor(newlyGainedScore * difficultyMultiplier);
-            this.score = this.score + adjustedNewScore;
-            
-            // Synchronize the scoring system with our adjusted score
-            this.scoringSystem.score = this.score;
+            // Update score and level from scoring system
+            // The scoring system handles all score calculations including level multipliers
+            this.score = this.scoringSystem.getScore();
             
             combo = this.scoringSystem.getCombo();
             this.level = this.scoringSystem.getLevel();

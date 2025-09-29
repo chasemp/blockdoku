@@ -73,11 +73,11 @@ export class ScoringSystem {
         return clearedLines;
     }
 
-    checkAndClearLines(board) {
+    checkAndClearLines(board, difficultyMultiplier = 1.0) {
         const clearedLines = this.checkForCompletedLines(board);
         
         // Now process the clears and return the full result
-        return this.applyClears(board, clearedLines);
+        return this.applyClears(board, clearedLines, difficultyMultiplier);
     }
     
     isRowComplete(board, row) {
@@ -102,7 +102,7 @@ export class ScoringSystem {
         return true;
     }
     
-    applyClears(board, clearedLines) {
+    applyClears(board, clearedLines, difficultyMultiplier = 1.0) {
         console.log('ScoringSystem.applyClears called with:', { board, clearedLines });
         let newBoard = board.map(row => [...row]); // Deep copy
         let totalCleared = 0;
@@ -162,7 +162,7 @@ export class ScoringSystem {
             this.columnsClearedCount += clearedLines.columns.length;
             this.squaresClearedCount += clearedLines.squares.length;
 
-            this.calculateScore(clearedLines, isComboEvent);
+            this.calculateScore(clearedLines, isComboEvent, difficultyMultiplier);
             this.linesCleared += totalCleared;
             
 			// A combo occurs when 2+ total clears happen in the same clear event
@@ -187,7 +187,7 @@ export class ScoringSystem {
         };
     }
     
-    calculateScore(clearedLines, isComboEvent = false) {
+    calculateScore(clearedLines, isComboEvent = false, difficultyMultiplier = 1.0) {
         let scoreGained = 0;
         
         // Base score for each type of clear
@@ -207,8 +207,9 @@ export class ScoringSystem {
 			this.pointsBreakdown.comboBonusPoints += comboBonus;
 		}
         
-        // Level multiplier
+        // Apply level multiplier and difficulty multiplier
         scoreGained *= this.level;
+        scoreGained = Math.floor(scoreGained * difficultyMultiplier);
         
         this.score += scoreGained;
         this.lastScoreGained = scoreGained;
@@ -218,13 +219,14 @@ export class ScoringSystem {
     }
     
     // Add points for placing a block (no line clears required)
-    addPlacementPoints(points) {
+    addPlacementPoints(points, difficultyMultiplier = 1.0) {
         const gained = Math.max(0, points | 0);
         if (gained === 0) return;
         
-        // Placement points are not level-multiplied
-        this.score += gained;
-        this.lastScoreGained = gained;
+        // Placement points are not level-multiplied but can be difficulty-multiplied
+        const adjustedPoints = Math.floor(gained * difficultyMultiplier);
+        this.score += adjustedPoints;
+        this.lastScoreGained = adjustedPoints;
 
         // Update level using compounding thresholds
         this.updateLevelFromScore();
