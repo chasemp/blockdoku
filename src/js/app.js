@@ -429,6 +429,15 @@ class BlockdokuGame {
         // Additional settings events
         document.getElementById('enable-hints').addEventListener('change', (e) => this.toggleSetting('hints', e.target.checked));
         document.getElementById('enable-timer').addEventListener('change', (e) => this.toggleSetting('timer', e.target.checked));
+        const showHighScoreModalToggle = document.getElementById('show-high-score-modal');
+        if (showHighScoreModalToggle) {
+            showHighScoreModalToggle.addEventListener('change', (e) => {
+                const current = this.storage.loadSettings();
+                current.showHighScore = e.target.checked;
+                this.storage.saveSettings(current);
+                this.renderPersonalBests();
+            });
+        }
         
         // Theme selection events
         document.querySelectorAll('.theme-option').forEach(option => {
@@ -2173,6 +2182,11 @@ class BlockdokuGame {
         // Update additional settings
         document.getElementById('enable-hints').checked = this.enableHints;
         document.getElementById('enable-timer').checked = this.enableTimer;
+        const showHighScoreModalToggle = document.getElementById('show-high-score-modal');
+        if (showHighScoreModalToggle) {
+            const s = this.storage.loadSettings();
+            showHighScoreModalToggle.checked = s.showHighScore === true;
+        }
     }
 
     async selectDifficulty(difficulty) {
