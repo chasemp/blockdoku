@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Navigation Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        .test-step {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .expected {
+            background: #e8f5e8;
+            border-color: #4caf50;
+        }
+        .warning {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+        code {
+            background: #f1f1f1;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Blockdoku Navigation Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>Problem Description</h2>
+        <p>Previously, when navigating to settings and back to the game board, the board state was being cleared, causing the user to lose their progress.</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>Root Cause Analysis</h2>
+        <div class="test-step">
+            <h3>Issue 1: Game State Not Saved Before Navigation</h3>
+            <p>The settings button click handler was not saving the game state before navigating to <code>settings.html</code>.</p>
+        </div>
+        <div class="test-step">
+            <h3>Issue 2: Game State Not Reloaded After Navigation</h3>
+            <p>The focus event handler was not reloading the game state when returning from the settings page.</p>
+        </div>
+        <div class="test-step">
+            <h3>Issue 3: Empty Board State Being Saved</h3>
+            <p>The game was saving empty board states when no actual progress had been made.</p>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Fixes Applied</h2>
+        <div class="test-step expected">
+            <h3>Fix 1: Save Game State Before Navigation</h3>
+            <p>Modified the settings button click handler to always save the game state before navigating to settings (if not game over).</p>
+            <code>if (!this.isGameOver) { this.saveGameState(); }</code>
+        </div>
+        <div class="test-step expected">
+            <h3>Fix 2: Reload Game State After Navigation</h3>
+            <p>Updated the focus event handler to always reload the game state when returning from settings (if not game over).</p>
+            <code>if (!this.isGameOver) { this.loadGameState(); this.render(); }</code>
+        </div>
+        <div class="test-step expected">
+            <h3>Fix 3: Prevent Saving Empty States</h3>
+            <p>Modified <code>saveGameState()</code> to only save when there's actual game progress (score > 0, blocks placed, or blocks available).</p>
+            <code>const hasGameProgress = this.score > 0 || (this.board && this.board.some(row => row.some(cell => cell === 1))) || (this.blockManager.currentBlocks && this.blockManager.currentBlocks.length > 0);</code>
+        </div>
+        <div class="test-step expected">
+            <h3>Fix 4: Preserve Board State When No Saved State</h3>
+            <p>Updated <code>loadGameState()</code> to preserve the current board state when no saved state exists instead of overwriting it.</p>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Steps</h2>
+        <div class="test-step">
+            <h3>Step 1: Start a Game</h3>
+            <p>1. Open the Blockdoku game</p>
+            <p>2. Place some blocks on the board</p>
+            <p>3. Note your current score and board state</p>
+        </div>
+        <div class="test-step">
+            <h3>Step 2: Navigate to Settings</h3>
+            <p>1. Click the settings button (⚙️)</p>
+            <p>2. Verify you're taken to the settings page</p>
+            <p>3. Check browser console for "Saving game state before navigating to settings" message</p>
+        </div>
+        <div class="test-step">
+            <h3>Step 3: Return to Game</h3>
+            <p>1. Click "Back to Game" button</p>
+            <p>2. Verify you're returned to the main game</p>
+            <p>3. Check that your board state, score, and blocks are preserved</p>
+            <p>4. Check browser console for "Focus event: reloading game state from settings" message</p>
+        </div>
+        <div class="test-step expected">
+            <h3>Expected Result</h3>
+            <p>✅ The game board should maintain its state exactly as it was before navigating to settings</p>
+            <p>✅ Score, level, and current blocks should be preserved</p>
+            <p>✅ No progress should be lost during navigation</p>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Additional Improvements</h2>
+        <div class="test-step">
+            <h3>Storage Event Handling</h3>
+            <p>Also updated storage event handlers to reload game state when settings change, ensuring consistency across different navigation scenarios.</p>
+        </div>
+        <div class="test-step">
+            <h3>Debug Logging</h3>
+            <p>Added comprehensive console logging to help debug any future issues with game state persistence.</p>
+        </div>
+    </div>
+    
+    <div class="test-section warning">
+        <h2>Important Notes</h2>
+        <p><strong>Auto-save Setting:</strong> The fixes work regardless of the auto-save setting, as they explicitly save/load state during navigation.</p>
+        <p><strong>Game Over State:</strong> Game state is not saved or loaded when the game is in a game-over state.</p>
+        <p><strong>Browser Compatibility:</strong> The focus event should work reliably across modern browsers for this navigation pattern.</p>
+    </div>
+</body>
+</html>
