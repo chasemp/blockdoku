@@ -40,12 +40,16 @@ export class EffectsManager {
     }
     
     // Get theme color from CSS custom properties
-    getThemeColor(varName, fallback) {
+    getThemeColor(varName) {
         try {
             const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-            return value || fallback;
+            if (!value) {
+                throw new Error(`Theme color variable '${varName}' not found`);
+            }
+            return value;
         } catch (e) {
-            return fallback;
+            console.error(`Failed to get theme color '${varName}':`, e);
+            throw new Error(`Theme color '${varName}' is required but not available`);
         }
     }
     
@@ -81,7 +85,7 @@ export class EffectsManager {
     
     // Score gain effects
     onScoreGain(x, y, score) {
-        const themeColor = this.getThemeColor('--clear-glow-color', '#ff4444');
+        const themeColor = this.getThemeColor('--clear-glow-color');
         this.particles.createScoreNumber(x, y, score, themeColor);
         if (this.settings.sound) this.sound.play('scoreGain');
     }
@@ -107,7 +111,7 @@ export class EffectsManager {
     
     // Glow trail for block movement
     onBlockMove(x, y, color = null) {
-        const themeColor = color || this.getThemeColor('--clear-glow-color', '#ff4444');
+        const themeColor = color || this.getThemeColor('--clear-glow-color');
         this.particles.createGlowTrail(x, y, themeColor);
     }
     

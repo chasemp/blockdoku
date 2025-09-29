@@ -826,17 +826,21 @@ class BlockdokuGame {
         return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
     }
 
-    getThemeColor(varName, fallback) {
+    getThemeColor(varName) {
         try {
             const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-            return value || fallback;
+            if (!value) {
+                throw new Error(`Theme color variable '${varName}' not found`);
+            }
+            return value;
         } catch (e) {
-            return fallback;
+            console.error(`Failed to get theme color '${varName}':`, e);
+            throw new Error(`Theme color '${varName}' is required but not available`);
         }
     }
 
     getClearGlowColor() {
-        return this.getThemeColor('--clear-glow-color', '#ff4444');
+        return this.getThemeColor('--clear-glow-color');
     }
     
     cleanupDrag() {
