@@ -108,7 +108,7 @@ export class EffectsSystem {
         
         ctx.save();
         ctx.globalAlpha = alpha;
-        ctx.fillStyle = '#ffff00'; // Yellow flash
+        ctx.fillStyle = this.getThemeColor('--clear-glow-color', '#ff4444'); // Theme-based flash
         
         // Flash cleared rows
         animation.clearedLines.rows.forEach(row => {
@@ -140,7 +140,7 @@ export class EffectsSystem {
         
         ctx.save();
         ctx.globalAlpha = alpha;
-        ctx.fillStyle = this.getThemeColor('--clear-glow-color', '#00ff00');
+        ctx.fillStyle = this.getThemeColor('--clear-glow-color', '#ff4444');
         ctx.font = 'bold 24px Arial';
         ctx.textAlign = 'center';
         ctx.fillText(`+${animation.score}`, animation.x, y);
