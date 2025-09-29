@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Light Theme Test - Blockdoku</title>
+    <link rel="stylesheet" href="src/css/main.css">
+    <link rel="stylesheet" href="src/css/themes/light.css" id="theme-css">
+    <style>
+        body {
+            padding: 2rem;
+            background: var(--bg-color);
+        }
+        
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--card-bg);
+        }
+        
+        .nav-item {
+            padding: 1rem 2rem;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            min-width: 120px;
+            text-align: center;
+            display: inline-block;
+            margin: 0.5rem;
+        }
+        
+        .nav-item:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .nav-item.active {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Override for light theme to ensure readability */
+        [data-theme="light"] .nav-item.active,
+        body.light-theme .nav-item.active,
+        html.light-theme .nav-item.active {
+            color: white !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
+        }
+        
+        .theme-option {
+            padding: 1rem;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            margin: 0.5rem;
+            display: inline-block;
+        }
+        
+        .theme-option.selected {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Override for light theme to ensure readability */
+        [data-theme="light"] .theme-option.selected,
+        body.light-theme .theme-option.selected,
+        html.light-theme .theme-option.selected {
+            color: white !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
+        }
+        
+        .theme-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0 auto 0.5rem;
+        }
+    </style>
+</head>
+<body data-theme="light" class="light-theme">
+    <div class="test-container">
+        <h1>Light Theme Readability Test</h1>
+        
+        <div class="test-section">
+            <h2>Navigation Items (Settings Groups)</h2>
+            <p>These should have readable white text on blue background when selected:</p>
+            <a href="#" class="nav-item active">🎨 Theme</a>
+            <a href="#" class="nav-item">⚡ Difficulty</a>
+            <a href="#" class="nav-item">🏆 High Scores</a>
+            <a href="#" class="nav-item">🎮 Game Settings</a>
+            <a href="#" class="nav-item">ℹ️ About</a>
+        </div>
+        
+        <div class="test-section">
+            <h2>Theme Options</h2>
+            <p>These should have readable white text on blue background when selected:</p>
+            <button class="theme-option selected">
+                <div class="theme-preview" style="background: #8d6e63; color: white;">W</div>
+                <span>Wood</span>
+            </button>
+            <button class="theme-option">
+                <div class="theme-preview" style="background: #007bff; color: white;">L</div>
+                <span>Light</span>
+            </button>
+            <button class="theme-option">
+                <div class="theme-preview" style="background: #0a0a0a; color: white;">D</div>
+                <span>Dark</span>
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h2>CSS Variables Check</h2>
+            <p>Current theme variables:</p>
+            <ul>
+                <li>--primary-color: <span id="primary-color"></span></li>
+                <li>--accent-color: <span id="accent-color"></span></li>
+                <li>--card-bg: <span id="card-bg"></span></li>
+                <li>--text-color: <span id="text-color"></span></li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Display CSS variables
+        const root = getComputedStyle(document.documentElement);
+        document.getElementById('primary-color').textContent = root.getPropertyValue('--primary-color').trim();
+        document.getElementById('accent-color').textContent = root.getPropertyValue('--accent-color').trim();
+        document.getElementById('card-bg').textContent = root.getPropertyValue('--card-bg').trim();
+        document.getElementById('text-color').textContent = root.getPropertyValue('--text-color').trim();
+        
+        // Add click handlers for testing
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+        
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.theme-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+    </script>
+</body>
+</html>
