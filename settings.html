@@ -278,13 +278,120 @@
         .copyright-notice a:hover {
             color: var(--text-color);
         }
+        
+        /* Sound Customization Styles */
+        .sound-customization-container {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .sound-effect-item {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .sound-effect-info h4 {
+            color: var(--text-color);
+            margin: 0 0 0.25rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .sound-effect-info p {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.875rem;
+        }
+        
+        .sound-preset-select {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 150px;
+        }
+        
+        .sound-preset-select:hover {
+            border-color: var(--primary-color);
+        }
+        
+        .sound-preset-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(141, 110, 99, 0.2);
+        }
+        
+        .sound-preview-btn {
+            padding: 0.5rem 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .sound-preview-btn:hover {
+            background: var(--primary-hover, #7a5a50);
+            transform: translateY(-1px);
+        }
+        
+        .sound-preview-btn:active {
+            transform: translateY(0);
+        }
+        
+        .sound-reset-all-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--secondary-color, #666);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-top: 1rem;
+        }
+        
+        .sound-reset-all-btn:hover {
+            background: var(--secondary-hover, #555);
+            transform: translateY(-1px);
+        }
+        
+        @media (max-width: 768px) {
+            .sound-effect-item {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .sound-preset-select,
+            .sound-preview-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
     </style>
-  <script type="module" crossorigin src="./assets/settings-CT6jlptb.js"></script>
+  <script type="module" crossorigin src="./assets/settings-Cg4asIJM.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/wood-BSoGWpSl.js">
-  <link rel="modulepreload" crossorigin href="./assets/confirmation-dialog-NrDfwpT4.js">
+  <link rel="modulepreload" crossorigin href="./assets/sound-manager-BRLdBeEu.js">
   <link rel="modulepreload" crossorigin href="./assets/build-info-Dwp5dZmk.js">
   <link rel="stylesheet" crossorigin href="./assets/wood-B_sWIlZE.css">
-  <link rel="stylesheet" crossorigin href="./assets/confirmation-dialog-DzA9m_1G.css">
+  <link rel="stylesheet" crossorigin href="./assets/sound-manager-B89XSKqS.css">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
     <div class="settings-container">
@@ -298,6 +405,7 @@
             <a href="#" class="nav-item" data-section="difficulty">⚡ Difficulty</a>
             <a href="#" class="nav-item" data-section="scores">🏆 High Scores</a>
             <a href="#" class="nav-item" data-section="game">🎮 Game Settings</a>
+            <a href="#" class="nav-item" data-section="sounds">🔊 Sound Effects</a>
             <a href="#" class="nav-item" data-section="about">ℹ️ About</a>
         </div>
         
@@ -464,6 +572,17 @@
                 <p>Install Blockdoku as a Progressive Web App for a better experience:</p>
                 <div id="install-button-container">
                     <!-- Install button will be dynamically added here -->
+                </div>
+            </div>
+            
+            <!-- Sound Effects Section -->
+            <div class="settings-section" id="sounds-section">
+                <h2 class="section-title">Sound Effect Customization</h2>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+                    Customize individual sound effects by choosing different presets. Each sound can use a different preset or keep the default sound.
+                </p>
+                <div id="sound-customization-container" class="sound-customization-container">
+                    <!-- Will be populated by JavaScript -->
                 </div>
             </div>
             
