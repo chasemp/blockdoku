@@ -23,7 +23,8 @@ export class ScoringSystem {
         this.pointsBreakdown = {
             linePoints: 0,       // Points from row/column clears (base, before difficulty multiplier)
             squarePoints: 0,     // Points from 3x3 square clears (base)
-            comboBonusPoints: 0  // Points from combo bonuses added in the moment of clear (base)
+            comboBonusPoints: 0, // Points from combo bonuses added in the moment of clear (base)
+            placementPoints: 0   // Points from block placements (base)
         };
         
         // Scoring multipliers
@@ -352,6 +353,9 @@ export class ScoringSystem {
         const adjustedPoints = Math.floor(gained * difficultyMultiplier);
         this.score += adjustedPoints;
         this.lastScoreGained = adjustedPoints;
+        
+        // Track placement points in breakdown
+        this.pointsBreakdown.placementPoints += adjustedPoints;
 
         // Update level using compounding thresholds
         this.updateLevelFromScore();
@@ -410,7 +414,7 @@ export class ScoringSystem {
         this.columnsClearedCount = 0;
         this.squaresClearedCount = 0;
         this.comboActivations = 0;
-        this.pointsBreakdown = { linePoints: 0, squarePoints: 0, comboBonusPoints: 0 };
+        this.pointsBreakdown = { linePoints: 0, squarePoints: 0, comboBonusPoints: 0, placementPoints: 0 };
     }
 
     // ---------- Level Progression Helpers ----------
@@ -513,7 +517,8 @@ export class ScoringSystem {
             breakdownBase: {
                 linePoints: this.pointsBreakdown.linePoints,
                 squarePoints: this.pointsBreakdown.squarePoints,
-                comboBonusPoints: this.pointsBreakdown.comboBonusPoints
+                comboBonusPoints: this.pointsBreakdown.comboBonusPoints,
+                placementPoints: this.pointsBreakdown.placementPoints
             }
         };
     }

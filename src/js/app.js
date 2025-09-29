@@ -1189,15 +1189,8 @@ class BlockdokuGame {
                 this.scoringSystem.combo = 0;
             }
             
-            // Update points breakdown
-            const linePointsAdded = (clearedLines.rows.length + clearedLines.columns.length) * this.scoringSystem.basePoints.line;
-            const squarePointsAdded = clearedLines.squares.length * this.scoringSystem.basePoints.square;
-            this.scoringSystem.pointsBreakdown.linePoints += linePointsAdded;
-            this.scoringSystem.pointsBreakdown.squarePoints += squarePointsAdded;
-            if (scoreInfo.isComboEvent) {
-                const comboBonus = 20 * (totalClears - 1);
-                this.scoringSystem.pointsBreakdown.comboBonusPoints += comboBonus;
-            }
+            // Points breakdown is now handled by the ScoringSystem.calculateScore method
+            // No need to duplicate the logic here
         }
         
         // Store the result for later use in completeLineClear
@@ -2454,7 +2447,7 @@ class BlockdokuGame {
 		// Build detailed stats and breakdown
 		const difficultyLabel = (stats.difficulty?.toUpperCase?.() || this.difficulty.toUpperCase());
 		const multiplier = stats.difficultyMultiplier || (this.difficultyManager?.getScoreMultiplier?.() || 1);
-		const breakdown = stats.breakdown || { linePoints: 0, squarePoints: 0, comboBonusPoints: 0 };
+		const breakdown = stats.breakdown || { linePoints: 0, squarePoints: 0, comboBonusPoints: 0, placementPoints: 0 };
 		const clears = {
 			rows: stats.rowClears || 0,
 			columns: stats.columnClears || 0,
@@ -2486,7 +2479,9 @@ class BlockdokuGame {
 						<h3 style=\"margin: 0 0 6px 0; color: var(--primary-color, #3498db); font-size: 1em;\">Score Breakdown</h3>
 						<p style=\"margin: 4px 0;\">Lines: <strong>${breakdown.linePoints.toLocaleString()}</strong></p>
 						<p style=\"margin: 4px 0;\">Squares: <strong>${breakdown.squarePoints.toLocaleString()}</strong></p>
+						<p style=\"margin: 4px 0;\">Placements: <strong>${breakdown.placementPoints.toLocaleString()}</strong></p>
 						<p style=\"margin: 4px 0;\">Combo Bonus: <strong>${breakdown.comboBonusPoints.toLocaleString()}</strong></p>
+						<p style=\"margin: 8px 0 4px 0; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.2); font-weight: bold; color: var(--primary-color, #3498db);">Total: <strong>${(breakdown.linePoints + breakdown.squarePoints + breakdown.placementPoints + breakdown.comboBonusPoints).toLocaleString()}</strong></p>
 					</div>
 				</div>
 			</div>
