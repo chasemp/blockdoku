@@ -2726,6 +2726,11 @@ class BlockdokuGame {
         // Load high scores if needed
         this.loadHighScores();
         
+        // Refresh statistics display to ensure latest data is shown
+        if (this.settingsManager && this.settingsManager.refreshStatistics) {
+            this.settingsManager.refreshStatistics();
+        }
+        
         modal.style.display = 'block';
         console.log('Settings modal should now be visible');
     }
