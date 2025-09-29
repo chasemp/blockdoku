@@ -464,32 +464,32 @@ export class ScoringSystem {
     
     // Get detailed statistics
     // Calculate progressive combo bonus based on total clears
-    // 2nd piece: 10 points
-    // 3rd piece: 15 points  
-    // 4th piece: 15 points
-    // 5th piece: 50 points
-    // 6th piece: 100 points
+    // 2 lines: +10 points (first combo piece)
+    // 3 lines: +10 + 15 = +25 points (first + second combo piece)
+    // 4 lines: +10 + 15 + 15 = +40 points (first + second + third combo piece)
+    // 5 lines: +10 + 15 + 15 + 50 = +90 points (first + second + third + fourth combo piece)
+    // 6 lines: +10 + 15 + 15 + 50 + 100 = +190 points (first + second + third + fourth + fifth combo piece)
     calculateComboBonus(totalClears) {
         if (totalClears < 2) return 0;
         
         let bonus = 0;
-        const piecesInCombo = totalClears - 1; // Pieces after the first
         
-        for (let i = 1; i <= piecesInCombo; i++) {
-            if (i === 1) {
-                // 2nd piece gets 10 points
+        // For each line cleared beyond the first, add the appropriate bonus
+        for (let i = 2; i <= totalClears; i++) {
+            if (i === 2) {
+                // 2nd line gets 10 points
                 bonus += 10;
-            } else if (i === 2 || i === 3) {
-                // 3rd and 4th pieces get 15 points each
+            } else if (i === 3 || i === 4) {
+                // 3rd and 4th lines get 15 points each
                 bonus += 15;
-            } else if (i === 4) {
-                // 5th piece gets 50 points
-                bonus += 50;
             } else if (i === 5) {
-                // 6th piece gets 100 points
+                // 5th line gets 50 points
+                bonus += 50;
+            } else if (i === 6) {
+                // 6th line gets 100 points
                 bonus += 100;
             } else {
-                // 7th+ pieces get 100 points each (same as 6th)
+                // 7th+ lines get 100 points each (same as 6th)
                 bonus += 100;
             }
         }
