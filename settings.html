@@ -282,12 +282,12 @@
             text-shadow: none;
         }
     </style>
-  <script type="module" crossorigin src="./assets/settings-DnhB1b5X.js"></script>
+  <script type="module" crossorigin src="./assets/settings-iIiX7xmu.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/wood-BSoGWpSl.js">
-  <link rel="modulepreload" crossorigin href="./assets/confirmation-dialog-Cex0sZaK.js">
+  <link rel="modulepreload" crossorigin href="./assets/confirmation-dialog-By8Z45EU.js">
   <link rel="modulepreload" crossorigin href="./assets/build-info-Dwp5dZmk.js">
   <link rel="stylesheet" crossorigin href="./assets/wood-B_sWIlZE.css">
-  <link rel="stylesheet" crossorigin href="./assets/confirmation-dialog-BGVFfOUE.css">
+  <link rel="stylesheet" crossorigin href="./assets/confirmation-dialog-DFANYNkx.css">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
     <div class="settings-container">
@@ -376,17 +376,20 @@
             <!-- Game Settings Section -->
             <div class="settings-section" id="game-section">
                 <h2 class="section-title">Game Settings</h2>
-                <div class="setting-item">
-                    <label>
-                        <input type="radio" name="combo-display-mode" value="streak" id="combo-streak" />
-                        <span>Combo display: Streak</span>
-                    </label>
-                </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="radio" name="combo-display-mode" value="cumulative" id="combo-cumulative" />
-                        <span>Combo display: Cumulative</span>
-                    </label>
+                
+                <!-- Combo Display Settings -->
+                <div class="combo-display-settings">
+                    <h3>Combo Display</h3>
+                    <div class="combo-options">
+                        <label class="combo-option">
+                            <input type="radio" name="combo-display-mode" value="streak" id="combo-streak" />
+                            <span class="combo-label">Streak</span>
+                        </label>
+                        <label class="combo-option">
+                            <input type="radio" name="combo-display-mode" value="cumulative" id="combo-cumulative" />
+                            <span class="combo-label">Cumulative</span>
+                        </label>
+                    </div>
                 </div>
                 <div class="setting-item">
                     <label>
