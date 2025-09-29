@@ -10,6 +10,7 @@ export class BlockPalette {
         this.selectedBlock = null;
         this.blockElements = new Map();
         this._placeabilityTimeout = null;
+        this.lastTapTime = null; // For double-tap detection on mobile
         
         this.init();
     }
@@ -123,10 +124,8 @@ export class BlockPalette {
         // Touch events for mobile drag and drop
         document.addEventListener('touchstart', (e) => {
             if (e.target.closest('.block-item')) {
-                e.preventDefault();
                 const blockItem = e.target.closest('.block-item');
                 const blockId = blockItem.dataset.blockId;
-                this.selectBlock(blockId);
                 
                 // Store the touch for potential drag
                 this.touchStart = e.touches[0];
@@ -137,7 +136,7 @@ export class BlockPalette {
                 blockItem.style.transform = 'scale(0.95)';
                 blockItem.style.transition = 'transform 0.1s ease';
             }
-        }, { passive: false });
+        }, { passive: true });
         
         document.addEventListener('touchmove', (e) => {
             if (this.touchStart && this.touchStartBlockId) {
@@ -167,8 +166,28 @@ export class BlockPalette {
         
         document.addEventListener('touchend', (e) => {
             if (this.touchStart) {
-                // Reset visual feedback
                 const blockItem = document.querySelector(`[data-block-id="${this.touchStartBlockId}"]`);
+                const touch = e.changedTouches[0];
+                const deltaTime = Date.now() - this.touchStartTime;
+                const deltaX = Math.abs(touch.clientX - this.touchStart.clientX);
+                const deltaY = Math.abs(touch.clientY - this.touchStart.clientY);
+                
+                // Check if this was a tap (not a drag)
+                if (deltaX < 5 && deltaY < 5 && deltaTime < 200) {
+                    // Handle double-tap detection
+                    if (this.lastTapTime && (Date.now() - this.lastTapTime) < 300) {
+                        // Double tap detected - rotate the block
+                        e.preventDefault();
+                        this.rotateBlock(this.touchStartBlockId);
+                        this.lastTapTime = null; // Reset to prevent triple-tap
+                    } else {
+                        // Single tap - select the block
+                        this.selectBlock(this.touchStartBlockId);
+                        this.lastTapTime = Date.now();
+                    }
+                }
+                
+                // Reset visual feedback
                 if (blockItem) {
                     blockItem.classList.remove('dragging');
                     blockItem.style.transform = '';
@@ -180,7 +199,7 @@ export class BlockPalette {
                 this.touchStartBlockId = null;
                 this.isDragging = false;
             }
-        }, { passive: true });
+        }, { passive: false });
         
         document.addEventListener('touchcancel', (e) => {
             if (this.touchStart) {
@@ -196,6 +215,7 @@ export class BlockPalette {
                 this.touchStartTime = null;
                 this.touchStartBlockId = null;
                 this.isDragging = false;
+                this.lastTapTime = null; // Reset double-tap detection
             }
         }, { passive: true });
     }
