@@ -96,7 +96,7 @@ export class HapticFeedback {
     
     // Combo feedback
     onCombo(combo) {
-        if (combo > 1) {
+        if (combo >= 1) {
             this.vibrate('combo');
         }
     }
