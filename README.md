@@ -20,6 +20,8 @@ A Progressive Web App for playing Blockudoku with multiple themes, local storage
 - **Sharing**: Web Share API + Social Media APIs
 - **Build**: Vite for optimization and bundling
 
+> Build system note: This project intentionally uses a non-standard Vite output layout to deploy from the repository root. See the build section below before changing any build settings.
+
 ## Development Status
 
 This project is currently in **Phase 1: Foundation**. See [PROJECT_PLAN.md](./PROJECT_PLAN.md) for detailed development milestones and progress.
@@ -63,7 +65,20 @@ npm run dev
 npm run build
 ```
 
-The built files will be in the `dist/` directory.
+Important:
+- The current Vite config outputs production files into the repository root (not `dist/`).
+- This is by design to support simple/static hosting where the site is served from the repo root.
+- Build metadata is generated before and after the build by `scripts/generate-build-info.js`, which writes `build-info.json` (used by the UI) and a plain-text `build` file for CI/support.
+
+If you prefer a conventional `dist/` output:
+- In `vite.config.js`, set `build.outDir` to `dist` and adjust `base` as needed (e.g., `/your-subpath/` for GitHub Pages).
+- Remove or update `build-and-deploy.js`, which currently assumes root-level output and performs additional copying/creation of PWA assets.
+- Ensure `build-info.json` and the `build` file are published with the site (either via copying them into `dist/` during build or by serving from the same directory).
+- Update your hosting/CI to deploy the `dist/` directory instead of the repo root.
+
+Dev/Preview notes:
+- Dev server runs at `http://localhost:3456` (see `vite.config.js`).
+- `base` is set to `./` to allow `file://` previews and root-level hosting. If you change hosting to a sub-path, update both `base` and the PWA manifest `start_url`/`scope` accordingly (configured via `vite-plugin-pwa`).
 
 ## Project Structure
 
