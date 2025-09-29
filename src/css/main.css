@@ -1867,10 +1867,7 @@ html.light-theme .settings-section .difficulty-option.selected {
 }
 
 .combo-option input[type="radio"] {
-    margin-right: 0.5rem;
-    width: 16px;
-    height: 16px;
-    accent-color: var(--primary-color);
+    display: none;
 }
 
 .combo-option:has(input:checked) {
