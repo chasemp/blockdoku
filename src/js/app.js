@@ -110,6 +110,13 @@ class BlockdokuGame {
             this.loadSettings();
             this.updateDifficultyButton();
             this.renderPersonalBests();
+            
+            // Always reload game state when returning from settings (if not game over)
+            if (!this.isGameOver) {
+                console.log('Focus event: reloading game state from settings');
+                this.loadGameState();
+                this.render();
+            }
         });
         
         // Listen for storage changes to detect difficulty changes from settings page
@@ -118,6 +125,13 @@ class BlockdokuGame {
                 this.loadSettings();
                 this.updateDifficultyButton();
                 this.renderPersonalBests();
+                
+                // Always reload game state when settings change (if not game over)
+                if (!this.isGameOver) {
+                    console.log('Storage change: reloading game state after settings change');
+                    this.loadGameState();
+                    this.render();
+                }
             }
         });
     }
@@ -336,6 +350,13 @@ class BlockdokuGame {
             const handleSettingsClick = () => {
                 this.effectsManager.onButtonClick();
                 console.log('Settings button clicked - navigating to settings page');
+                
+                // Always save game state before navigating to settings (if not game over)
+                if (!this.isGameOver) {
+                    console.log('Saving game state before navigating to settings');
+                    this.saveGameState();
+                }
+                
                 // NOTE: Settings is a separate PAGE (settings.html), not a modal!
                 // The settings page contains: theme selection, difficulty settings, 
                 // high scores, game settings, and the PWA install button.
@@ -1876,11 +1897,25 @@ class BlockdokuGame {
             }
             console.log('Game state loaded successfully');
         } else {
-            console.log('No saved game state found');
+            console.log('No saved game state found - preserving current board state');
+            // If no saved state, ensure we have a valid board (don't overwrite existing state)
+            if (!this.board || !Array.isArray(this.board)) {
+                this.board = this.initializeBoard();
+            }
         }
     }
 
     saveGameState() {
+        // Only save if there's actually a game in progress
+        const hasGameProgress = this.score > 0 || 
+                               (this.board && this.board.some(row => row.some(cell => cell === 1))) ||
+                               (this.blockManager.currentBlocks && this.blockManager.currentBlocks.length > 0);
+        
+        if (!hasGameProgress) {
+            console.log('No game progress to save, skipping save');
+            return;
+        }
+        
         const gameState = {
             board: this.board,
             score: this.score,
