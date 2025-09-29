@@ -388,7 +388,7 @@ class SettingsManager {
                 <div class="score-item">
                     <div class="rank">#${index + 1}</div>
                     <div class="score-value">${score.score}</div>
-                    <div class="score-details">Level ${score.level} • ${new Date(score.date).toLocaleDateString()}</div>
+                    <div class="score-details">${(score.difficulty||'normal').toUpperCase()} • Level ${score.level} • ${new Date(score.date).toLocaleDateString()}</div>
                 </div>
             `).join('');
         }

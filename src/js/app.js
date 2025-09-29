@@ -1837,6 +1837,10 @@ class BlockdokuGame {
         
         // Save final game state
         this.saveGameState();
+        // Clear autosave so a dead board is not restored on reload
+        if (this.storage && this.storage.clearGameState) {
+            this.storage.clearGameState();
+        }
     }
 
     stopGameLoop() {
@@ -1892,6 +1896,7 @@ class BlockdokuGame {
                 <p style="margin: 5px 0; font-size: 1.2em;"><strong>Final Score: ${stats.score}</strong></p>
                 <p style="margin: 5px 0;">Lines Cleared: ${stats.linesCleared}</p>
                 <p style="margin: 5px 0;">Max Combo: ${stats.maxCombo}</p>
+                <p style="margin: 5px 0;">Difficulty: ${stats.difficulty?.toUpperCase?.() || this.difficulty.toUpperCase()}</p>
                 ${isHighScore ? '<p style="color: #ffd700; font-weight: bold; margin: 10px 0;">🎉 New High Score! 🎉</p>' : ''}
             </div>
             <div style="margin-top: 25px;">
@@ -1973,7 +1978,7 @@ class BlockdokuGame {
                 <div class="score-item">
                     <span class="rank">#${index + 1}</span>
                     <span class="score-value">${score.score.toLocaleString()}</span>
-                    <span class="score-details">Level ${score.level} • ${score.linesCleared} lines • ${score.date}</span>
+                    <span class="score-details">${(score.difficulty||'normal').toUpperCase()} • Level ${score.level} • ${score.linesCleared} lines • ${score.date}</span>
                 </div>
             `).join('');
         }

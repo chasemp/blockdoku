@@ -70,6 +70,7 @@ export class GameStorage {
                 linesCleared: scoreData.linesCleared,
                 combo: scoreData.combo,
                 maxCombo: scoreData.maxCombo,
+                difficulty: scoreData.difficulty || 'normal',
                 timestamp: Date.now(),
                 date: new Date().toLocaleDateString()
             };
