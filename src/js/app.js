@@ -190,7 +190,7 @@ class BlockdokuGame {
         this.setupEventListeners();
         this.registerServiceWorker();
         // this.loadSettings();
-        // this.loadGameState();
+        this.loadGameState();
         this.generateNewBlocks();
         
         // Initialize timer system for current difficulty
@@ -461,6 +461,22 @@ class BlockdokuGame {
             if (e.key === 'blockdoku-settings' || e.key === 'blockdoku_settings') {
                 this.loadSettings();
                 this.updateHintControls();
+            }
+        });
+        
+        // Save game state when navigating away from the page
+        window.addEventListener('beforeunload', () => {
+            console.log('beforeunload event triggered, autoSave:', this.autoSave, 'isGameOver:', this.isGameOver);
+            if (this.autoSave && !this.isGameOver) {
+                this.saveGameState();
+            }
+        });
+        
+        // Save game state when page becomes hidden (e.g., navigating to settings)
+        document.addEventListener('visibilitychange', () => {
+            console.log('visibilitychange event triggered, hidden:', document.hidden, 'autoSave:', this.autoSave, 'isGameOver:', this.isGameOver);
+            if (document.hidden && this.autoSave && !this.isGameOver) {
+                this.saveGameState();
             }
         });
     }
@@ -1839,6 +1855,7 @@ class BlockdokuGame {
     loadGameState() {
         const savedState = this.storage.loadGameState();
         if (savedState) {
+            console.log('Loading saved game state:', savedState);
             this.board = savedState.board || this.initializeBoard();
             this.score = savedState.score || 0;
             this.level = savedState.level || 1;
@@ -1853,6 +1870,9 @@ class BlockdokuGame {
             if (savedState.selectedBlock) {
                 this.selectedBlock = savedState.selectedBlock;
             }
+            console.log('Game state loaded successfully');
+        } else {
+            console.log('No saved game state found');
         }
     }
 
@@ -1864,7 +1884,9 @@ class BlockdokuGame {
             currentBlocks: this.blockManager.currentBlocks,
             selectedBlock: this.selectedBlock
         };
+        console.log('Saving game state:', gameState);
         this.storage.saveGameState(gameState);
+        console.log('Game state saved successfully');
     }
 
     loadSettings() {
