@@ -29,6 +29,8 @@ export class PWAInstallManager {
             // Create and show install button immediately
             this.createInstallButton();
             this.showInstallButton();
+            // Ensure settings page status reflects availability
+            this.updateSettingsButtonStatus();
         });
         
         // Listen for the appinstalled event
@@ -253,7 +255,17 @@ export class PWAInstallManager {
         } else {
             this.settingsInstallButton.classList.remove('installed');
             if (statusElement) {
-                statusElement.textContent = 'Not available';
+                // Provide platform-specific guidance instead of a hard "Not available"
+                const ua = (navigator.userAgent || '').toLowerCase();
+                let message = '';
+                if (ua.includes('android')) {
+                    message = 'Install via browser menu';
+                } else if (/iphone|ipad|ipod/.test(ua)) {
+                    message = 'Use Share → Add to Home Screen';
+                } else {
+                    message = 'Install via browser menu';
+                }
+                statusElement.textContent = message;
             }
         }
     }
