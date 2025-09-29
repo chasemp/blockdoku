@@ -154,8 +154,11 @@ export class ScoringSystem {
         scoreGained += clearedLines.columns.length * this.basePoints.line;
         scoreGained += clearedLines.squares.length * this.basePoints.square;
         
-        // Combo bonus: when 2+ different types clear simultaneously, add flat +25
-        if (this.combo >= 1) {
+        // Combo bonus: apply +25 when the CURRENT clear includes 2+ different types
+        const currentClearTypesCount = (clearedLines.rows.length > 0 ? 1 : 0)
+            + (clearedLines.columns.length > 0 ? 1 : 0)
+            + (clearedLines.squares.length > 0 ? 1 : 0);
+        if (currentClearTypesCount >= 2) {
             scoreGained += 25;
         }
         
