@@ -242,6 +242,11 @@ export class ScoringSystem {
         return this.maxCombo;
     }
     
+    // Total number of times a combo has been activated during the current game
+    getComboTotal() {
+        return this.comboActivations;
+    }
+    
     getLinesCleared() {
         return this.linesCleared;
     }
