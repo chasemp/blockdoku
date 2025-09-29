@@ -1152,6 +1152,68 @@ class BlockdokuGame {
         }
     }
     
+    // Calculate score for clears and update immediately
+    updateScoreForClears(clearedLines) {
+        console.log('updateScoreForClears called with:', clearedLines);
+        
+        // Calculate score without modifying state
+        const scoreInfo = this.scoringSystem.calculateScoreForClears(clearedLines);
+        console.log('Score calculation result:', scoreInfo);
+        
+        // Apply difficulty multiplier
+        const difficultyMultiplier = this.difficultyManager.getScoreMultiplier();
+        const adjustedScore = Math.floor(scoreInfo.scoreGained * difficultyMultiplier);
+        
+        // Update app score
+        this.score = this.score + adjustedScore;
+        
+        // Update scoring system score to keep in sync
+        this.scoringSystem.score = this.score;
+        
+        // Update level based on new score
+        this.scoringSystem.updateLevelFromScore();
+        this.level = this.scoringSystem.getLevel();
+        
+        // Update combo state in scoring system
+        const totalClears = clearedLines.rows.length + clearedLines.columns.length + clearedLines.squares.length;
+        if (totalClears > 0) {
+            // Update per-type clear counters
+            this.scoringSystem.rowsClearedCount += clearedLines.rows.length;
+            this.scoringSystem.columnsClearedCount += clearedLines.columns.length;
+            this.scoringSystem.squaresClearedCount += clearedLines.squares.length;
+            this.scoringSystem.linesCleared += totalClears;
+            
+            // Update combo
+            if (scoreInfo.isComboEvent) {
+                this.scoringSystem.combo++;
+                this.scoringSystem.maxCombo = Math.max(this.scoringSystem.maxCombo, this.scoringSystem.combo);
+                this.scoringSystem.comboActivations++;
+            } else {
+                this.scoringSystem.combo = 0;
+            }
+            
+            // Update points breakdown
+            const linePointsAdded = (clearedLines.rows.length + clearedLines.columns.length) * this.scoringSystem.basePoints.line;
+            const squarePointsAdded = clearedLines.squares.length * this.scoringSystem.basePoints.square;
+            this.scoringSystem.pointsBreakdown.linePoints += linePointsAdded;
+            this.scoringSystem.pointsBreakdown.squarePoints += squarePointsAdded;
+            if (scoreInfo.isComboEvent) {
+                const comboBonus = 20 * (totalClears - 1);
+                this.scoringSystem.pointsBreakdown.comboBonusPoints += comboBonus;
+            }
+        }
+        
+        // Store the result for later use in completeLineClear
+        this.pendingClearResult = {
+            clearedLines: clearedLines,
+            scoreGained: adjustedScore,
+            isCombo: scoreInfo.isComboEvent,
+            combo: this.scoringSystem.getCombo()
+        };
+        
+        console.log('Score updated immediately. New score:', this.score, 'New level:', this.level);
+    }
+    
     startLineClearAnimation(clearedLines) {
         console.log('Starting line clear animation for:', clearedLines);
         // Start glow effect immediately
@@ -1384,31 +1446,31 @@ class BlockdokuGame {
             // Clear pending clears state
             this.pendingClears = null;
             
-            // Actually clear the lines
-            console.log('Applying clears to board...');
-            const previousScore = this.scoringSystem.getScore();
-            result = this.scoringSystem.applyClears(this.board, clearedLines);
-            console.log('Clears applied, result:', result);
+            // Actually clear the lines from the board (without updating score)
+            console.log('Clearing lines from board...');
+            result = this.scoringSystem.clearLinesFromBoard(this.board, clearedLines);
+            console.log('Lines cleared from board, result:', result);
             this.board = result.board;
             
-            // Update score and level with difficulty multiplier
-            const baseScore = this.scoringSystem.getScore();
-            const newlyGainedScore = baseScore - previousScore;
-            const difficultyMultiplier = this.difficultyManager.getScoreMultiplier();
-            const adjustedNewScore = Math.floor(newlyGainedScore * difficultyMultiplier);
-            this.score = this.score + adjustedNewScore;
+            // Retrieve the score info that was already calculated and applied
+            const storedResult = this.pendingClearResult;
+            if (!storedResult) {
+                console.warn('No pendingClearResult found - score was not pre-calculated!');
+                // Fallback: shouldn't happen but handle gracefully
+                combo = this.scoringSystem.getCombo();
+            } else {
+                combo = storedResult.combo;
+            }
             
-            // Synchronize the scoring system with our adjusted score
-            this.scoringSystem.score = this.score;
+            // Clear the stored result
+            this.pendingClearResult = null;
             
-            combo = this.scoringSystem.getCombo();
-            this.level = this.scoringSystem.getLevel();
-            
-            console.log('Line clear completed successfully. New score:', this.score, 'New level:', this.level);
+            console.log('Line clear completed. Score was already updated. Current score:', this.score, 'Current level:', this.level);
         } catch (error) {
             console.error('Error during line clear completion:', error);
             // Reset pending clears state even if there was an error
             this.pendingClears = null;
+            this.pendingClearResult = null;
             return;
         }
         
@@ -1421,12 +1483,16 @@ class BlockdokuGame {
         this.effectsManager.onLineClear(centerX, centerY, clearedLines);
         
         // Create score popup with contextual details
+        // Use stored result if available, otherwise fall back to defaults
+        const scoreGained = storedResult ? storedResult.scoreGained : 0;
+        const isCombo = storedResult ? storedResult.isCombo : false;
+        
         this.createScorePopup(
             centerX,
             centerY,
-            result.scoreGained,
+            scoreGained,
             clearedLines,
-            result.isCombo,
+            isCombo,
             combo,
             (this.storage.loadSettings()?.comboDisplayMode) || 'streak'
         );
@@ -1437,7 +1503,7 @@ class BlockdokuGame {
             this.effectsManager.onCombo(centerX, centerY + 50, combo);
         }
         
-        // Update UI
+        // Note: UI was already updated in checkLineClears, but update again in case of state changes
         this.updateUI();
         
         // Update placeability indicators immediately after line clears
