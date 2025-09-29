@@ -115,12 +115,15 @@ export class ScoringSystem {
         // Calculate combo bonus if applicable
         let comboBonus = 0;
         if (isComboEvent) {
-            comboBonus = 20 * (totalClears - 1);
+            comboBonus = this.basePoints.combo * (totalClears - 1);
             scoreGained += comboBonus;
         }
         
-        // Apply multipliers efficiently
-        scoreGained = Math.floor(scoreGained * this.level * difficultyMultiplier);
+        // Apply multipliers efficiently (only to base points, not combo bonus)
+        const baseScoreGained = linePoints + squarePoints;
+        const multipliedBaseScore = Math.floor(baseScoreGained * this.level * difficultyMultiplier);
+        const multipliedComboBonus = Math.floor(comboBonus * this.level * difficultyMultiplier);
+        scoreGained = multipliedBaseScore + multipliedComboBonus;
         
         return {
             scoreGained,
@@ -130,7 +133,7 @@ export class ScoringSystem {
             breakdown: {
                 linePoints: Math.floor(linePoints * this.level * difficultyMultiplier),
                 squarePoints: Math.floor(squarePoints * this.level * difficultyMultiplier),
-                comboBonus: Math.floor(comboBonus * this.level * difficultyMultiplier)
+                comboBonus: multipliedComboBonus
             }
         };
     }
@@ -306,17 +309,20 @@ export class ScoringSystem {
         // Calculate combo bonus if applicable
         let comboBonus = 0;
         if (isComboEvent) {
-            comboBonus = 20 * (totalClears - 1);
+            comboBonus = this.basePoints.combo * (totalClears - 1);
             scoreGained += comboBonus;
         }
         
-        // Apply multipliers efficiently
-        scoreGained = Math.floor(scoreGained * this.level * difficultyMultiplier);
+        // Apply multipliers efficiently (only to base points, not combo bonus)
+        const baseScoreGained = linePointsAdded + squarePointsAdded;
+        const multipliedBaseScore = Math.floor(baseScoreGained * this.level * difficultyMultiplier);
+        const multipliedComboBonus = Math.floor(comboBonus * this.level * difficultyMultiplier);
+        scoreGained = multipliedBaseScore + multipliedComboBonus;
         
         // Update tracking variables
         this.pointsBreakdown.linePoints += Math.floor(linePointsAdded * this.level * difficultyMultiplier);
         this.pointsBreakdown.squarePoints += Math.floor(squarePointsAdded * this.level * difficultyMultiplier);
-        this.pointsBreakdown.comboBonusPoints += Math.floor(comboBonus * this.level * difficultyMultiplier);
+        this.pointsBreakdown.comboBonusPoints += multipliedComboBonus;
         
         this.score += scoreGained;
         this.lastScoreGained = scoreGained;
