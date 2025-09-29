@@ -18,6 +18,9 @@
     --block-border: #007aa3;
     --grid-line: #333333;
     --highlight: #001a33;
+    --clear-glow-color: #ff4444;
+    --accent-color: #0099cc;
+    --card-bg: #1a1a1a;
 }
 
 /* Dark theme effects */
