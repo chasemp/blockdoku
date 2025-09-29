@@ -24,8 +24,8 @@ export class ScoringSystem {
         // Scoring multipliers
         this.basePoints = {
             single: 1,
-            line: 10,
-            square: 15,
+            line: 15,
+            square: 20,
             combo: 5
         };
     }
@@ -173,13 +173,13 @@ export class ScoringSystem {
         this.pointsBreakdown.linePoints += linePointsAdded;
         this.pointsBreakdown.squarePoints += squarePointsAdded;
         
-        // Combo bonus: apply +25 when the CURRENT clear includes 2+ different types
+        // Combo bonus: apply +20 when the CURRENT clear includes 2+ different types
         const currentClearTypesCount = (clearedLines.rows.length > 0 ? 1 : 0)
             + (clearedLines.columns.length > 0 ? 1 : 0)
             + (clearedLines.squares.length > 0 ? 1 : 0);
         if (currentClearTypesCount >= 2) {
-            scoreGained += 25;
-            this.pointsBreakdown.comboBonusPoints += 25;
+            scoreGained += 20;
+            this.pointsBreakdown.comboBonusPoints += 20;
         }
         
         // Level multiplier
