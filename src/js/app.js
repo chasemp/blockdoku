@@ -1576,13 +1576,11 @@ class BlockdokuGame {
         const comboLabelElement = document.getElementById('combo-label');
         
         const currentCombo = this.scoringSystem.getCombo();
-        const totalCombos = this.scoringSystem.getComboTotal ? this.scoringSystem.getComboTotal() : this.scoringSystem.comboActivations || 0;
-
-        // Determine which value to show based on settings
-        const settings = this.storage.loadSettings();
-        const mode = settings.comboDisplayMode || 'streak';
-        this.comboModeActive = mode;
-        this.comboModesUsed.add(mode);
+        const totalCombos = this.scoringSystem.getTotalCombos();
+        
+        // Track both combo modes as used
+        this.comboModesUsed.add('streak');
+        this.comboModesUsed.add('cumulative');
         
         // Check for first score gain
         if (this.previousScore === 0 && this.score > 0) {
@@ -1604,13 +1602,10 @@ class BlockdokuGame {
         // Update the text content
         scoreElement.textContent = this.score;
         levelElement.textContent = this.level;
-        // Always show label as singular 'Combo', switch value per mode
-        if (comboLabelElement) comboLabelElement.textContent = 'Combo';
-        if (mode === 'cumulative') {
-            comboElement.textContent = totalCombos;
-        } else {
-            comboElement.textContent = currentCombo;
-        }
+        
+        // Display both combo types: "Streak: X | Total: Y"
+        if (comboLabelElement) comboLabelElement.textContent = 'Combos';
+        comboElement.textContent = `Streak: ${currentCombo} | Total: ${totalCombos}`;
         
         // Update previous values
         this.previousScore = this.score;
@@ -2375,6 +2370,11 @@ class BlockdokuGame {
 		this.checkHighScore();
 		// Proactively refresh any visible high scores UI
 		this.loadHighScores();
+		
+		// Refresh statistics display if settings modal is open
+		if (this.settingsManager && this.settingsManager.refreshStatistics) {
+			this.settingsManager.refreshStatistics();
+		}
         
         // Show game over modal or notification
         this.showGameOverModal(stats);
