@@ -2147,9 +2147,14 @@ html.light-theme .settings-section .difficulty-option.selected {
 
 /* Reset Statistics Button Styles */
 .reset-stats-item {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-color);
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #dc3545;
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, rgba(192, 35, 48, 0.05) 100%);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-left: -1rem;
+    margin-right: -1rem;
 }
 
 .pwa-install-button {
@@ -2208,11 +2213,11 @@ html.light-theme .settings-section .difficulty-option.selected {
 .reset-stats-button {
     background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
     color: white;
-    border: none;
+    border: 2px solid #dc3545;
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
@@ -2220,21 +2225,60 @@ html.light-theme .settings-section .difficulty-option.selected {
     justify-content: center;
     gap: 0.5rem;
     width: 100%;
-    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.15);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.reset-stats-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.reset-stats-button:hover::before {
+    left: 100%;
 }
 
 .reset-stats-button:hover {
     background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+    border-color: #c82333;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
+    box-shadow: 0 6px 16px rgba(220, 53, 69, 0.35);
 }
 
 .reset-stats-button:active {
     transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
 }
 
 .reset-text {
     font-weight: 600;
+}
+
+/* Theme-specific enhancements for reset stats button */
+[data-theme="light"] .reset-stats-item,
+body.light-theme .reset-stats-item {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.08) 0%, rgba(192, 35, 48, 0.08) 100%);
+    border-top-color: #dc3545;
+}
+
+[data-theme="dark"] .reset-stats-item,
+body.dark-theme .reset-stats-item {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(192, 35, 48, 0.1) 100%);
+    border-top-color: #dc3545;
+}
+
+[data-theme="wood"] .reset-stats-item,
+body.wood-theme .reset-stats-item {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.08) 0%, rgba(192, 35, 48, 0.08) 100%);
+    border-top-color: #dc3545;
 }
 
 /* Copyright Notice */
