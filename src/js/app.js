@@ -780,6 +780,19 @@ class BlockdokuGame {
         const b = Math.max(0, parseInt(hex.substr(4, 2), 16) - 30);
         return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
     }
+
+    getThemeColor(varName, fallback) {
+        try {
+            const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+            return value || fallback;
+        } catch (e) {
+            return fallback;
+        }
+    }
+
+    getClearGlowColor() {
+        return this.getThemeColor('--clear-glow-color', '#00ff00');
+    }
     
     cleanupDrag() {
         this.isDragging = false;
@@ -954,6 +967,19 @@ class BlockdokuGame {
         // Draw preview block
         if (this.selectedBlock && this.previewPosition) {
             this.drawPreviewBlock();
+
+            // Subtle pre-clear indication in Easy/Normal when preview would clear
+            if (this.difficulty === 'easy' || this.difficulty === 'normal') {
+                const row = this.previewPosition.row;
+                const col = this.previewPosition.col;
+                if (this.canPlaceBlock(row, col)) {
+                    const tempBoard = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);
+                    const potentialClears = this.scoringSystem.checkForCompletedLines(tempBoard);
+                    if (potentialClears.rows.length || potentialClears.columns.length || potentialClears.squares.length) {
+                        this.drawClearingBlockGlow(potentialClears, { subtle: true });
+                    }
+                }
+            }
         }
         
         // Draw hints if enabled
@@ -1056,15 +1082,16 @@ class BlockdokuGame {
         
         // Create immediate visual feedback - very subtle flash
         this.ctx.save();
-        this.ctx.fillStyle = '#00ff00'; // Green flash
+        const glowColor = this.getClearGlowColor();
+        this.ctx.fillStyle = glowColor; // Theme-based flash
         this.ctx.globalAlpha = 0.2;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.globalAlpha = 1.0;
         this.ctx.restore();
         
         // Add a brief visual cue (very subtle border)
-        this.canvas.style.border = '1px solid #00ff00';
-        this.canvas.style.boxShadow = '0 0 5px #00ff00';
+        this.canvas.style.border = `1px solid ${glowColor}`;
+        this.canvas.style.boxShadow = `0 0 5px ${glowColor}`;
         
         // Remove the border effect quickly
         setTimeout(() => {
@@ -1081,25 +1108,28 @@ class BlockdokuGame {
         this.showQuickClearNotification(centerX, centerY, clearedLines);
     }
     
-    drawClearingBlockGlow(clearedLines) {
+    drawClearingBlockGlow(clearedLines, options = {}) {
         // Draw enhanced glow outline around blocks that will be cleared
+        const { subtle = false } = options;
         this.ctx.save();
         const drawCellSize = this.actualCellSize || this.cellSize;
         
-        // Set up enhanced glow effect (reduced intensity)
-        this.ctx.shadowColor = '#00ff00';
-        this.ctx.shadowBlur = 4; // Reduced from 8 to 4
-        this.ctx.strokeStyle = '#00ff00';
-        this.ctx.lineWidth = 1; // Reduced from 2 to 1
+        // Set up enhanced glow effect (theme-based)
+        const glowColor = this.getClearGlowColor();
+        this.ctx.shadowColor = glowColor;
+        this.ctx.shadowBlur = subtle ? 2 : 4;
+        this.ctx.strokeStyle = glowColor;
+        this.ctx.lineWidth = subtle ? 0.5 : 1;
         
-        // Draw outer glow - more subtle
-        this.ctx.globalAlpha = 0.4; // Reduced from 0.8 to 0.4
+        // Draw outer glow
+        this.ctx.globalAlpha = subtle ? 0.2 : 0.4;
         clearedLines.rows.forEach(row => {
             for (let col = 0; col < this.boardSize; col++) {
                 if (this.board[row][col] === 1) {
                     const x = col * drawCellSize;
                     const y = row * drawCellSize;
-                    this.ctx.strokeRect(x + 2, y + 2, drawCellSize - 4, drawCellSize - 4);
+                    const inset = subtle ? 3 : 2;
+                    this.ctx.strokeRect(x + inset, y + inset, drawCellSize - inset * 2, drawCellSize - inset * 2);
                 }
             }
         });
@@ -1109,7 +1139,8 @@ class BlockdokuGame {
                 if (this.board[row][col] === 1) {
                     const x = col * drawCellSize;
                     const y = row * drawCellSize;
-                    this.ctx.strokeRect(x + 2, y + 2, drawCellSize - 4, drawCellSize - 4);
+                    const inset = subtle ? 3 : 2;
+                    this.ctx.strokeRect(x + inset, y + inset, drawCellSize - inset * 2, drawCellSize - inset * 2);
                 }
             }
         });
@@ -1125,7 +1156,8 @@ class BlockdokuGame {
                     if (this.board[row][col] === 1) {
                         const x = col * drawCellSize;
                         const y = row * drawCellSize;
-                        this.ctx.strokeRect(x + 2, y + 2, drawCellSize - 4, drawCellSize - 4);
+                        const inset = subtle ? 3 : 2;
+                        this.ctx.strokeRect(x + inset, y + inset, drawCellSize - inset * 2, drawCellSize - inset * 2);
                     }
                 }
             }
@@ -1134,15 +1166,16 @@ class BlockdokuGame {
         // Draw inner bright outline (reduced intensity)
         this.ctx.shadowBlur = 0;
         this.ctx.strokeStyle = '#ffffff';
-        this.ctx.lineWidth = 0.75; // Reduced from 1.5 to 0.75
-        this.ctx.globalAlpha = 0.5; // Reduced from 1.0 to 0.5
+        this.ctx.lineWidth = subtle ? 0.5 : 0.75; // Reduced from 1.5
+        this.ctx.globalAlpha = subtle ? 0.25 : 0.5; // Reduced from 1.0
         
         clearedLines.rows.forEach(row => {
             for (let col = 0; col < this.boardSize; col++) {
                 if (this.board[row][col] === 1) {
                     const x = col * drawCellSize;
                     const y = row * drawCellSize;
-                    this.ctx.strokeRect(x + 4, y + 4, drawCellSize - 8, drawCellSize - 8);
+                    const insetInner = subtle ? 5 : 4;
+                    this.ctx.strokeRect(x + insetInner, y + insetInner, drawCellSize - insetInner * 2, drawCellSize - insetInner * 2);
                 }
             }
         });
@@ -1152,7 +1185,8 @@ class BlockdokuGame {
                 if (this.board[row][col] === 1) {
                     const x = col * drawCellSize;
                     const y = row * drawCellSize;
-                    this.ctx.strokeRect(x + 4, y + 4, drawCellSize - 8, drawCellSize - 8);
+                    const insetInner = subtle ? 5 : 4;
+                    this.ctx.strokeRect(x + insetInner, y + insetInner, drawCellSize - insetInner * 2, drawCellSize - insetInner * 2);
                 }
             }
         });
@@ -1168,7 +1202,8 @@ class BlockdokuGame {
                     if (this.board[row][col] === 1) {
                         const x = col * drawCellSize;
                         const y = row * drawCellSize;
-                        this.ctx.strokeRect(x + 4, y + 4, drawCellSize - 8, drawCellSize - 8);
+                    const insetInner = subtle ? 5 : 4;
+                    this.ctx.strokeRect(x + insetInner, y + insetInner, drawCellSize - insetInner * 2, drawCellSize - insetInner * 2);
                     }
                 }
             }
