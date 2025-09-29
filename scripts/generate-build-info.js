@@ -14,6 +14,9 @@
  * - The UI (Settings → About) reads build-info.json at runtime. If this file is missing,
  *   the app falls back to a synthesized dev value which reduces traceability.
  * - Ensure npm scripts keep this wired: see package.json `prebuild` and `postbuild`.
+ * - If you migrate Vite to output into `dist/` instead of the repo root, verify that
+ *   wherever you host from can see `build-info.json` and the plain-text `build` file,
+ *   or adjust your deploy step to include them.
  */
 
 const fs = require('fs');
