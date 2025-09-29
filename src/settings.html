@@ -258,6 +258,31 @@
                 padding: 1.5rem;
             }
         }
+        /* Settings page layout/footer override */
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .settings-container {
+            flex: 1;
+            min-height: 0;
+        }
+        /* Settings page copyright override */
+        .copyright-notice {
+            position: static;
+            bottom: auto;
+            right: auto;
+            pointer-events: none;
+            margin: 2rem 0 0;
+            text-align: center;
+            width: 100%;
+        }
+        .copyright-notice p {
+            background: none;
+            color: var(--text-muted);
+            text-shadow: none;
+        }
     </style>
 </head>
 <body>
