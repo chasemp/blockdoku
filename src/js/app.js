@@ -1122,6 +1122,13 @@ class BlockdokuGame {
             return;
         }
         
+        // Ensure board is valid before checking
+        if (!this.board || !Array.isArray(this.board)) {
+            console.error('Invalid board state in checkLineClears, reinitializing...');
+            this.board = this.initializeBoard();
+            return;
+        }
+        
         // Check for completed lines (but don't clear yet)
         const clearedLines = this.scoringSystem.checkForCompletedLines(this.board);
         
@@ -1133,15 +1140,19 @@ class BlockdokuGame {
             
             // Start the clearing animation with delay
             this.startLineClearAnimation(clearedLines);
+        } else {
+            console.log('No lines detected for clearing');
         }
     }
     
     startLineClearAnimation(clearedLines) {
+        console.log('Starting line clear animation for:', clearedLines);
         // Start glow effect immediately
         this.highlightClearingBlocks(clearedLines);
         
         // After 0.75 seconds, actually clear the lines and show effects
         setTimeout(() => {
+            console.log('Timeout reached, calling completeLineClear');
             this.completeLineClear(clearedLines);
         }, 750);
     }
@@ -1358,17 +1369,23 @@ class BlockdokuGame {
     }
     
     completeLineClear(clearedLines) {
+        console.log('completeLineClear called with:', clearedLines);
+        let result;
+        let combo;
+        
         try {
             // Clear pending clears state
             this.pendingClears = null;
             
             // Actually clear the lines
-            const result = this.scoringSystem.applyClears(this.board, clearedLines);
+            console.log('Applying clears to board...');
+            result = this.scoringSystem.applyClears(this.board, clearedLines);
+            console.log('Clears applied, result:', result);
             this.board = result.board;
             
             // Update score and level with difficulty multiplier
             const baseScore = this.scoringSystem.getScore();
-            const combo = this.scoringSystem.getCombo();
+            combo = this.scoringSystem.getCombo();
             this.score = this.difficultyManager.calculateScore(baseScore, combo);
             this.level = this.scoringSystem.getLevel();
             
@@ -2106,7 +2123,11 @@ class BlockdokuGame {
         document.body.classList.add(`${theme}-theme`);
         
         // Clear any pending clearing effects when switching themes
-        this.pendingClears = null;
+        // Only clear if we're not in the middle of a critical clearing operation
+        if (this.pendingClears) {
+            console.log('Clearing pending clears due to theme switch');
+            this.pendingClears = null;
+        }
         
         // Redraw the board with new theme colors after a small delay to ensure CSS is loaded
         setTimeout(() => {

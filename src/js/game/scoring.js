@@ -103,17 +103,20 @@ export class ScoringSystem {
     }
     
     applyClears(board, clearedLines) {
+        console.log('ScoringSystem.applyClears called with:', { board, clearedLines });
         let newBoard = board.map(row => [...row]); // Deep copy
         let totalCleared = 0;
         
         // Clear rows
         clearedLines.rows.forEach(row => {
+            console.log(`Clearing row ${row}`);
             newBoard[row] = new Array(board[0].length).fill(0);
             totalCleared++;
         });
         
         // Clear columns
         clearedLines.columns.forEach(col => {
+            console.log(`Clearing column ${col}`);
             for (let row = 0; row < board.length; row++) {
                 newBoard[row][col] = 0;
             }
@@ -122,6 +125,7 @@ export class ScoringSystem {
         
         // Clear 3x3 squares
         clearedLines.squares.forEach(square => {
+            console.log(`Clearing square at row ${square.row}, col ${square.col}`);
             const startRow = square.row * 3;
             const startCol = square.col * 3;
             
@@ -132,6 +136,8 @@ export class ScoringSystem {
             }
             totalCleared++;
         });
+        
+        console.log(`Total cleared: ${totalCleared}`);
         
         // Check for combo
 		// Previously: combo only when multiple different types clear simultaneously,
