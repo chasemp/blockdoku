@@ -217,6 +217,17 @@ class SettingsManager {
             document.head.appendChild(themeLink);
         }
         themeLink.href = `css/themes/${theme}.css`;
+
+		// If Vite injected a wood stylesheet into built HTML, disable it when switching away
+		try {
+			const builtWoodLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+				.filter(l => (l.getAttribute('href') || '').includes('/assets/wood-') || (l.href || '').includes('/assets/wood-'));
+			builtWoodLinks.forEach(l => {
+				l.disabled = theme !== 'wood';
+			});
+		} catch (e) {
+			// no-op
+		}
         // Warm up other theme links (helps after build)
         const light = document.getElementById('theme-css-light');
         const dark = document.getElementById('theme-css-dark');
