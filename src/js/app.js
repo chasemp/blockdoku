@@ -2156,6 +2156,12 @@ class BlockdokuGame {
             this.score = savedState.score || 0;
             this.level = savedState.level || 1;
             
+            // Initialize previous values to match loaded state to prevent false animations
+            this.previousScore = this.score;
+            this.previousLevel = this.level;
+            this.previousCombo = 0;
+            this.previousTotalCombos = 0;
+            
             // Fully synchronize scoring system state
             this.scoringSystem.score = this.score;
             this.scoringSystem.level = this.level;
