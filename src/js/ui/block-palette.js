@@ -101,6 +101,7 @@ export class BlockPalette {
             if (e.target.closest('.block-item')) {
                 const blockItem = e.target.closest('.block-item');
                 const blockId = blockItem.dataset.blockId;
+                // Select block but no visual highlighting - dragging is primary selection mechanism
                 this.selectBlock(blockId);
             }
             
@@ -132,7 +133,7 @@ export class BlockPalette {
                 this.touchStartTime = Date.now();
                 this.touchStartBlockId = blockId;
                 
-                // Add visual feedback
+                // Add subtle visual feedback for touch start
                 blockItem.style.transform = 'scale(0.95)';
                 blockItem.style.transition = 'transform 0.1s ease';
             }
@@ -154,7 +155,7 @@ export class BlockPalette {
                         this.isDragging = true;
                         this.startDragFromPalette(touch);
                         
-                        // Add dragging visual feedback
+                        // Add dragging visual feedback - this is the primary selection indication
                         const blockItem = document.querySelector(`[data-block-id="${this.touchStartBlockId}"]`);
                         if (blockItem) {
                             blockItem.classList.add('dragging');
@@ -174,14 +175,14 @@ export class BlockPalette {
                 
                 // Check if this was a tap (not a drag)
                 if (deltaX < 5 && deltaY < 5 && deltaTime < 200) {
-                    // Handle double-tap detection
+                    // Handle double-tap detection for rotation
                     if (this.lastTapTime && (Date.now() - this.lastTapTime) < 300) {
                         // Double tap detected - rotate the block
                         e.preventDefault();
                         this.rotateBlock(this.touchStartBlockId);
                         this.lastTapTime = null; // Reset to prevent triple-tap
                     } else {
-                        // Single tap - select the block
+                        // Single tap - select the block (but no visual highlighting)
                         this.selectBlock(this.touchStartBlockId);
                         this.lastTapTime = Date.now();
                     }
@@ -245,10 +246,8 @@ export class BlockPalette {
         // Select new block
         this.selectedBlock = this.blockManager.getBlockById(blockId);
         if (this.selectedBlock) {
-            const blockElement = this.blockElements.get(blockId);
-            if (blockElement) {
-                blockElement.classList.add('selected');
-            }
+            // Don't add visual selection highlighting - dragging is the primary selection mechanism
+            // Visual feedback will be provided through dragging state only
         }
         
         // Update rotate button state
@@ -293,9 +292,7 @@ export class BlockPalette {
     
     clearSelection() {
         this.selectedBlock = null;
-        this.blockElements.forEach(element => {
-            element.classList.remove('selected');
-        });
+        // No need to remove 'selected' class since we're not using passive selection highlighting
         this.updateRotateButton();
     }
     
