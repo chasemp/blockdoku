@@ -1156,16 +1156,13 @@ class BlockdokuGame {
     updateScoreForClears(clearedLines) {
         console.log('updateScoreForClears called with:', clearedLines);
         
-        // Calculate score without modifying state
-        const scoreInfo = this.scoringSystem.calculateScoreForClears(clearedLines);
+        // Get difficulty multiplier and calculate score with it
+        const difficultyMultiplier = this.difficultyManager.getScoreMultiplier();
+        const scoreInfo = this.scoringSystem.calculateScoreForClears(clearedLines, difficultyMultiplier);
         console.log('Score calculation result:', scoreInfo);
         
-        // Apply difficulty multiplier
-        const difficultyMultiplier = this.difficultyManager.getScoreMultiplier();
-        const adjustedScore = Math.floor(scoreInfo.scoreGained * difficultyMultiplier);
-        
-        // Update app score
-        this.score = this.score + adjustedScore;
+        // Update app score (score is already adjusted for difficulty in calculateScoreForClears)
+        this.score = this.score + scoreInfo.scoreGained;
         
         // Update scoring system score to keep in sync
         this.scoringSystem.score = this.score;
@@ -1206,7 +1203,7 @@ class BlockdokuGame {
         // Store the result for later use in completeLineClear
         this.pendingClearResult = {
             clearedLines: clearedLines,
-            scoreGained: adjustedScore,
+            scoreGained: scoreInfo.scoreGained,
             isCombo: scoreInfo.isComboEvent,
             combo: this.scoringSystem.getCombo()
         };
