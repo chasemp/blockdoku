@@ -104,6 +104,7 @@ class BlockdokuGame {
         window.addEventListener('focus', () => {
             this.loadSettings();
             this.updateDifficultyButton();
+            this.renderPersonalBests();
         });
         
         // Listen for storage changes to detect difficulty changes from settings page
@@ -111,6 +112,7 @@ class BlockdokuGame {
             if (e.key === 'blockdoku-settings') {
                 this.loadSettings();
                 this.updateDifficultyButton();
+                this.renderPersonalBests();
             }
         });
     }
@@ -197,6 +199,7 @@ class BlockdokuGame {
             requestAnimationFrame(() => {
                 this.drawBoard();
                 this.updateUI();
+                this.renderPersonalBests();
             });
         }, 100); // Increased delay to ensure DOM is fully ready
         
@@ -215,6 +218,7 @@ class BlockdokuGame {
         
         // Initialize difficulty button
         this.updateDifficultyButton();
+        this.renderPersonalBests();
     }
     
     async registerServiceWorker() {
@@ -1368,6 +1372,31 @@ class BlockdokuGame {
         
         // Update hint controls visibility
         this.updateHintControls();
+        // Keep personal bests fresh if score changed
+        this.renderPersonalBests();
+    }
+
+    renderPersonalBests() {
+        try {
+            const container = document.getElementById('personal-bests');
+            if (!container) return;
+            const settings = this.storage.loadSettings();
+            const show = settings.showHighScore === true;
+            if (!show) {
+                container.style.display = 'none';
+                return;
+            }
+            const best = this.storage.getBestScoresByDifficulty();
+            container.innerHTML = `
+                <span class="pb-item"><span class="pb-label">Easy</span><span class="pb-value">${(best.easy||0).toLocaleString()}</span></span>
+                <span class="pb-item"><span class="pb-label">Normal</span><span class="pb-value">${(best.normal||0).toLocaleString()}</span></span>
+                <span class="pb-item"><span class="pb-label">Hard</span><span class="pb-value">${(best.hard||0).toLocaleString()}</span></span>
+                <span class="pb-item"><span class="pb-label">Expert</span><span class="pb-value">${(best.expert||0).toLocaleString()}</span></span>
+            `;
+            container.style.display = 'inline-flex';
+        } catch (e) {
+            console.warn('renderPersonalBests failed:', e);
+        }
     }
     
     updateHintControls() {

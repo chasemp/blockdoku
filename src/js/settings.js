@@ -92,6 +92,11 @@ class SettingsManager {
         if (showPoints) {
             showPoints.checked = this.settings.showPoints === true; // Default to false
         }
+
+        const showHighScore = document.getElementById('show-high-score');
+        if (showHighScore) {
+            showHighScore.checked = this.settings.showHighScore === true; // Default to false
+        }
     }
     
     setupEventListeners() {
@@ -161,6 +166,13 @@ class SettingsManager {
             this.updateSetting('showPoints', e.target.checked);
             this.updateBlockPointsDisplay();
         });
+
+        const showHighScore = document.getElementById('show-high-score');
+        if (showHighScore) {
+            showHighScore.addEventListener('change', (e) => {
+                this.updateSetting('showHighScore', e.target.checked);
+            });
+        }
         
         // Effects settings
         document.getElementById('particles-enabled').addEventListener('change', (e) => {

@@ -97,6 +97,18 @@ export class GameStorage {
         }
     }
 
+    // Compute best score per difficulty
+    getBestScoresByDifficulty() {
+        const scores = this.getHighScores();
+        const best = { easy: 0, normal: 0, hard: 0, expert: 0 };
+        for (const s of scores) {
+            const diff = (s.difficulty || 'normal');
+            if (best[diff] === undefined) continue;
+            if (s.score > best[diff]) best[diff] = s.score;
+        }
+        return best;
+    }
+
     isHighScore(score) {
         const scores = this.getHighScores();
         return scores.length < this.maxHighScores || score > scores[scores.length - 1]?.score;
@@ -133,7 +145,8 @@ export class GameStorage {
             enableHints: false,
             enableTimer: false,
             enableUndo: false,
-            showPoints: false
+            showPoints: false,
+            showHighScore: false
         };
     }
 
