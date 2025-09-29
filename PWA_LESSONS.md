@@ -310,4 +310,63 @@ element.addEventListener('touchstart', (e) => {
 
 ---
 
+### 🔄 Preserving Local Data Across PWA Upgrades
+
+#### The Problem
+- Upgrades changed localStorage key names (e.g., `blockdoku-settings` vs `blockdoku_settings`), risking loss of settings and stats.
+- Some pages read keys directly, others via a storage module, causing mismatches.
+- Service Worker and manifest upgrades can confuse users if they appear to “reset” the app (cache cleared, theme reset), even if data still exists.
+
+#### What We Did
+- Introduced a storage migration that copies legacy keys into canonical ones without deleting the legacy keys immediately.
+- Updated all storage listeners to watch both old and new keys during a transition period.
+- Adjusted HTML pages that read settings directly from `localStorage` to try canonical first, then legacy.
+- Standardized the in-progress game key lookup to the canonical key provided by the storage module.
+
+#### Code Patterns
+```javascript
+// In storage module constructor
+this.migrateLegacyKeys = function () {
+  try {
+    const legacySettings = localStorage.getItem('blockdoku-settings');
+    const currentSettings = localStorage.getItem('blockdoku_settings');
+    if (legacySettings && !currentSettings) {
+      localStorage.setItem('blockdoku_settings', legacySettings);
+    }
+
+    const legacyGame = localStorage.getItem('blockdoku_game_state');
+    const currentGame = localStorage.getItem('blockdoku_game_data');
+    if (legacyGame && !currentGame) {
+      localStorage.setItem('blockdoku_game_data', legacyGame);
+    }
+  } catch {}
+};
+
+// Storage event listeners
+window.addEventListener('storage', (e) => {
+  if (e.key === 'blockdoku-settings' || e.key === 'blockdoku_settings') {
+    reloadSettings();
+  }
+});
+
+// Direct reads from HTML pages
+const savedSettings = localStorage.getItem('blockdoku_settings')
+  || localStorage.getItem('blockdoku-settings');
+```
+
+#### Best Practices
+- Prefer a single canonical key per data domain with a stable prefix (e.g., `blockdoku_*`).
+- When renaming keys, migrate by copying to the new key; keep the old key for one or two releases before removal.
+- Don’t call `localStorage.clear()` in any update flow.
+- Avoid manifest changes that move the app to a different origin or drastically alter `scope`/`start_url` in ways that might break URLs or confound caches for existing installations.
+- Service Worker updates: precache new assets, clean outdated caches, but leave storage alone (SW cannot access localStorage anyway). Communicate updates quietly and don’t disrupt the session.
+
+#### Checklist for Future Projects
+- Define canonical storage keys up front (`app_settings`, `app_game_data`, `app_high_scores`, `app_statistics`).
+- Ship a `migrateLegacyKeys()` in the storage layer; call it on init.
+- Update listeners and direct readers to accept both canonical and legacy keys during transition.
+- Keep manifest `scope` and `start_url` stable; if changing, test install/upgrade paths.
+- Verify upgrade on real devices: install previous version, play, upgrade, and confirm settings/stats persist.
+
+
 *This document was created during the development of Blockdoku PWA and should be updated with new lessons learned from future projects.*
