@@ -21,7 +21,13 @@
                 try {
                     const settings = JSON.parse(savedSettings);
                     if (settings.theme) {
-                        const themeLink = document.getElementById('theme-css');
+                        let themeLink = document.getElementById('theme-css');
+                        if (!themeLink) {
+                            themeLink = document.createElement('link');
+                            themeLink.rel = 'stylesheet';
+                            themeLink.id = 'theme-css';
+                            document.head.appendChild(themeLink);
+                        }
                         themeLink.href = `css/themes/${settings.theme}.css`;
                     }
                 } catch (e) {
@@ -242,7 +248,7 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="./assets/settings-Q6nSvJ5U.js"></script>
+  <script type="module" crossorigin src="./assets/settings-uKLsQKm9.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/wood-CS1vos5M.js">
   <link rel="modulepreload" crossorigin href="./assets/confirmation-dialog-oQSc4aXZ.js">
   <link rel="modulepreload" crossorigin href="./assets/build-info-Dwp5dZmk.js">

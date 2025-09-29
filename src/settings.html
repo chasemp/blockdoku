@@ -23,7 +23,13 @@
                 try {
                     const settings = JSON.parse(savedSettings);
                     if (settings.theme) {
-                        const themeLink = document.getElementById('theme-css');
+                        let themeLink = document.getElementById('theme-css');
+                        if (!themeLink) {
+                            themeLink = document.createElement('link');
+                            themeLink.rel = 'stylesheet';
+                            themeLink.id = 'theme-css';
+                            document.head.appendChild(themeLink);
+                        }
                         themeLink.href = `css/themes/${settings.theme}.css`;
                     }
                 } catch (e) {

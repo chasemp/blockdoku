@@ -1,0 +1,45 @@
+:root {
+    /* Dark theme colors - modern dark with neon accents */
+    --bg-color: #0a0a0a;
+    --text-color: #ffffff;
+    --text-muted: #b0b0b0;
+    --header-bg: #1a1a1a;
+    --footer-bg: #1a1a1a;
+    --board-bg: #0f0f0f;
+    --border-color: #333333;
+    --primary-color: #00d4ff;
+    --primary-hover: #0099cc;
+    --secondary-color: #666666;
+    --secondary-hover: #555555;
+    --cell-bg: #0f0f0f;
+    --cell-border: #333333;
+    --cell-hover: #1a1a1a;
+    --block-color: #00d4ff;
+    --block-border: #0099cc;
+    --grid-line: #333333;
+    --highlight: #001a33;
+}
+
+/* Dark theme effects */
+body {
+    background-image: 
+        radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(0, 212, 255, 0.05) 0%, transparent 50%),
+        linear-gradient(135deg, var(--bg-color) 0%, var(--header-bg) 100%);
+}
+
+.game-board-container {
+    background-image: 
+        linear-gradient(45deg, transparent 25%, rgba(0, 212, 255, 0.03) 25%, rgba(0, 212, 255, 0.03) 50%, transparent 50%, transparent 75%, rgba(0, 212, 255, 0.03) 75%),
+        linear-gradient(135deg, var(--board-bg) 0%, var(--cell-bg) 100%);
+    background-size: 20px 20px, 100% 100%;
+    box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
+}
+
+.block-palette {
+    background-image: 
+        linear-gradient(90deg, transparent 25%, rgba(0, 212, 255, 0.03) 25%, rgba(0, 212, 255, 0.03) 50%, transparent 50%, transparent 75%, rgba(0, 212, 255, 0.03) 75%),
+        linear-gradient(135deg, var(--header-bg) 0%, var(--cell-bg) 100%);
+    background-size: 15px 15px, 100% 100%;
+    box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
+}

@@ -1,0 +1,131 @@
+:root {
+    /* Wood theme colors - dark, rich wood tones with texture */
+    --bg-color: #2c1810;
+    --text-color: #f5f1e8;
+    --text-muted: #d4c4b0;
+    --header-bg: #3d2a1a;
+    --footer-bg: #2c1810;
+    --board-bg: #1a0f08;
+    --border-color: #5d4037;
+    --primary-color: #8d6e63;
+    --primary-hover: #a1887f;
+    --secondary-color: #6d4c41;
+    --secondary-hover: #5d4037;
+    --cell-bg: #1a0f08;
+    --cell-border: #5d4037;
+    --cell-hover: #2c1810;
+    --block-color: #8d6e63;
+    --block-border: #6d4c41;
+    --grid-line: #5d4037;
+    --highlight: #4e342e;
+    --card-bg: #3d2a1a;
+    --accent-color: #a1887f;
+}
+
+/* Wood texture effects */
+body {
+    background-image: 
+        radial-gradient(circle at 20% 80%, rgba(93, 64, 55, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(93, 64, 55, 0.15) 0%, transparent 50%),
+        linear-gradient(135deg, var(--bg-color) 0%, var(--header-bg) 100%);
+}
+
+.game-board-container {
+    background-image: 
+        linear-gradient(45deg, transparent 25%, rgba(93, 64, 55, 0.08) 25%, rgba(93, 64, 55, 0.08) 50%, transparent 50%, transparent 75%, rgba(93, 64, 55, 0.08) 75%),
+        linear-gradient(135deg, var(--board-bg) 0%, var(--cell-bg) 100%);
+    background-size: 20px 20px, 100% 100%;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.block-palette {
+    background-image: 
+        linear-gradient(90deg, transparent 25%, rgba(93, 64, 55, 0.08) 25%, rgba(93, 64, 55, 0.08) 50%, transparent 50%, transparent 75%, rgba(93, 64, 55, 0.08) 75%),
+        linear-gradient(135deg, var(--header-bg) 0%, var(--cell-bg) 100%);
+    background-size: 15px 15px, 100% 100%;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Dark wood theme enhancements */
+.modal {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.modal-content {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    color: var(--text-color);
+}
+
+.modal-header {
+    background: var(--card-bg);
+    color: var(--text-color);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.modal-body {
+    color: var(--text-color);
+}
+
+.btn {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    background: linear-gradient(135deg, var(--primary-hover) 0%, var(--secondary-hover) 100%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--primary-hover) 0%, var(--accent-color) 100%);
+}
+
+.score-display, .level-display, .combo-display {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Difficulty modal improvements for wood theme */
+.difficulty-option h3 {
+    color: var(--text-color);
+}
+
+.difficulty-option p {
+    color: var(--text-muted);
+}
+
+.difficulty-option li {
+    color: var(--text-color);
+}
+
+.difficulty-option li::before {
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+.difficulty-option.selected li::before {
+    color: white;
+}
+
+.difficulty-settings h3 {
+    color: var(--text-color);
+}
+
+.setting-item label {
+    color: var(--text-color);
+}
