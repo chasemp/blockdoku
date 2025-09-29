@@ -24,12 +24,16 @@ export class ParticleSystem {
     }
     
     // Get theme color from CSS custom properties
-    getThemeColor(varName, fallback) {
+    getThemeColor(varName) {
         try {
             const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-            return value || fallback;
+            if (!value) {
+                throw new Error(`Theme color variable '${varName}' not found`);
+            }
+            return value;
         } catch (e) {
-            return fallback;
+            console.error(`Failed to get theme color '${varName}':`, e);
+            throw new Error(`Theme color '${varName}' is required but not available`);
         }
     }
     
@@ -56,7 +60,7 @@ export class ParticleSystem {
         if (!this.isEnabled) return;
         
         // Use theme color if no color specified
-        const themeColor = color || this.getThemeColor('--clear-glow-color', '#ff4444');
+        const themeColor = color || this.getThemeColor('--clear-glow-color');
         this.particles.push(new GlowTrailParticle(x, y, themeColor));
     }
     
@@ -65,7 +69,7 @@ export class ParticleSystem {
         if (!this.isEnabled) return;
         
         // Use theme color if no color specified
-        const themeColor = color || this.getThemeColor('--clear-glow-color', '#ff4444');
+        const themeColor = color || this.getThemeColor('--clear-glow-color');
         
         this.particles.push(new ScoreNumberParticle(x, y, score, themeColor));
     }
