@@ -12,12 +12,16 @@ export class EffectsSystem {
     }
     
     // Get theme color from CSS custom properties
-    getThemeColor(varName, fallback) {
+    getThemeColor(varName) {
         try {
             const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-            return value || fallback;
+            if (!value) {
+                throw new Error(`Theme color variable '${varName}' not found`);
+            }
+            return value;
         } catch (e) {
-            return fallback;
+            console.error(`Failed to get theme color '${varName}':`, e);
+            throw new Error(`Theme color '${varName}' is required but not available`);
         }
     }
     
@@ -108,7 +112,7 @@ export class EffectsSystem {
         
         ctx.save();
         ctx.globalAlpha = alpha;
-        ctx.fillStyle = this.getThemeColor('--clear-glow-color', '#ff4444'); // Theme-based flash
+        ctx.fillStyle = this.getThemeColor('--clear-glow-color'); // Theme-based flash
         
         // Flash cleared rows
         animation.clearedLines.rows.forEach(row => {
@@ -140,7 +144,7 @@ export class EffectsSystem {
         
         ctx.save();
         ctx.globalAlpha = alpha;
-        ctx.fillStyle = this.getThemeColor('--clear-glow-color', '#ff4444');
+        ctx.fillStyle = this.getThemeColor('--clear-glow-color');
         ctx.font = 'bold 24px Arial';
         ctx.textAlign = 'center';
         ctx.fillText(`+${animation.score}`, animation.x, y);
