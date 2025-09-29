@@ -1417,7 +1417,7 @@ class BlockdokuGame {
         );
         
         // Create combo effect if applicable
-        if (combo > 1) {
+        if (combo >= 1) {
             this.createComboEffect(combo, centerX, centerY + 50);
             this.effectsManager.onCombo(centerX, centerY + 50, combo);
         }
@@ -1513,7 +1513,7 @@ class BlockdokuGame {
         }
         
         // Check for combo hit
-        if (currentCombo > this.previousCombo && currentCombo > 1) {
+        if (currentCombo > this.previousCombo && currentCombo >= 1) {
             this.animateComboHit(comboElement);
         }
         
