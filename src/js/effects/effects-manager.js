@@ -95,8 +95,9 @@ export class EffectsManager {
     }
     
     // Glow trail for block movement
-    onBlockMove(x, y, color = '#00ff00') {
-        this.particles.createGlowTrail(x, y, color);
+    onBlockMove(x, y, color = null) {
+        const themeColor = color || getComputedStyle(document.documentElement).getPropertyValue('--clear-glow-color').trim() || '#00ff00';
+        this.particles.createGlowTrail(x, y, themeColor);
     }
     
     // Update all effects
