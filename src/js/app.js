@@ -1135,6 +1135,13 @@ class BlockdokuGame {
         // If any lines were cleared, start the animation sequence
         if (clearedLines.rows.length > 0 || clearedLines.columns.length > 0 || clearedLines.squares.length > 0) {
             console.log('Lines detected for clearing:', clearedLines);
+            
+            // Calculate and update score immediately (before animation)
+            this.updateScoreForClears(clearedLines);
+            
+            // Update UI immediately to show new score
+            this.updateUI();
+            
             // Show immediate visual feedback first (with original board intact for glow)
             this.showImmediateClearFeedback(clearedLines);
             
