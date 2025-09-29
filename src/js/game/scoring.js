@@ -15,7 +15,7 @@ export class ScoringSystem {
         this.basePoints = {
             single: 1,
             line: 10,
-            square: 50,
+            square: 15,
             combo: 5
         };
     }
@@ -154,10 +154,12 @@ export class ScoringSystem {
         scoreGained += clearedLines.columns.length * this.basePoints.line;
         scoreGained += clearedLines.squares.length * this.basePoints.square;
         
-        // Combo bonus - scaled down to match overall score reduction
-        if (this.combo >= 1) {
-            // First combo is worth 20 points, each subsequent combo adds 10 more
-            scoreGained += 20 + ((this.combo - 1) * 10);
+        // Combo bonus: apply +25 when the CURRENT clear includes 2+ different types
+        const currentClearTypesCount = (clearedLines.rows.length > 0 ? 1 : 0)
+            + (clearedLines.columns.length > 0 ? 1 : 0)
+            + (clearedLines.squares.length > 0 ? 1 : 0);
+        if (currentClearTypesCount >= 2) {
+            scoreGained += 25;
         }
         
         // Level multiplier
