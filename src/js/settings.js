@@ -303,6 +303,7 @@ class SettingsManager {
         for (const [soundKey, soundInfo] of Object.entries(soundEffects)) {
             const currentPreset = currentMappings[soundKey] || 'default';
             
+            const isMuted = currentPreset === 'none';
             html += `
                 <div class="sound-effect-item">
                     <div class="sound-effect-info">
@@ -320,6 +321,9 @@ class SettingsManager {
                     </select>
                     <button class="sound-preview-btn" data-sound="${soundKey}">
                         🔊 Preview
+                    </button>
+                    <button class="sound-mute-btn ${isMuted ? 'muted' : ''}" data-sound="${soundKey}" title="${isMuted ? 'Unmute' : 'Mute'}">
+                        ${isMuted ? '🔇' : '🔊'}
                     </button>
                 </div>
             `;
@@ -339,6 +343,20 @@ class SettingsManager {
                 const soundKey = e.target.dataset.sound;
                 const presetId = e.target.value;
                 this.soundManager.setCustomSound(soundKey, presetId);
+                
+                // Update mute button state
+                const muteBtn = e.target.parentElement.querySelector('.sound-mute-btn');
+                if (muteBtn) {
+                    if (presetId === 'none') {
+                        muteBtn.classList.add('muted');
+                        muteBtn.textContent = '🔇';
+                        muteBtn.title = 'Unmute';
+                    } else {
+                        muteBtn.classList.remove('muted');
+                        muteBtn.textContent = '🔊';
+                        muteBtn.title = 'Mute';
+                    }
+                }
             });
         });
         
@@ -360,6 +378,31 @@ class SettingsManager {
                     }, 500);
                 } else {
                     this.soundManager.play(soundKey);
+                }
+            });
+        });
+        
+        // Add event listeners for mute buttons
+        container.querySelectorAll('.sound-mute-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const soundKey = e.currentTarget.dataset.sound;
+                const select = e.currentTarget.parentElement.querySelector('.sound-preset-select');
+                const currentPreset = select.value;
+                
+                if (currentPreset === 'none') {
+                    // Unmute: set to default
+                    select.value = 'default';
+                    this.soundManager.setCustomSound(soundKey, 'default');
+                    btn.classList.remove('muted');
+                    btn.textContent = '🔊';
+                    btn.title = 'Mute';
+                } else {
+                    // Mute: set to none
+                    select.value = 'none';
+                    this.soundManager.setCustomSound(soundKey, 'none');
+                    btn.classList.add('muted');
+                    btn.textContent = '🔇';
+                    btn.title = 'Unmute';
                 }
             });
         });

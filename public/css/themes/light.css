@@ -11,6 +11,8 @@
     --primary-hover: #0056b3;
     --secondary-color: #6c757d;
     --secondary-hover: #545b62;
+    --error-color: #dc3545;
+    --error-hover: #c82333;
     --cell-bg: #ffffff;
     --cell-border: #dee2e6;
     --cell-hover: #e9ecef;
