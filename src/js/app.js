@@ -840,7 +840,17 @@ class BlockdokuGame {
     }
 
     getClearGlowColor() {
-        return this.getThemeColor('--clear-glow-color');
+        try {
+            return this.getThemeColor('--clear-glow-color');
+        } catch (error) {
+            // Fallback colors for each theme if CSS variable is not available
+            const fallbackColors = {
+                'light': '#00ff00',
+                'dark': '#ff4444', 
+                'wood': '#00aaff'
+            };
+            return fallbackColors[this.currentTheme] || '#00ff00';
+        }
     }
     
     cleanupDrag() {
@@ -1106,25 +1116,43 @@ class BlockdokuGame {
     }
     
     checkLineClears() {
+        // Don't check for clears if we're already in the middle of a clearing animation
+        if (this.pendingClears) {
+            console.log('Skipping line clear check - animation in progress');
+            return;
+        }
+        
+        // Ensure board is valid before checking
+        if (!this.board || !Array.isArray(this.board)) {
+            console.error('Invalid board state in checkLineClears, reinitializing...');
+            this.board = this.initializeBoard();
+            return;
+        }
+        
         // Check for completed lines (but don't clear yet)
         const clearedLines = this.scoringSystem.checkForCompletedLines(this.board);
         
         // If any lines were cleared, start the animation sequence
         if (clearedLines.rows.length > 0 || clearedLines.columns.length > 0 || clearedLines.squares.length > 0) {
+            console.log('Lines detected for clearing:', clearedLines);
             // Show immediate visual feedback first (with original board intact for glow)
             this.showImmediateClearFeedback(clearedLines);
             
             // Start the clearing animation with delay
             this.startLineClearAnimation(clearedLines);
+        } else {
+            console.log('No lines detected for clearing');
         }
     }
     
     startLineClearAnimation(clearedLines) {
+        console.log('Starting line clear animation for:', clearedLines);
         // Start glow effect immediately
         this.highlightClearingBlocks(clearedLines);
         
         // After 0.75 seconds, actually clear the lines and show effects
         setTimeout(() => {
+            console.log('Timeout reached, calling completeLineClear');
             this.completeLineClear(clearedLines);
         }, 750);
     }
@@ -1341,18 +1369,33 @@ class BlockdokuGame {
     }
     
     completeLineClear(clearedLines) {
-        // Clear pending clears state
-        this.pendingClears = null;
+        console.log('completeLineClear called with:', clearedLines);
+        let result;
+        let combo;
         
-        // Actually clear the lines
-        const result = this.scoringSystem.applyClears(this.board, clearedLines);
-        this.board = result.board;
-        
-        // Update score and level with difficulty multiplier
-        const baseScore = this.scoringSystem.getScore();
-        const combo = this.scoringSystem.getCombo();
-        this.score = this.difficultyManager.calculateScore(baseScore, combo);
-        this.level = this.scoringSystem.getLevel();
+        try {
+            // Clear pending clears state
+            this.pendingClears = null;
+            
+            // Actually clear the lines
+            console.log('Applying clears to board...');
+            result = this.scoringSystem.applyClears(this.board, clearedLines);
+            console.log('Clears applied, result:', result);
+            this.board = result.board;
+            
+            // Update score and level with difficulty multiplier
+            const baseScore = this.scoringSystem.getScore();
+            combo = this.scoringSystem.getCombo();
+            this.score = this.difficultyManager.calculateScore(baseScore, combo);
+            this.level = this.scoringSystem.getLevel();
+            
+            console.log('Line clear completed successfully. New score:', this.score, 'New level:', this.level);
+        } catch (error) {
+            console.error('Error during line clear completion:', error);
+            // Reset pending clears state even if there was an error
+            this.pendingClears = null;
+            return;
+        }
         
         // Create visual effects
         this.createLineClearEffect(clearedLines);
@@ -1898,8 +1941,22 @@ class BlockdokuGame {
             this.board = savedState.board || this.initializeBoard();
             this.score = savedState.score || 0;
             this.level = savedState.level || 1;
+            
+            // Fully synchronize scoring system state
             this.scoringSystem.score = this.score;
             this.scoringSystem.level = this.level;
+            
+            // Restore additional scoring system state if available
+            if (savedState.scoringState) {
+                this.scoringSystem.linesCleared = savedState.scoringState.linesCleared || 0;
+                this.scoringSystem.combo = savedState.scoringState.combo || 0;
+                this.scoringSystem.maxCombo = savedState.scoringState.maxCombo || 0;
+                this.scoringSystem.rowsClearedCount = savedState.scoringState.rowsClearedCount || 0;
+                this.scoringSystem.columnsClearedCount = savedState.scoringState.columnsClearedCount || 0;
+                this.scoringSystem.squaresClearedCount = savedState.scoringState.squaresClearedCount || 0;
+                this.scoringSystem.comboActivations = savedState.scoringState.comboActivations || 0;
+                this.scoringSystem.pointsBreakdown = savedState.scoringState.pointsBreakdown || { linePoints: 0, squarePoints: 0, comboBonusPoints: 0 };
+            }
             
             if (savedState.currentBlocks) {
                 this.blockManager.currentBlocks = savedState.currentBlocks;
@@ -1939,7 +1996,17 @@ class BlockdokuGame {
             score: this.score,
             level: this.level,
             currentBlocks: this.blockManager.currentBlocks,
-            selectedBlock: this.selectedBlock
+            selectedBlock: this.selectedBlock,
+            scoringState: {
+                linesCleared: this.scoringSystem.linesCleared,
+                combo: this.scoringSystem.combo,
+                maxCombo: this.scoringSystem.maxCombo,
+                rowsClearedCount: this.scoringSystem.rowsClearedCount,
+                columnsClearedCount: this.scoringSystem.columnsClearedCount,
+                squaresClearedCount: this.scoringSystem.squaresClearedCount,
+                comboActivations: this.scoringSystem.comboActivations,
+                pointsBreakdown: this.scoringSystem.pointsBreakdown
+            }
         };
         console.log('Saving game state:', gameState);
         this.storage.saveGameState(gameState);
@@ -2054,6 +2121,18 @@ class BlockdokuGame {
         // Also add class to body as fallback
         document.body.className = document.body.className.replace(/light-theme|dark-theme|wood-theme/g, '');
         document.body.classList.add(`${theme}-theme`);
+        
+        // Clear any pending clearing effects when switching themes
+        // Only clear if we're not in the middle of a critical clearing operation
+        if (this.pendingClears) {
+            console.log('Clearing pending clears due to theme switch');
+            this.pendingClears = null;
+        }
+        
+        // Redraw the board with new theme colors after a small delay to ensure CSS is loaded
+        setTimeout(() => {
+            this.render();
+        }, 50);
         
         this.saveSettings();
     }
@@ -2500,37 +2579,30 @@ class BlockdokuGame {
     }
 
     selectTheme(theme) {
+        // Save current game state before switching themes
+        if (this.gameRunning) {
+            this.saveGameState();
+        }
+        
+        // Clear any active placeability indicators before theme switch
+        if (this.blockPalette && this.blockPalette.clearPlaceability) {
+            this.blockPalette.clearPlaceability();
+        }
+        
         this.currentTheme = theme;
         this.applyTheme(theme);
         this.updateThemeUI();
         this.saveSettings();
-    }
-
-    applyTheme(theme) {
-        let themeLink = document.getElementById('theme-css');
-        if (!themeLink) {
-            // Create a resilient theme link if missing (e.g., after build transforms)
-            themeLink = document.createElement('link');
-            themeLink.rel = 'stylesheet';
-            themeLink.id = 'theme-css';
-            document.head.appendChild(themeLink);
+        
+        // Redraw the board with new theme colors
+        if (this.gameRunning) {
+            this.drawBoard();
+            
+            // Wait for CSS variables to be available before updating placeability indicators
+            setTimeout(() => {
+                this.updatePlaceabilityIndicators();
+            }, 100);
         }
-        themeLink.href = `css/themes/${theme}.css`;
-        // If Vite injected a wood stylesheet into built HTML, disable it when switching away
-        try {
-            const builtWoodLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
-                .filter(l => (l.getAttribute('href') || '').includes('/assets/wood-') || (l.href || '').includes('/assets/wood-'));
-            builtWoodLinks.forEach(l => {
-                l.disabled = theme !== 'wood';
-            });
-        } catch {}
-        
-        // Set data-theme attribute for CSS selectors
-        document.documentElement.setAttribute('data-theme', theme);
-        
-        // Also add class to body as fallback
-        document.body.className = document.body.className.replace(/light-theme|dark-theme|wood-theme/g, '');
-        document.body.classList.add(`${theme}-theme`);
     }
 
     updateThemeUI() {
