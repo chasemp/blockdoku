@@ -1208,6 +1208,12 @@ class BlockdokuGame {
             combo: this.scoringSystem.getCombo()
         };
         
+        // Store score info for enhanced display
+        this.lastScoreInfo = scoreInfo;
+        
+        // Show immediate point breakdown display
+        this.showPointBreakdown(scoreInfo, clearedLines);
+        
         console.log('Score updated immediately. New score:', this.score, 'New level:', this.level);
     }
     
@@ -1640,6 +1646,103 @@ class BlockdokuGame {
         }
     }
     
+    // Show detailed point breakdown for immediate feedback
+    showPointBreakdown(scoreInfo, clearedLines) {
+        if (!scoreInfo || scoreInfo.scoreGained === 0) return;
+        
+        // Create or update point breakdown display
+        let breakdownElement = document.getElementById('point-breakdown');
+        if (!breakdownElement) {
+            breakdownElement = document.createElement('div');
+            breakdownElement.id = 'point-breakdown';
+            breakdownElement.className = 'point-breakdown';
+            document.querySelector('.game-info').appendChild(breakdownElement);
+        }
+        
+        // Build breakdown text
+        const breakdown = scoreInfo.breakdown || {};
+        const parts = [];
+        
+        if (breakdown.linePoints > 0) {
+            const lineCount = clearedLines.rows.length + clearedLines.columns.length;
+            parts.push(`${lineCount} Line${lineCount > 1 ? 's' : ''}: +${breakdown.linePoints}`);
+        }
+        
+        if (breakdown.squarePoints > 0) {
+            const squareCount = clearedLines.squares.length;
+            parts.push(`${squareCount} Square${squareCount > 1 ? 's' : ''}: +${breakdown.squarePoints}`);
+        }
+        
+        if (breakdown.comboBonus > 0) {
+            parts.push(`Combo Bonus: +${breakdown.comboBonus}`);
+        }
+        
+        if (parts.length > 0) {
+            breakdownElement.innerHTML = parts.join('<br>');
+            breakdownElement.style.display = 'block';
+            breakdownElement.style.opacity = '1';
+            
+            // Animate the breakdown
+            breakdownElement.style.transition = 'all 0.3s ease-out';
+            breakdownElement.style.transform = 'scale(1.1)';
+            breakdownElement.style.color = this.getClearGlowColor();
+            
+            // Hide after 3 seconds
+            setTimeout(() => {
+                breakdownElement.style.opacity = '0';
+                breakdownElement.style.transform = 'scale(1)';
+                setTimeout(() => {
+                    breakdownElement.style.display = 'none';
+                }, 300);
+            }, 3000);
+        }
+        
+        // Also show floating score animation
+        this.showFloatingScore(scoreInfo.scoreGained, scoreInfo.isComboEvent);
+    }
+    
+    // Show floating score animation for immediate feedback
+    showFloatingScore(scoreGained, isCombo = false) {
+        const scoreElement = document.getElementById('score');
+        const rect = scoreElement.getBoundingClientRect();
+        const canvasRect = this.canvas.getBoundingClientRect();
+        
+        // Calculate position relative to canvas
+        const x = rect.left + rect.width / 2 - canvasRect.left;
+        const y = rect.top + rect.height / 2 - canvasRect.top;
+        
+        // Create floating score element
+        const floatingScore = document.createElement('div');
+        floatingScore.className = 'floating-score';
+        floatingScore.textContent = `+${scoreGained}`;
+        floatingScore.style.position = 'absolute';
+        floatingScore.style.left = `${x}px`;
+        floatingScore.style.top = `${y}px`;
+        floatingScore.style.color = isCombo ? '#ff6600' : this.getClearGlowColor();
+        floatingScore.style.fontSize = '2rem';
+        floatingScore.style.fontWeight = '900';
+        floatingScore.style.textShadow = `0 0 10px ${isCombo ? '#ff6600' : this.getClearGlowColor()}`;
+        floatingScore.style.pointerEvents = 'none';
+        floatingScore.style.zIndex = '1000';
+        floatingScore.style.transition = 'all 1.5s ease-out';
+        
+        // Add to canvas container
+        this.canvas.parentElement.appendChild(floatingScore);
+        
+        // Animate the floating score
+        setTimeout(() => {
+            floatingScore.style.transform = 'translateY(-60px) scale(1.2)';
+            floatingScore.style.opacity = '0';
+        }, 100);
+        
+        // Remove after animation
+        setTimeout(() => {
+            if (floatingScore.parentElement) {
+                floatingScore.parentElement.removeChild(floatingScore);
+            }
+        }, 1600);
+    }
+    
     updateHintControls() {
         const hintControls = document.getElementById('hint-controls');
         const hintBtn = document.getElementById('hint-btn');
@@ -1888,28 +1991,46 @@ class BlockdokuGame {
     
     // UI Animation Methods
     animateFirstScore(element) {
-        element.style.transition = 'all 0.6s ease-out';
-        element.style.transform = 'scale(1.5)';
+        // Enhanced first score animation with celebration effect
+        element.style.transition = 'all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+        element.style.transform = 'scale(1.6)';
         const glowColor = this.getClearGlowColor();
         element.style.color = glowColor;
-        element.style.textShadow = `0 0 10px ${glowColor}`;
+        element.style.textShadow = `0 0 20px ${glowColor}`;
+        
+        // Add pulsing effect
+        setTimeout(() => {
+            element.style.transform = 'scale(1.3)';
+        }, 300);
+        
+        setTimeout(() => {
+            element.style.transform = 'scale(1.1)';
+        }, 500);
         
         setTimeout(() => {
             element.style.transform = 'scale(1)';
             element.style.color = '';
             element.style.textShadow = '';
-        }, 600);
+        }, 800);
     }
     
     animateScoreIncrease(element) {
-        element.style.transition = 'all 0.3s ease-out';
-        element.style.transform = 'scale(1.2)';
+        // Enhanced score animation with better visual feedback
+        element.style.transition = 'all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+        element.style.transform = 'scale(1.3)';
         element.style.color = this.getClearGlowColor();
+        element.style.textShadow = `0 0 15px ${this.getClearGlowColor()}`;
+        
+        // Add a subtle bounce effect
+        setTimeout(() => {
+            element.style.transform = 'scale(1.1)';
+        }, 200);
         
         setTimeout(() => {
             element.style.transform = 'scale(1)';
             element.style.color = '';
-        }, 300);
+            element.style.textShadow = '';
+        }, 400);
     }
     
     animateLevelUp(element) {

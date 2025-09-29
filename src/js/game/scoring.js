@@ -83,37 +83,55 @@ export class ScoringSystem {
     // Calculate score for clears without modifying state
     // Returns the score that would be gained, including all bonuses
     calculateScoreForClears(clearedLines, difficultyMultiplier = 1.0) {
-        let scoreGained = 0;
+        // Pre-calculate clear counts for efficiency
+        const rowCount = clearedLines.rows.length;
+        const colCount = clearedLines.columns.length;
+        const squareCount = clearedLines.squares.length;
+        const totalClears = rowCount + colCount + squareCount;
         
-        // Base score for each type of clear
-        const linePointsAdded = (clearedLines.rows.length + clearedLines.columns.length) * this.basePoints.line;
-        const squarePointsAdded = clearedLines.squares.length * this.basePoints.square;
-        scoreGained += linePointsAdded;
-        scoreGained += squarePointsAdded;
+        // Early return if no clears
+        if (totalClears === 0) {
+            return {
+                scoreGained: 0,
+                isComboEvent: false,
+                clearTypes: [],
+                totalClears: 0,
+                breakdown: { linePoints: 0, squarePoints: 0, comboBonus: 0 }
+            };
+        }
         
-        // Check if this is a combo event
+        // Calculate base points efficiently
+        const linePoints = (rowCount + colCount) * this.basePoints.line;
+        const squarePoints = squareCount * this.basePoints.square;
+        let scoreGained = linePoints + squarePoints;
+        
+        // Determine combo status efficiently
         const clearTypes = [];
-        if (clearedLines.rows.length > 0) clearTypes.push('row');
-        if (clearedLines.columns.length > 0) clearTypes.push('column');
-        if (clearedLines.squares.length > 0) clearTypes.push('square');
-        const totalClears = clearedLines.rows.length + clearedLines.columns.length + clearedLines.squares.length;
+        if (rowCount > 0) clearTypes.push('row');
+        if (colCount > 0) clearTypes.push('column');
+        if (squareCount > 0) clearTypes.push('square');
         const isComboEvent = clearTypes.length >= 2 || totalClears >= 2;
         
-        // Combo bonus scaling by total simultaneous clears
+        // Calculate combo bonus if applicable
+        let comboBonus = 0;
         if (isComboEvent) {
-            const comboBonus = 20 * (totalClears - 1);
+            comboBonus = 20 * (totalClears - 1);
             scoreGained += comboBonus;
         }
         
-        // Apply level multiplier and difficulty multiplier
-        scoreGained *= this.level;
-        scoreGained = Math.floor(scoreGained * difficultyMultiplier);
+        // Apply multipliers efficiently
+        scoreGained = Math.floor(scoreGained * this.level * difficultyMultiplier);
         
         return {
             scoreGained,
             isComboEvent,
             clearTypes,
-            totalClears
+            totalClears,
+            breakdown: {
+                linePoints: Math.floor(linePoints * this.level * difficultyMultiplier),
+                squarePoints: Math.floor(squarePoints * this.level * difficultyMultiplier),
+                comboBonus: Math.floor(comboBonus * this.level * difficultyMultiplier)
+            }
         };
     }
     
@@ -271,28 +289,34 @@ export class ScoringSystem {
     }
     
     calculateScore(clearedLines, isComboEvent = false, difficultyMultiplier = 1.0) {
-        let scoreGained = 0;
+        // Pre-calculate clear counts for efficiency
+        const rowCount = clearedLines.rows.length;
+        const colCount = clearedLines.columns.length;
+        const squareCount = clearedLines.squares.length;
+        const totalClears = rowCount + colCount + squareCount;
         
-        // Base score for each type of clear
-        const linePointsAdded = (clearedLines.rows.length + clearedLines.columns.length) * this.basePoints.line;
-        const squarePointsAdded = clearedLines.squares.length * this.basePoints.square;
-        scoreGained += linePointsAdded;
-        scoreGained += squarePointsAdded;
-        this.pointsBreakdown.linePoints += linePointsAdded;
-        this.pointsBreakdown.squarePoints += squarePointsAdded;
+        // Early return if no clears
+        if (totalClears === 0) return;
         
-		// Combo bonus scaling by total simultaneous clears (rows + columns + squares)
-		// 2 clears => +20, 3 clears => +40, 4 clears => +60, +20 per additional
-		const totalClears = clearedLines.rows.length + clearedLines.columns.length + clearedLines.squares.length;
-		if (isComboEvent) {
-			const comboBonus = 20 * (totalClears - 1);
-			scoreGained += comboBonus;
-			this.pointsBreakdown.comboBonusPoints += comboBonus;
-		}
+        // Calculate base points efficiently
+        const linePointsAdded = (rowCount + colCount) * this.basePoints.line;
+        const squarePointsAdded = squareCount * this.basePoints.square;
+        let scoreGained = linePointsAdded + squarePointsAdded;
         
-        // Apply level multiplier and difficulty multiplier
-        scoreGained *= this.level;
-        scoreGained = Math.floor(scoreGained * difficultyMultiplier);
+        // Calculate combo bonus if applicable
+        let comboBonus = 0;
+        if (isComboEvent) {
+            comboBonus = 20 * (totalClears - 1);
+            scoreGained += comboBonus;
+        }
+        
+        // Apply multipliers efficiently
+        scoreGained = Math.floor(scoreGained * this.level * difficultyMultiplier);
+        
+        // Update tracking variables
+        this.pointsBreakdown.linePoints += Math.floor(linePointsAdded * this.level * difficultyMultiplier);
+        this.pointsBreakdown.squarePoints += Math.floor(squarePointsAdded * this.level * difficultyMultiplier);
+        this.pointsBreakdown.comboBonusPoints += Math.floor(comboBonus * this.level * difficultyMultiplier);
         
         this.score += scoreGained;
         this.lastScoreGained = scoreGained;
