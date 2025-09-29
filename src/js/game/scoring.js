@@ -140,16 +140,20 @@ export class ScoringSystem {
         console.log(`Total cleared: ${totalCleared}`);
         
         // Check for combo
-		// Previously: combo only when multiple different types clear simultaneously,
-		// or 2+ lines of the same orientation (2 rows or 2 columns).
-		// Now: treat ANY simultaneous clears of 2+ total lines/blocks (rows, columns, squares)
-		// as a combo event. This aligns with scaled combo bonuses (2->+20, 3->+40, 4->+60, ...).
+		// Combo occurs when:
+		// 1. Multiple different types clear simultaneously (row + column, row + square, etc.)
+		// 2. OR 2+ lines of the same orientation (2 rows or 2 columns)
+		// 3. OR 2+ squares clear simultaneously
 		const clearTypes = [];
 		if (clearedLines.rows.length > 0) clearTypes.push('row');
 		if (clearedLines.columns.length > 0) clearTypes.push('column');
 		if (clearedLines.squares.length > 0) clearTypes.push('square');
 		const totalClearsThisEvent = clearedLines.rows.length + clearedLines.columns.length + clearedLines.squares.length;
-		const isComboEvent = totalClearsThisEvent >= 2;
+		
+		// A combo occurs when:
+		// - Different types clear simultaneously (2+ different types)
+		// - OR 2+ of the same type clear simultaneously
+		const isComboEvent = clearTypes.length >= 2 || totalClearsThisEvent >= 2;
         
         // Calculate score and combo
         if (totalCleared > 0) {
@@ -197,7 +201,7 @@ export class ScoringSystem {
 		// Combo bonus scaling by total simultaneous clears (rows + columns + squares)
 		// 2 clears => +20, 3 clears => +40, 4 clears => +60, +20 per additional
 		const totalClears = clearedLines.rows.length + clearedLines.columns.length + clearedLines.squares.length;
-		if (totalClears >= 2) {
+		if (isComboEvent) {
 			const comboBonus = 20 * (totalClears - 1);
 			scoreGained += comboBonus;
 			this.pointsBreakdown.comboBonusPoints += comboBonus;
