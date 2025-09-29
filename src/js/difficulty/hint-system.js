@@ -28,6 +28,19 @@ export class HintSystem {
                this.game.selectedBlock !== null;
     }
     
+    toggleHints() {
+        if (this.hintsActive) {
+            this.hideHints();
+        } else {
+            this.showHint();
+        }
+        
+        // Update the hint button text
+        if (this.game.updateHintControls) {
+            this.game.updateHintControls();
+        }
+    }
+    
     showHint() {
         if (!this.isHintAvailable()) return false;
         
@@ -37,11 +50,6 @@ export class HintSystem {
         
         // Find valid positions for the selected block
         this.findValidPositions();
-        
-        // Auto-hide hints after duration
-        setTimeout(() => {
-            this.hideHints();
-        }, this.hintDuration);
         
         return true;
     }
@@ -118,7 +126,7 @@ export class HintSystem {
         const drawCellSize = this.game.actualCellSize || this.game.cellSize;
         
         ctx.save();
-        ctx.globalAlpha = 0.6;
+        ctx.globalAlpha = 0.8;
         
         // Draw hints for top 3 positions
         const topPositions = this.validPositions.slice(0, 3);
@@ -127,23 +135,21 @@ export class HintSystem {
             const x = pos.col * drawCellSize;
             const y = pos.row * drawCellSize;
             
-            // Different colors for different priority levels
-            let color;
-            switch (index) {
-                case 0: color = '#00ff00'; break; // Green for best
-                case 1: color = '#ffff00'; break; // Yellow for second
-                case 2: color = '#ff8800'; break; // Orange for third
-            }
+            // Use subtle outline effect with consistent color
+            const color = '#4CAF50'; // Subtle green
+            const lineWidth = index === 0 ? 3 : 2; // Thicker line for best position
             
-            ctx.fillStyle = color;
-            ctx.fillRect(x + 2, y + 2, drawCellSize - 4, drawCellSize - 4);
-            
-            // Add glow effect
-            ctx.shadowColor = color;
-            ctx.shadowBlur = 10;
             ctx.strokeStyle = color;
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x + 2, y + 2, drawCellSize - 4, drawCellSize - 4);
+            ctx.lineWidth = lineWidth;
+            ctx.setLineDash(index === 0 ? [] : [5, 5]); // Solid line for best, dashed for others
+            
+            // Draw outline
+            ctx.strokeRect(x + 1, y + 1, drawCellSize - 2, drawCellSize - 2);
+            
+            // Add subtle glow effect
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 8;
+            ctx.strokeRect(x + 1, y + 1, drawCellSize - 2, drawCellSize - 2);
         });
         
         ctx.restore();
