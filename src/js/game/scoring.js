@@ -175,6 +175,22 @@ export class ScoringSystem {
         }
     }
     
+    // Add points for placing a block (no line clears required)
+    addPlacementPoints(points) {
+        const gained = Math.max(0, points | 0);
+        if (gained === 0) return;
+        
+        // Placement points are not level-multiplied
+        this.score += gained;
+        this.lastScoreGained = gained;
+        
+        // Update level based on total score (level up every 100 points)
+        const newLevel = Math.floor(this.score / 100) + 1;
+        if (newLevel > this.level) {
+            this.level = newLevel;
+        }
+    }
+    
     getLastScoreGained() {
         return this.lastScoreGained || 0;
     }

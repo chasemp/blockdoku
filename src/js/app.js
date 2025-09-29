@@ -2272,6 +2272,12 @@ class BlockdokuGame {
         // Place the block on the board
         this.board = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);
         
+        // Add placement points immediately (block point value)
+        const placementPoints = (this.selectedBlock && this.selectedBlock.points) ? this.selectedBlock.points : 0;
+        if (placementPoints > 0) {
+            this.scoringSystem.addPlacementPoints(placementPoints);
+        }
+        
         // Add placement effects
         const centerX = this.canvas.width / 2;
         const centerY = this.canvas.height / 2;
@@ -2281,6 +2287,14 @@ class BlockdokuGame {
         this.blockManager.removeBlock(this.selectedBlock.id);
         this.selectedBlock = null;
         this.previewPosition = null;
+        
+        // Update score/level immediately after placement points
+        {
+            const baseScore = this.scoringSystem.getScore();
+            const combo = this.scoringSystem.getCombo();
+            this.score = this.difficultyManager.calculateScore(baseScore, combo);
+            this.level = this.scoringSystem.getLevel();
+        }
         
         // Update UI
         this.blockPalette.updateBlocks(this.blockManager.currentBlocks);
