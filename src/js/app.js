@@ -75,6 +75,7 @@ class BlockdokuGame {
         // Effects system
         this.effectsManager = new EffectsManager(this.canvas, this.ctx);
         this.confirmationDialog = new ConfirmationDialog();
+        this.preGameOverPending = false;
         this.selectedBlock = null;
         this.previewPosition = null;
         this.isGameOver = false;
@@ -296,6 +297,9 @@ class BlockdokuGame {
             }
             this.updateTimerDisplay();
         }
+
+        // Update placeability indicators each tick for responsiveness
+        this.updatePlaceabilityIndicators();
     }
     
     draw() {
@@ -1693,12 +1697,64 @@ class BlockdokuGame {
         const centerX = this.canvas.width / 2;
         const centerY = this.canvas.height / 2;
         this.effectsManager.onLevelUp(centerX, centerY);
+        // Encouraging message overlay
+        this.showEncouragingLevelMessage();
         
         setTimeout(() => {
             element.style.transform = 'scale(1) rotate(0deg)';
             element.style.color = '';
             element.style.textShadow = '';
         }, 800);
+    }
+
+    showEncouragingLevelMessage() {
+        const ctx = this.ctx;
+        const x = this.canvas.width / 2;
+        const y = this.canvas.height / 2 - 60;
+        const message = this.getEncouragementText();
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        ctx.fillRect(x - 140, y - 24, 280, 48);
+        ctx.strokeStyle = '#ff6600';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x - 140, y - 24, 280, 48);
+        ctx.fillStyle = '#ffcc66';
+        ctx.font = 'bold 18px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(message, x, y + 6);
+        ctx.restore();
+        setTimeout(() => this.drawBoard(), 1200);
+    }
+
+    getEncouragementText() {
+        // Gradually encouraging messages and difficulty nudges
+        const lvl = this.level;
+        const diff = this.difficultyManager?.getCurrentDifficulty?.() || this.difficulty || 'normal';
+        const suggestions = {
+            easy: [
+                'Great rhythm! Keep building streaks!',
+                'Nice clears! Try planning two moves ahead.',
+                'You’re cruising—consider Normal soon!'
+            ],
+            normal: [
+                'Clean plays! Eye the 3x3 squares.',
+                'Strong pace—chain those clears!',
+                'Feeling comfy? Hard might be fun!'
+            ],
+            hard: [
+                'Impressive! Combos are your friend.',
+                'Great foresight—minimize leftover singles.',
+                'Dominating Hard? Expert awaits.'
+            ],
+            expert: [
+                'Elite moves! Stay calm under the clock.',
+                'Precision play—keep the board breathable.',
+                'Excellent focus—push that high score!'
+            ]
+        };
+        const pool = suggestions[diff] || suggestions.normal;
+        // Rotate based on level to vary messages without RNG
+        return pool[(lvl - 1) % pool.length];
     }
     
     animateComboHit(element) {
@@ -2490,18 +2546,74 @@ class BlockdokuGame {
         }
         
         // Check if any block can be placed anywhere on the board
-        for (let block of this.blockManager.currentBlocks) {
-            for (let row = 0; row < this.boardSize; row++) {
-                for (let col = 0; col < this.boardSize; col++) {
-                    if (this.blockManager.canPlaceBlock(block, row, col, this.board)) {
-                        return; // Game can continue
+        const placeableMap = this.computePlaceabilityMap();
+        const hasAnyPlaceable = Object.values(placeableMap).some(v => v);
+        if (hasAnyPlaceable) {
+            this.preGameOverPending = false;
+            return; // Game can continue
+        }
+        
+        // No blocks can be placed - show 1.25s pre-indicator and then end the game
+        if (!this.preGameOverPending) {
+            this.preGameOverPending = true;
+            if (this.blockPalette && this.blockPalette.showPreGameOverIndicator) {
+                this.blockPalette.showPreGameOverIndicator(1250);
+            }
+            setTimeout(() => {
+                // If still no moves after delay, end game
+                if (!this.isGameOver) {
+                    const stillNone = !Object.values(this.computePlaceabilityMap()).some(v => v);
+                    if (stillNone) {
+                        this.gameOver();
+                    } else {
+                        this.preGameOverPending = false;
                     }
+                }
+            }, 1250);
+        }
+    }
+
+    // Compute per-block placeability and update palette highlighting for 1.25s when only one playable remains
+    updatePlaceabilityIndicators() {
+        if (!this.blockManager || !this.blockPalette) return;
+        if (!this.blockManager.currentBlocks || this.blockManager.currentBlocks.length === 0) return;
+        
+        const placeableById = this.computePlaceabilityMap();
+        const placeableIds = Object.keys(placeableById).filter(id => placeableById[id]);
+        
+        // If exactly one block is playable, briefly highlight it and dim others
+        if (placeableIds.length === 1) {
+            if (this.blockPalette.setPlaceability) {
+                this.blockPalette.setPlaceability(placeableById, { highlightLast: true, durationMs: 1250 });
+            }
+        } else if (placeableIds.length === 0) {
+            // nothing playable - handled by pre-game over indicator when detected in checkGameOver
+        } else {
+            // Do not persist classes during normal play; clear any existing state
+            if (this.blockPalette.clearPlaceability) {
+                this.blockPalette.clearPlaceability();
+            }
+        }
+    }
+
+    computePlaceabilityMap() {
+        const map = {};
+        if (!this.blockManager || !this.blockManager.currentBlocks) return map;
+        for (const block of this.blockManager.currentBlocks) {
+            map[block.id] = this.canPlaceAnywhere(block);
+        }
+        return map;
+    }
+
+    canPlaceAnywhere(block) {
+        for (let row = 0; row < this.boardSize; row++) {
+            for (let col = 0; col < this.boardSize; col++) {
+                if (this.blockManager.canPlaceBlock(block, row, col, this.board)) {
+                    return true;
                 }
             }
         }
-        
-        // No blocks can be placed - game over
-        this.gameOver();
+        return false;
     }
 }
 
