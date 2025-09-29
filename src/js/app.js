@@ -1532,7 +1532,9 @@ class BlockdokuGame {
         this.previewPosition = null;
         this.isGameOver = false;
         this.isInitialized = true;
-        this.comboModeActive = 'streak';
+        // Load combo display mode from settings
+        const settings = this.storage.loadSettings();
+        this.comboModeActive = settings.comboDisplayMode || 'cumulative';
         this.comboModesUsed = new Set();
         
         // Update placeability indicators for new game
@@ -2139,6 +2141,8 @@ class BlockdokuGame {
         const settings = this.storage.loadSettings();
         this.currentTheme = settings.theme;
         this.applyTheme(settings.theme);
+        // Load combo display mode from settings
+        this.comboModeActive = settings.comboDisplayMode || 'cumulative';
     }
 
     loadGameState() {
