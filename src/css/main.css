@@ -754,6 +754,18 @@ body {
     box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
 }
 
+/* Dragging state: dull color and subtle scale so users know it's being dragged */
+.block-item.dragging {
+    filter: saturate(60%) brightness(0.9);
+    opacity: 0.7;
+    transform: scale(1.05);
+    transition: filter 0.1s ease, opacity 0.1s ease, transform 0.1s ease;
+}
+
+.block-item.dragging .block-preview canvas {
+    filter: grayscale(30%);
+}
+
 @keyframes pulse {
     0% { box-shadow: 0 12px 35px rgba(0, 123, 255, 0.4); }
     50% { box-shadow: 0 12px 35px rgba(0, 123, 255, 0.6); }
