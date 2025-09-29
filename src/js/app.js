@@ -82,7 +82,7 @@ class BlockdokuGame {
         this.isInitialized = false;
         
         // Track combo display mode usage within a game (streak vs cumulative)
-        this.comboModeActive = 'streak';
+        this.comboModeActive = 'cumulative';
         this.comboModesUsed = new Set();
         
         // Drag and drop state
@@ -1497,7 +1497,7 @@ class BlockdokuGame {
             clearedLines,
             isCombo,
             combo,
-            (this.storage.loadSettings()?.comboDisplayMode) || 'streak'
+            (this.storage.loadSettings()?.comboDisplayMode) || 'cumulative'
         );
         
         // Create combo effect if applicable
@@ -1580,7 +1580,7 @@ class BlockdokuGame {
         
         // Determine which value to show based on settings
         const settings = this.storage.loadSettings();
-        const mode = settings.comboDisplayMode || 'streak';
+        const mode = settings.comboDisplayMode || 'cumulative';
         this.comboModeActive = mode;
         this.comboModesUsed.add(mode);
         

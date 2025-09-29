@@ -120,7 +120,7 @@ export class ScoringSystem {
         // Calculate combo bonus if applicable
         let comboBonus = 0;
         if (isComboEvent) {
-            comboBonus = this.basePoints.combo * (totalClears - 1);
+            comboBonus = this.calculateComboBonus(totalClears);
             scoreGained += comboBonus;
         }
         
@@ -321,7 +321,7 @@ export class ScoringSystem {
         // Calculate combo bonus if applicable
         let comboBonus = 0;
         if (isComboEvent) {
-            comboBonus = this.basePoints.combo * (totalClears - 1);
+            comboBonus = this.calculateComboBonus(totalClears);
             scoreGained += comboBonus;
         }
         
@@ -463,6 +463,40 @@ export class ScoringSystem {
     }
     
     // Get detailed statistics
+    // Calculate progressive combo bonus based on total clears
+    // 2nd piece: 10 points
+    // 3rd piece: 15 points  
+    // 4th piece: 15 points
+    // 5th piece: 50 points
+    // 6th piece: 100 points
+    calculateComboBonus(totalClears) {
+        if (totalClears < 2) return 0;
+        
+        let bonus = 0;
+        const piecesInCombo = totalClears - 1; // Pieces after the first
+        
+        for (let i = 1; i <= piecesInCombo; i++) {
+            if (i === 1) {
+                // 2nd piece gets 10 points
+                bonus += 10;
+            } else if (i === 2 || i === 3) {
+                // 3rd and 4th pieces get 15 points each
+                bonus += 15;
+            } else if (i === 4) {
+                // 5th piece gets 50 points
+                bonus += 50;
+            } else if (i === 5) {
+                // 6th piece gets 100 points
+                bonus += 100;
+            } else {
+                // 7th+ pieces get 100 points each (same as 6th)
+                bonus += 100;
+            }
+        }
+        
+        return bonus;
+    }
+
     getStats() {
         return {
             score: this.score,

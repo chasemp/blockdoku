@@ -112,7 +112,7 @@ class SettingsManager {
         const comboStreak = document.getElementById('combo-streak');
         const comboCumulative = document.getElementById('combo-cumulative');
         if (comboStreak && comboCumulative) {
-            const mode = this.settings.comboDisplayMode || 'streak';
+            const mode = this.settings.comboDisplayMode || 'cumulative';
             if (mode === 'cumulative') {
                 comboCumulative.checked = true;
             } else {
