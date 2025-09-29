@@ -13,10 +13,10 @@ export class ScoringSystem {
         
         // Scoring multipliers
         this.basePoints = {
-            single: 10,
-            line: 100,
-            square: 500,
-            combo: 50
+            single: 1,
+            line: 10,
+            square: 50,
+            combo: 5
         };
     }
     
@@ -154,10 +154,10 @@ export class ScoringSystem {
         scoreGained += clearedLines.columns.length * this.basePoints.line;
         scoreGained += clearedLines.squares.length * this.basePoints.square;
         
-        // Combo bonus - now much more valuable since combos are harder to achieve
+        // Combo bonus - scaled down to match overall score reduction
         if (this.combo >= 1) {
-            // First combo is worth 200 points, each subsequent combo adds 100 more
-            scoreGained += 200 + ((this.combo - 1) * 100);
+            // First combo is worth 20 points, each subsequent combo adds 10 more
+            scoreGained += 20 + ((this.combo - 1) * 10);
         }
         
         // Level multiplier
@@ -166,8 +166,8 @@ export class ScoringSystem {
         this.score += scoreGained;
         this.lastScoreGained = scoreGained;
         
-        // Level up every 1000 points
-        const newLevel = Math.floor(this.score / 1000) + 1;
+        // Level up every 100 points (reduced 10x to keep pace consistent)
+        const newLevel = Math.floor(this.score / 100) + 1;
         if (newLevel > this.level) {
             this.level = newLevel;
         }
