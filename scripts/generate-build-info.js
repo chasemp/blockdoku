@@ -3,6 +3,17 @@
 /**
  * Generate build information for Blockdoku PWA
  * Creates a build identifier using current date/time
+ *
+ * IMPORTANT BUILD SYSTEM NOTE:
+ * - This script MUST run as part of the build for the site to function as expected.
+ * - It writes build metadata to two files:
+ *   1) src/build-info.json (used during development)
+ *   2) build-info.json at repo root (used by the deployed app)
+ * - It ALSO writes a plain-text `build` file at the repo root containing the
+ *   `fullVersion` (e.g., 1.4.0+YYYYMMDD-HHMM) for CI/CD and support.
+ * - The UI (Settings → About) reads build-info.json at runtime. If this file is missing,
+ *   the app falls back to a synthesized dev value which reduces traceability.
+ * - Ensure npm scripts keep this wired: see package.json `prebuild` and `postbuild`.
  */
 
 const fs = require('fs');
@@ -49,12 +60,22 @@ function writeBuildInfo() {
     const buildInfo = generateBuildInfo();
     const srcPath = path.join(__dirname, '..', 'src', 'build-info.json');
     const rootPath = path.join(__dirname, '..', 'build-info.json');
+    const buildFilePath = path.join(__dirname, '..', 'build');
     
     // Write to src directory for development
     fs.writeFileSync(srcPath, JSON.stringify(buildInfo, null, 2));
     
     // Write to root directory for production builds
     fs.writeFileSync(rootPath, JSON.stringify(buildInfo, null, 2));
+    
+    // Also write a plain-text build file with fullVersion for quick reference
+    // This is helpful for human inspection, support, and CI artifacts.
+    try {
+        fs.writeFileSync(buildFilePath, `${buildInfo.fullVersion}\n`);
+        console.log(`Build file written: ${buildFilePath}`);
+    } catch (err) {
+        console.warn('Failed to write build file:', err);
+    }
     
     console.log(`Build info generated: ${buildInfo.fullVersion}`);
     console.log(`Build date: ${buildInfo.buildDate}`);
