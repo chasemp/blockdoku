@@ -9,6 +9,7 @@ export class BlockPalette {
         this.blockManager = blockManager;
         this.selectedBlock = null;
         this.blockElements = new Map();
+        this._placeabilityTimeout = null;
         
         this.init();
     }
@@ -307,5 +308,86 @@ export class BlockPalette {
     
     getSelectedBlock() {
         return this.selectedBlock;
+    }
+
+    // --- Placeability and pre-game-over indicators ---
+    /**
+     * Apply placeability classes to palette items.
+     * @param {{[blockId:string]: boolean}} placeableById
+     * @param {{highlightLast:boolean, durationMs?:number}} options
+     */
+    setPlaceability(placeableById, options = {}) {
+        const { highlightLast = false, durationMs = 1250 } = options;
+
+        // Clear any prior timeout
+        if (this._placeabilityTimeout) {
+            clearTimeout(this._placeabilityTimeout);
+            this._placeabilityTimeout = null;
+        }
+
+        // Count placeable blocks and find last playable id if any
+        let placeableIds = [];
+        Object.keys(placeableById || {}).forEach(id => {
+            if (placeableById[id]) placeableIds.push(id);
+        });
+
+        // Apply classes
+        this.blockElements.forEach((el, id) => {
+            const isPlaceable = !!placeableById[id];
+            el.classList.toggle('unplaceable', !isPlaceable);
+            el.classList.toggle('placeable', isPlaceable);
+            el.classList.remove('last-playable');
+        });
+
+        if (highlightLast && placeableIds.length === 1) {
+            const lastId = placeableIds[0];
+            const el = this.blockElements.get(lastId);
+            if (el) {
+                el.classList.add('last-playable');
+            }
+        }
+
+        // Auto clear after duration
+        this._placeabilityTimeout = setTimeout(() => {
+            this.clearPlaceability();
+        }, durationMs);
+    }
+
+    /**
+     * Temporarily dim entire palette to indicate imminent game over.
+     * Automatically clears after duration.
+     */
+    showPreGameOverIndicator(durationMs = 1250) {
+        if (!this.container) return;
+        const palette = this.container.querySelector('.block-palette');
+        if (palette) {
+            palette.classList.add('pre-game-over');
+        }
+        this.blockElements.forEach((el) => {
+            el.classList.add('unplaceable');
+            el.classList.remove('last-playable');
+        });
+        if (this._placeabilityTimeout) {
+            clearTimeout(this._placeabilityTimeout);
+        }
+        this._placeabilityTimeout = setTimeout(() => {
+            this.clearPlaceability();
+        }, durationMs);
+    }
+
+    clearPlaceability() {
+        const palette = this.container ? this.container.querySelector('.block-palette') : null;
+        if (palette) {
+            palette.classList.remove('pre-game-over');
+        }
+        this.blockElements.forEach((el) => {
+            el.classList.remove('unplaceable');
+            el.classList.remove('placeable');
+            el.classList.remove('last-playable');
+        });
+        if (this._placeabilityTimeout) {
+            clearTimeout(this._placeabilityTimeout);
+            this._placeabilityTimeout = null;
+        }
     }
 }
