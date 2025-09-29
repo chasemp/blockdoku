@@ -149,7 +149,7 @@ export class GameStorage {
             enableUndo: false,
             showPoints: false,
             showHighScore: false,
-            comboDisplayMode: 'streak' // 'streak' or 'cumulative'
+            comboDisplayMode: 'cumulative' // 'streak' or 'cumulative'
         };
     }
 
