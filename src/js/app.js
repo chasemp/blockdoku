@@ -419,7 +419,7 @@ class BlockdokuGame {
         if (hintBtn) {
             const handleHintClick = () => {
                 this.effectsManager.onButtonClick();
-                this.hintSystem.showHint();
+                this.hintSystem.toggleHints();
             };
             
             hintBtn.addEventListener('click', handleHintClick);
@@ -1755,7 +1755,14 @@ class BlockdokuGame {
             if (hintsEnabled) {
                 const hintStatus = this.hintSystem.getHintStatus();
                 hintBtn.disabled = !hintStatus.available;
-                hintBtn.textContent = hintStatus.available ? '💡 Hint' : `💡 Hint (${Math.ceil(hintStatus.cooldownRemaining / 1000)}s)`;
+                
+                if (hintStatus.active) {
+                    hintBtn.textContent = '💡 Hint On';
+                } else if (hintStatus.available) {
+                    hintBtn.textContent = '💡 Hint Off';
+                } else {
+                    hintBtn.textContent = `💡 Hint (${Math.ceil(hintStatus.cooldownRemaining / 1000)}s)`;
+                }
             }
         }
     }
