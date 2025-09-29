@@ -100,11 +100,16 @@ class SettingsManager {
             showHighScore.checked = this.settings.showHighScore === true; // Default to false
         }
 
-        // Combo display mode
-        const comboMode = document.getElementById('combo-display-mode');
-        if (comboMode) {
+        // Combo display mode - handle radio buttons
+        const comboStreak = document.getElementById('combo-streak');
+        const comboCumulative = document.getElementById('combo-cumulative');
+        if (comboStreak && comboCumulative) {
             const mode = this.settings.comboDisplayMode || 'streak';
-            comboMode.value = mode;
+            if (mode === 'cumulative') {
+                comboCumulative.checked = true;
+            } else {
+                comboStreak.checked = true;
+            }
         }
     }
     
@@ -183,11 +188,19 @@ class SettingsManager {
             });
         }
 
-        const comboMode = document.getElementById('combo-display-mode');
-        if (comboMode) {
-            comboMode.addEventListener('change', (e) => {
-                const value = e.target.value === 'cumulative' ? 'cumulative' : 'streak';
-                this.updateSetting('comboDisplayMode', value);
+        // Combo display mode - handle radio buttons
+        const comboStreak = document.getElementById('combo-streak');
+        const comboCumulative = document.getElementById('combo-cumulative');
+        if (comboStreak && comboCumulative) {
+            comboStreak.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    this.updateSetting('comboDisplayMode', 'streak');
+                }
+            });
+            comboCumulative.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    this.updateSetting('comboDisplayMode', 'cumulative');
+                }
             });
         }
         
