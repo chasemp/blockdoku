@@ -1307,8 +1307,16 @@ class BlockdokuGame {
         const centerY = this.canvas.height / 2;
         this.effectsManager.onLineClear(centerX, centerY, clearedLines);
         
-        // Create score popup
-        this.createScorePopup(centerX, centerY, result.scoreGained);
+        // Create score popup with contextual details
+        this.createScorePopup(
+            centerX,
+            centerY,
+            result.scoreGained,
+            clearedLines,
+            result.isCombo,
+            combo,
+            (this.storage.loadSettings()?.comboDisplayMode) || 'streak'
+        );
         
         // Create combo effect if applicable
         if (combo > 1) {
@@ -1375,8 +1383,14 @@ class BlockdokuGame {
         const scoreElement = document.getElementById('score');
         const levelElement = document.getElementById('level');
         const comboElement = document.getElementById('combo');
+        const comboTotalElement = document.getElementById('combo-total');
         
         const currentCombo = this.scoringSystem.getCombo();
+        const totalCombos = this.scoringSystem.getComboTotal ? this.scoringSystem.getComboTotal() : this.scoringSystem.comboActivations || 0;
+
+        // Determine which value to show based on settings
+        const settings = this.storage.loadSettings();
+        const mode = settings.comboDisplayMode || 'streak';
         
         // Check for first score gain
         if (this.previousScore === 0 && this.score > 0) {
@@ -1398,7 +1412,16 @@ class BlockdokuGame {
         // Update the text content
         scoreElement.textContent = this.score;
         levelElement.textContent = this.level;
-        comboElement.textContent = currentCombo;
+        if (mode === 'cumulative') {
+            comboElement.textContent = totalCombos;
+        } else {
+            comboElement.textContent = currentCombo;
+        }
+        if (comboTotalElement) {
+            comboTotalElement.textContent = totalCombos;
+            // Optionally hide duplicate display if showing cumulative in main spot
+            comboTotalElement.parentElement.style.display = mode === 'cumulative' ? 'none' : '';
+        }
         
         // Update previous values
         this.previousScore = this.score;
@@ -1552,8 +1575,8 @@ class BlockdokuGame {
         }, 100);
     }
     
-    createScorePopup(x, y, scoreGained) {
-        // Enhanced score popup with better visibility
+    createScorePopup(x, y, scoreGained, clearedLines = { rows: [], columns: [], squares: [] }, isCombo = false, comboValue = 0, comboMode = 'streak') {
+        // Enhanced score popup with contextual visibility
         this.ctx.save();
         
         // Add background for better visibility
@@ -1565,11 +1588,25 @@ class BlockdokuGame {
         this.ctx.lineWidth = 2;
         this.ctx.strokeRect(x - 60, y - 20, 120, 40);
         
-        // Draw score text
+        // Build contextual text
+        const totalLines = (clearedLines?.rows?.length || 0) + (clearedLines?.columns?.length || 0);
+        const squares = (clearedLines?.squares?.length || 0);
+        const parts = [];
+        if (totalLines > 0) parts.push(`${totalLines} line${totalLines>1?'s':''}`);
+        if (squares > 0) parts.push(`${squares} square${squares>1?'s':''}`);
+        const contextText = parts.length ? parts.join(' + ') : 'Placement';
+
+        // Primary score text
         this.ctx.fillStyle = '#00ff00';
-        this.ctx.font = 'bold 28px Arial';
+        this.ctx.font = 'bold 22px Arial';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText(`+${scoreGained}`, x, y + 8);
+        this.ctx.fillText(`+${scoreGained}`, x, y);
+
+        // Secondary context line
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = 'bold 14px Arial';
+        const comboLabel = isCombo ? (comboMode === 'cumulative' ? ` • COMBO x${comboValue} (total)` : ` • COMBO x${comboValue}`) : '';
+        this.ctx.fillText(`${contextText}${comboLabel}`, x, y + 18);
         
         this.ctx.restore();
         
@@ -1580,14 +1617,20 @@ class BlockdokuGame {
                 this.ctx.save();
                 this.ctx.globalAlpha = 1 - (animationFrame / 60);
                 this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                this.ctx.fillRect(x - 60, y - 20 - animationFrame * 2, 120, 40);
+                this.ctx.fillRect(x - 70, y - 24 - animationFrame * 2, 140, 48);
                 this.ctx.strokeStyle = '#00ff00';
                 this.ctx.lineWidth = 2;
-                this.ctx.strokeRect(x - 60, y - 20 - animationFrame * 2, 120, 40);
+                this.ctx.strokeRect(x - 70, y - 24 - animationFrame * 2, 140, 48);
                 this.ctx.fillStyle = '#00ff00';
-                this.ctx.font = 'bold 28px Arial';
+                this.ctx.font = 'bold 22px Arial';
                 this.ctx.textAlign = 'center';
-                this.ctx.fillText(`+${scoreGained}`, x, y + 8 - animationFrame * 2);
+                this.ctx.fillText(`+${scoreGained}`, x, y - 4 - animationFrame * 2);
+
+                // Draw secondary text
+                this.ctx.fillStyle = '#ffffff';
+                this.ctx.font = 'bold 14px Arial';
+                const comboLabelAnim = isCombo ? (comboMode === 'cumulative' ? ` • COMBO x${comboValue} (total)` : ` • COMBO x${comboValue}`) : '';
+                this.ctx.fillText(`${contextText}${comboLabelAnim}`, x, y + 14 - animationFrame * 2);
                 this.ctx.restore();
                 
                 animationFrame++;
