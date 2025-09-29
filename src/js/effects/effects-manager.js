@@ -39,6 +39,16 @@ export class EffectsManager {
         this.sound.setVolume(volume);
     }
     
+    // Get theme color from CSS custom properties
+    getThemeColor(varName, fallback) {
+        try {
+            const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+            return value || fallback;
+        } catch (e) {
+            return fallback;
+        }
+    }
+    
     // Block placement effects
     onBlockPlace(x, y) {
         this.particles.createSparkles(x, y, 6);
@@ -71,7 +81,8 @@ export class EffectsManager {
     
     // Score gain effects
     onScoreGain(x, y, score) {
-        this.particles.createScoreNumber(x, y, score, '#00ff00');
+        const themeColor = this.getThemeColor('--clear-glow-color', '#00ff00');
+        this.particles.createScoreNumber(x, y, score, themeColor);
         if (this.settings.sound) this.sound.play('scoreGain');
     }
     
@@ -96,7 +107,7 @@ export class EffectsManager {
     
     // Glow trail for block movement
     onBlockMove(x, y, color = null) {
-        const themeColor = color || getComputedStyle(document.documentElement).getPropertyValue('--clear-glow-color').trim() || '#00ff00';
+        const themeColor = color || this.getThemeColor('--clear-glow-color', '#00ff00');
         this.particles.createGlowTrail(x, y, themeColor);
     }
     
