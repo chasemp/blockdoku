@@ -637,8 +637,15 @@ class SettingsManager {
         const scoresList = document.getElementById('high-scores-list');
         const statsDisplay = document.getElementById('statistics-display');
         
+        if (!scoresList || !statsDisplay) {
+            console.error('High scores elements not found');
+            return;
+        }
+        
         const highScores = this.storage.getHighScores();
         const stats = this.storage.loadStatistics();
+        
+        console.log('Loading statistics:', stats); // Debug log
         
         // Display high scores
         if (highScores.length === 0) {
@@ -657,25 +664,31 @@ class SettingsManager {
         statsDisplay.innerHTML = `
             <div class="stat-item">
                 <span class="stat-label">Games Played:</span>
-                <span class="stat-value">${stats.gamesPlayed}</span>
+                <span class="stat-value">${stats.gamesPlayed || 0}</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Total Score:</span>
-                <span class="stat-value">${stats.totalScore}</span>
+                <span class="stat-value">${stats.totalScore || 0}</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Best Score:</span>
-                <span class="stat-value">${stats.bestScore}</span>
+                <span class="stat-value">${stats.bestScore || 0}</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Total Lines:</span>
-                <span class="stat-value">${stats.totalLinesCleared}</span>
+                <span class="stat-value">${stats.totalLinesCleared || 0}</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Max Combo:</span>
-                <span class="stat-value">${stats.maxCombo}</span>
+                <span class="stat-value">${stats.maxCombo || 0}</span>
             </div>
         `;
+    }
+    
+    // Add method to refresh statistics display
+    refreshStatistics() {
+        console.log('Refreshing statistics display...');
+        this.loadHighScores();
     }
     
     saveSettings() {
