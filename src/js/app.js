@@ -1781,6 +1781,11 @@ class BlockdokuGame {
         if (themeLink) {
             themeLink.href = `css/themes/${theme}.css`;
         }
+        // Warm up other theme links (helps after build)
+        const light = document.getElementById('theme-css-light');
+        const dark = document.getElementById('theme-css-dark');
+        if (light) light.media = 'all';
+        if (dark) dark.media = 'all';
         
         // Set data-theme attribute for CSS selectors
         document.documentElement.setAttribute('data-theme', theme);
