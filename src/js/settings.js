@@ -97,6 +97,28 @@ class SettingsManager {
             enablePetrification.checked = this.settings.enablePetrification === true; // Default to false
         }
         
+        // Dead pixels
+        const enableDeadPixels = document.getElementById('enable-dead-pixels');
+        if (enableDeadPixels) {
+            enableDeadPixels.checked = this.settings.enableDeadPixels === true; // Default to false
+        }
+        
+        const deadPixelsIntensity = document.getElementById('dead-pixels-intensity');
+        const deadPixelsIntensityValue = document.getElementById('dead-pixels-intensity-value');
+        const deadPixelsIntensityContainer = document.getElementById('dead-pixels-intensity-container');
+        
+        if (deadPixelsIntensity && deadPixelsIntensityValue) {
+            const intensity = this.settings.deadPixelsIntensity || 0;
+            deadPixelsIntensity.value = intensity;
+            deadPixelsIntensityValue.textContent = intensity;
+            
+            // Show/hide intensity slider based on toggle
+            if (deadPixelsIntensityContainer) {
+                deadPixelsIntensityContainer.style.display = 
+                    this.settings.enableDeadPixels === true ? 'block' : 'none';
+            }
+        }
+        
         const autoSave = document.getElementById('auto-save');
         if (autoSave) {
             autoSave.checked = this.settings.autoSave !== false; // Default to true
@@ -317,6 +339,31 @@ class SettingsManager {
         if (enablePetrification) {
             enablePetrification.addEventListener('change', (e) => {
                 this.updateSetting('enablePetrification', e.target.checked);
+            });
+        }
+        
+        // Dead pixels toggle
+        const enableDeadPixels = document.getElementById('enable-dead-pixels');
+        if (enableDeadPixels) {
+            enableDeadPixels.addEventListener('change', (e) => {
+                this.updateSetting('enableDeadPixels', e.target.checked);
+                
+                // Show/hide intensity slider
+                const container = document.getElementById('dead-pixels-intensity-container');
+                if (container) {
+                    container.style.display = e.target.checked ? 'block' : 'none';
+                }
+            });
+        }
+        
+        // Dead pixels intensity slider
+        const deadPixelsIntensity = document.getElementById('dead-pixels-intensity');
+        const deadPixelsIntensityValue = document.getElementById('dead-pixels-intensity-value');
+        if (deadPixelsIntensity && deadPixelsIntensityValue) {
+            deadPixelsIntensity.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                deadPixelsIntensityValue.textContent = value;
+                this.updateSetting('deadPixelsIntensity', value);
             });
         }
         
