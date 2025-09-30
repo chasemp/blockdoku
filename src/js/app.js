@@ -1152,6 +1152,8 @@ class BlockdokuGame {
             this.startLineClearAnimation(clearedLines);
         } else {
             console.log('No lines detected for clearing');
+            // Reset streak when no clears occur after block placement
+            this.scoringSystem.resetStreak();
         }
     }
     
@@ -2507,7 +2509,7 @@ class BlockdokuGame {
 		};
 
         // Always show both combo types in game over modal
-        const comboSummary = `<p style=\"margin: 5px 0;\">Max Streak: ${stats.maxCombo}</p><p style=\"margin: 5px 0;\">Total Combos: ${stats.totalCombos || 0}</p>`;
+        const comboSummary = `<p style=\"margin: 5px 0;\">Max Streak: ${stats.maxCombo}</p><p style=\"margin: 5px 0;\">Total Combos: ${stats.totalCombos || 0}</p><p style=\"margin: 5px 0;\">Max Combo Streak: ${stats.maxStreakCount || 0}</p>`;
 
         modalContent.innerHTML = `
 			<h2 style="margin: 0 0 20px 0; color: var(--primary-color, #3498db);">Game Over!</h2>
@@ -2533,7 +2535,8 @@ class BlockdokuGame {
 						<p style=\"margin: 4px 0;\">Squares: <strong>${breakdown.squarePoints.toLocaleString()}</strong></p>
 						<p style=\"margin: 4px 0;\">Placements: <strong>${breakdown.placementPoints.toLocaleString()}</strong></p>
 						<p style=\"margin: 4px 0;\">Combo Bonus: <strong>${breakdown.comboBonusPoints.toLocaleString()}</strong></p>
-						<p style=\"margin: 8px 0 4px 0; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.2); font-weight: bold; color: var(--primary-color, #3498db);">Total: <strong>${(breakdown.linePoints + breakdown.squarePoints + breakdown.placementPoints + breakdown.comboBonusPoints).toLocaleString()}</strong></p>
+						<p style=\"margin: 4px 0;\">Streak Bonus: <strong>${(breakdown.streakBonusPoints || 0).toLocaleString()}</strong></p>
+						<p style=\"margin: 8px 0 4px 0; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.2); font-weight: bold; color: var(--primary-color, #3498db);">Total: <strong>${(breakdown.linePoints + breakdown.squarePoints + breakdown.placementPoints + breakdown.comboBonusPoints + (breakdown.streakBonusPoints || 0)).toLocaleString()}</strong></p>
 					</div>
 				</div>
 			</div>
