@@ -90,6 +90,14 @@ export class EffectsManager {
         if (this.settings.sound) this.sound.play('scoreGain');
     }
     
+    // Speed bonus effects
+    onSpeedBonus(x, y, bonus) {
+        // Create special speed bonus particles
+        this.particles.createSpeedBonusEffect(x, y, bonus);
+        if (this.settings.sound) this.sound.play('speedBonus');
+        this.haptic.onSpeedBonus();
+    }
+    
     // Error effects
     onError() {
         if (this.settings.sound) this.sound.play('error');

@@ -15,6 +15,13 @@ export class ScoringSystem {
         this.totalCombos = 0;              // Total cumulative combos (never resets)
         this.maxTotalCombos = 0;           // Maximum total combos in a single game
         
+        // Speed tracking system
+        this.placementTimes = [];          // Array of timestamps for each block placement
+        this.speedBonuses = [];            // Array of speed bonuses earned
+        this.totalSpeedBonus = 0;          // Cumulative speed bonus points
+        this.fastestPlacement = null;      // Fastest placement interval (in ms)
+        this.averagePlacementSpeed = 0;    // Average placement speed
+        
         // Detailed tracking for clears and scoring breakdown
         this.rowsClearedCount = 0;
         this.columnsClearedCount = 0;
@@ -33,6 +40,19 @@ export class ScoringSystem {
             line: 15,
             square: 20,
             combo: 5
+        };
+        
+        // Speed bonus configuration
+        this.speedBonusConfig = {
+            enabled: true,
+            thresholds: [
+                { maxTime: 500, bonus: 10, label: 'Lightning Fast' },    // < 0.5s
+                { maxTime: 1000, bonus: 5, label: 'Very Fast' },         // < 1.0s
+                { maxTime: 2000, bonus: 2, label: 'Fast' },              // < 2.0s
+                { maxTime: 3000, bonus: 1, label: 'Quick' }               // < 3.0s
+            ],
+            maxBonus: 50,           // Maximum speed bonus per placement
+            streakMultiplier: 1.5   // Multiplier for consecutive fast placements
         };
 
         // Compounding level progression settings
@@ -361,6 +381,97 @@ export class ScoringSystem {
         this.updateLevelFromScore();
     }
     
+    // Record block placement time and calculate speed bonus
+    recordPlacementTime() {
+        const currentTime = Date.now();
+        this.placementTimes.push(currentTime);
+        
+        // Calculate speed bonus if we have at least 2 placements
+        if (this.placementTimes.length >= 2) {
+            const timeSinceLastPlacement = currentTime - this.placementTimes[this.placementTimes.length - 2];
+            const speedBonus = this.calculateSpeedBonus(timeSinceLastPlacement);
+            
+            if (speedBonus > 0) {
+                this.speedBonuses.push({
+                    time: timeSinceLastPlacement,
+                    bonus: speedBonus,
+                    timestamp: currentTime
+                });
+                this.totalSpeedBonus += speedBonus;
+                this.score += speedBonus;
+                this.lastScoreGained += speedBonus;
+                
+                // Update fastest placement
+                if (!this.fastestPlacement || timeSinceLastPlacement < this.fastestPlacement) {
+                    this.fastestPlacement = timeSinceLastPlacement;
+                }
+                
+                // Update average placement speed
+                this.updateAveragePlacementSpeed();
+            }
+        }
+    }
+    
+    // Calculate speed bonus based on placement interval
+    calculateSpeedBonus(intervalMs) {
+        if (!this.speedBonusConfig.enabled || intervalMs <= 0) return 0;
+        
+        // Find the appropriate threshold
+        for (const threshold of this.speedBonusConfig.thresholds) {
+            if (intervalMs <= threshold.maxTime) {
+                let bonus = threshold.bonus;
+                
+                // Apply streak multiplier for consecutive fast placements
+                const recentFastPlacements = this.getRecentFastPlacements();
+                if (recentFastPlacements >= 2) {
+                    bonus = Math.floor(bonus * this.speedBonusConfig.streakMultiplier);
+                }
+                
+                // Cap the bonus
+                return Math.min(bonus, this.speedBonusConfig.maxBonus);
+            }
+        }
+        
+        return 0;
+    }
+    
+    // Get count of recent fast placements (within last 5 placements)
+    getRecentFastPlacements() {
+        if (this.speedBonuses.length === 0) return 0;
+        
+        const recentCount = Math.min(5, this.speedBonuses.length);
+        const recentBonuses = this.speedBonuses.slice(-recentCount);
+        
+        return recentBonuses.filter(bonus => bonus.bonus > 0).length;
+    }
+    
+    // Update average placement speed
+    updateAveragePlacementSpeed() {
+        if (this.placementTimes.length < 2) {
+            this.averagePlacementSpeed = 0;
+            return;
+        }
+        
+        let totalInterval = 0;
+        for (let i = 1; i < this.placementTimes.length; i++) {
+            totalInterval += this.placementTimes[i] - this.placementTimes[i - 1];
+        }
+        
+        this.averagePlacementSpeed = totalInterval / (this.placementTimes.length - 1);
+    }
+    
+    // Get speed statistics
+    getSpeedStats() {
+        return {
+            totalSpeedBonus: this.totalSpeedBonus,
+            fastestPlacement: this.fastestPlacement,
+            averagePlacementSpeed: this.averagePlacementSpeed,
+            speedBonuses: this.speedBonuses,
+            recentFastPlacements: this.getRecentFastPlacements(),
+            totalPlacements: this.placementTimes.length
+        };
+    }
+    
     getLastScoreGained() {
         return this.lastScoreGained || 0;
     }
@@ -408,6 +519,13 @@ export class ScoringSystem {
         this.maxCombo = 0;
         this.totalCombos = 0;
         this.maxTotalCombos = 0;
+        
+        // Reset speed tracking
+        this.placementTimes = [];
+        this.speedBonuses = [];
+        this.totalSpeedBonus = 0;
+        this.fastestPlacement = null;
+        this.averagePlacementSpeed = 0;
         
         this.lastScoreGained = 0;
         this.rowsClearedCount = 0;
@@ -519,7 +637,8 @@ export class ScoringSystem {
                 squarePoints: this.pointsBreakdown.squarePoints,
                 comboBonusPoints: this.pointsBreakdown.comboBonusPoints,
                 placementPoints: this.pointsBreakdown.placementPoints
-            }
+            },
+            speedStats: this.getSpeedStats()
         };
     }
 }
