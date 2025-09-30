@@ -108,14 +108,20 @@ class SettingsManager {
             showHighScore.checked = this.settings.showHighScore === true; // Default to false
         }
         
-        const enableSpeedBonus = document.getElementById('enable-speed-bonus');
-        if (enableSpeedBonus) {
-            enableSpeedBonus.checked = this.settings.enableSpeedBonus !== false; // Default to true
-        }
+        // Speed mode - handle radio buttons
+        const speedModeBonus = document.getElementById('speed-mode-bonus');
+        const speedModePunishment = document.getElementById('speed-mode-punishment');
+        const speedModeIgnored = document.getElementById('speed-mode-ignored');
         
-        const enableSpeedPunishment = document.getElementById('enable-speed-punishment');
-        if (enableSpeedPunishment) {
-            enableSpeedPunishment.checked = this.settings.enableSpeedPunishment === true; // Default to false
+        if (speedModeBonus && speedModePunishment && speedModeIgnored) {
+            const mode = this.settings.speedMode || 'bonus'; // Default to 'bonus'
+            if (mode === 'bonus') {
+                speedModeBonus.checked = true;
+            } else if (mode === 'punishment') {
+                speedModePunishment.checked = true;
+            } else if (mode === 'ignored') {
+                speedModeIgnored.checked = true;
+            }
         }
         
         const showSpeedBonus = document.getElementById('show-speed-bonus');
@@ -346,32 +352,25 @@ class SettingsManager {
             });
         }
         
-        const enableSpeedBonus = document.getElementById('enable-speed-bonus');
-        if (enableSpeedBonus) {
-            enableSpeedBonus.addEventListener('change', (e) => {
-                this.updateSetting('enableSpeedBonus', e.target.checked);
-                // If speed bonus is disabled, also disable speed punishment
-                if (!e.target.checked) {
-                    const speedPunishment = document.getElementById('enable-speed-punishment');
-                    if (speedPunishment && speedPunishment.checked) {
-                        speedPunishment.checked = false;
-                        this.updateSetting('enableSpeedPunishment', false);
-                    }
+        // Speed mode radio buttons
+        const speedModeBonus = document.getElementById('speed-mode-bonus');
+        const speedModePunishment = document.getElementById('speed-mode-punishment');
+        const speedModeIgnored = document.getElementById('speed-mode-ignored');
+        
+        if (speedModeBonus && speedModePunishment && speedModeIgnored) {
+            speedModeBonus.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    this.updateSetting('speedMode', 'bonus');
                 }
             });
-        }
-        
-        const enableSpeedPunishment = document.getElementById('enable-speed-punishment');
-        if (enableSpeedPunishment) {
-            enableSpeedPunishment.addEventListener('change', (e) => {
-                this.updateSetting('enableSpeedPunishment', e.target.checked);
-                // If speed punishment is enabled, ensure speed tracking is also enabled
+            speedModePunishment.addEventListener('change', (e) => {
                 if (e.target.checked) {
-                    const speedBonus = document.getElementById('enable-speed-bonus');
-                    if (speedBonus && !speedBonus.checked) {
-                        speedBonus.checked = true;
-                        this.updateSetting('enableSpeedBonus', true);
-                    }
+                    this.updateSetting('speedMode', 'punishment');
+                }
+            });
+            speedModeIgnored.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    this.updateSetting('speedMode', 'ignored');
                 }
             });
         }

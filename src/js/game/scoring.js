@@ -53,10 +53,10 @@ export class ScoringSystem {
             combo: 5
         };
         
-        // Speed bonus configuration
-        this.speedBonusConfig = {
-            enabled: true,
-            punishmentMode: false,  // New: if true, speed reduces points instead of adding
+        // Speed tracking configuration
+        // Mode: 'bonus' (faster = more points), 'punishment' (faster = less points), 'ignored' (no speed tracking)
+        this.speedConfig = {
+            mode: 'bonus',  // 'bonus', 'punishment', or 'ignored'
             thresholds: [
                 { maxTime: 500, bonus: 10, label: 'Lightning Fast' },    // < 0.5s
                 { maxTime: 1000, bonus: 5, label: 'Very Fast' },         // < 1.0s
@@ -406,13 +406,13 @@ export class ScoringSystem {
         this.updateLevelFromScore();
     }
     
-    // Record block placement time and calculate speed bonus
+    // Record block placement time and calculate speed bonus/punishment
     recordPlacementTime() {
         const currentTime = Date.now();
         this.placementTimes.push(currentTime);
         
-        // Only calculate speed bonus if enabled
-        if (!this.speedBonusConfig.enabled) {
+        // Skip speed tracking if mode is 'ignored'
+        if (this.speedConfig.mode === 'ignored') {
             return;
         }
         
@@ -430,15 +430,16 @@ export class ScoringSystem {
                 this.totalSpeedBonus += speedBonus;
                 
                 // Apply speed bonus or punishment based on mode
-                if (this.speedBonusConfig.punishmentMode) {
+                if (this.speedConfig.mode === 'punishment') {
                     // Punishment mode: subtract from score
                     this.score -= speedBonus;
                     this.lastScoreGained -= speedBonus;
-                } else {
-                    // Normal mode: add to score
+                } else if (this.speedConfig.mode === 'bonus') {
+                    // Bonus mode: add to score
                     this.score += speedBonus;
                     this.lastScoreGained += speedBonus;
                 }
+                // If mode is 'ignored', we don't modify the score at all
                 
                 // Update fastest placement
                 if (!this.fastestPlacement || timeSinceLastPlacement < this.fastestPlacement) {
@@ -453,28 +454,30 @@ export class ScoringSystem {
     
     // Calculate speed bonus based on placement interval
     calculateSpeedBonus(intervalMs) {
-        if (!this.speedBonusConfig.enabled || intervalMs <= 0) return 0;
+        // Skip calculation if mode is ignored or invalid interval
+        if (this.speedConfig.mode === 'ignored' || intervalMs <= 0) return 0;
         
         // Find the appropriate threshold
-        for (const threshold of this.speedBonusConfig.thresholds) {
+        for (const threshold of this.speedConfig.thresholds) {
             if (intervalMs <= threshold.maxTime) {
                 let bonus = threshold.bonus;
                 
                 // Apply streak multiplier for consecutive fast placements
                 const recentFastPlacements = this.getRecentFastPlacements();
                 if (recentFastPlacements >= 2) {
-                    bonus = Math.floor(bonus * this.speedBonusConfig.streakMultiplier);
+                    bonus = Math.floor(bonus * this.speedConfig.streakMultiplier);
                 }
                 
                 // In punishment mode, scale penalty with level (small but noticeable)
                 // Each level adds ~3% to the penalty
-                if (this.speedBonusConfig.punishmentMode) {
+                if (this.speedConfig.mode === 'punishment') {
                     const levelMultiplier = 1 + (this.level - 1) * 0.03;
                     bonus = Math.floor(bonus * levelMultiplier);
                 }
                 
-                // Cap the bonus
-                return Math.min(bonus, this.speedBonusConfig.maxBonus * (this.speedBonusConfig.punishmentMode ? 2 : 1));
+                // Cap the bonus (doubled for punishment mode)
+                const maxCap = this.speedConfig.maxBonus * (this.speedConfig.mode === 'punishment' ? 2 : 1);
+                return Math.min(bonus, maxCap);
             }
         }
         
@@ -518,28 +521,37 @@ export class ScoringSystem {
         };
     }
     
-    // Enable or disable speed bonus system
-    setSpeedBonusEnabled(enabled) {
-        this.speedBonusConfig.enabled = enabled;
-    }
-    
-    // Check if speed bonus is enabled
-    isSpeedBonusEnabled() {
-        return this.speedBonusConfig.enabled;
-    }
-    
-    // Enable or disable speed punishment mode
-    setSpeedPunishmentMode(enabled) {
-        this.speedBonusConfig.punishmentMode = enabled;
-        // If enabling punishment mode, also enable speed tracking
-        if (enabled) {
-            this.speedBonusConfig.enabled = true;
+    // Set speed tracking mode ('bonus', 'punishment', or 'ignored')
+    setSpeedMode(mode) {
+        const validModes = ['bonus', 'punishment', 'ignored'];
+        if (validModes.includes(mode)) {
+            this.speedConfig.mode = mode;
+        } else {
+            console.warn(`Invalid speed mode: ${mode}. Using 'bonus' as default.`);
+            this.speedConfig.mode = 'bonus';
         }
     }
     
-    // Check if speed punishment mode is enabled
+    // Get current speed mode
+    getSpeedMode() {
+        return this.speedConfig.mode;
+    }
+    
+    // Legacy compatibility methods (deprecated but kept for backwards compatibility)
+    setSpeedBonusEnabled(enabled) {
+        this.speedConfig.mode = enabled ? 'bonus' : 'ignored';
+    }
+    
+    isSpeedBonusEnabled() {
+        return this.speedConfig.mode !== 'ignored';
+    }
+    
+    setSpeedPunishmentMode(enabled) {
+        this.speedConfig.mode = enabled ? 'punishment' : 'bonus';
+    }
+    
     isSpeedPunishmentMode() {
-        return this.speedBonusConfig.punishmentMode;
+        return this.speedConfig.mode === 'punishment';
     }
     
     // Reset streak count (called when a non-clearing block is placed)
