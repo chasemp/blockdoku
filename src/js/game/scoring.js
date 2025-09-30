@@ -4,10 +4,13 @@
  */
 
 export class ScoringSystem {
-    constructor() {
+    constructor(petrificationManager = null) {
         this.score = 0;
         this.level = 1;
         this.linesCleared = 0;
+        
+        // Petrification manager (optional)
+        this.petrificationManager = petrificationManager;
         
         // Dual combo tracking system
         this.combo = 0;                    // Current streak combo
@@ -77,7 +80,13 @@ export class ScoringSystem {
         };
     }
     
+    // Set petrification manager
+    setPetrificationManager(petrificationManager) {
+        this.petrificationManager = petrificationManager;
+    }
+    
     // Check for completed lines without clearing them
+    // Now respects petrification - lines with petrified cells cannot be cleared
     checkForCompletedLines(board) {
         const clearedLines = {
             rows: [],
@@ -88,14 +97,20 @@ export class ScoringSystem {
         // Check rows
         for (let row = 0; row < board.length; row++) {
             if (this.isRowComplete(board, row)) {
-                clearedLines.rows.push(row);
+                // Check if row can be cleared (no petrified cells)
+                if (!this.petrificationManager || this.petrificationManager.canClearRow(board, row)) {
+                    clearedLines.rows.push(row);
+                }
             }
         }
         
         // Check columns
         for (let col = 0; col < board[0].length; col++) {
             if (this.isColumnComplete(board, col)) {
-                clearedLines.columns.push(col);
+                // Check if column can be cleared (no petrified cells)
+                if (!this.petrificationManager || this.petrificationManager.canClearColumn(board, col)) {
+                    clearedLines.columns.push(col);
+                }
             }
         }
         
@@ -103,7 +118,10 @@ export class ScoringSystem {
         for (let squareRow = 0; squareRow < 3; squareRow++) {
             for (let squareCol = 0; squareCol < 3; squareCol++) {
                 if (this.isSquareComplete(board, squareRow, squareCol)) {
-                    clearedLines.squares.push({ row: squareRow, col: squareCol });
+                    // Check if square can be cleared (no petrified cells)
+                    if (!this.petrificationManager || this.petrificationManager.canClearSquare(board, squareRow, squareCol)) {
+                        clearedLines.squares.push({ row: squareRow, col: squareCol });
+                    }
                 }
             }
         }

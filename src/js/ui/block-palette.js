@@ -4,13 +4,15 @@
  */
 
 export class BlockPalette {
-    constructor(containerId, blockManager) {
+    constructor(containerId, blockManager, petrificationManager = null) {
         this.container = document.getElementById(containerId);
         this.blockManager = blockManager;
+        this.petrificationManager = petrificationManager;
         this.selectedBlock = null;
         this.blockElements = new Map();
         this._placeabilityTimeout = null;
         this.lastTapTime = null; // For double-tap detection on mobile
+        this._petrificationUpdateInterval = null;
         
         this.init();
     }
@@ -48,6 +50,13 @@ export class BlockPalette {
             container.appendChild(blockElement);
             this.blockElements.set(block.id, blockElement);
         });
+        
+        // Start petrification visual updates if enabled
+        if (this.petrificationManager && this.petrificationManager.isEnabled()) {
+            this.startPetrificationUpdates();
+        } else {
+            this.stopPetrificationUpdates();
+        }
     }
     
     createBlockElement(block) {
@@ -418,5 +427,50 @@ export class BlockPalette {
             clearTimeout(this._placeabilityTimeout);
             this._placeabilityTimeout = null;
         }
+    }
+    
+    // Petrification visual updates
+    startPetrificationUpdates() {
+        // Stop any existing interval
+        this.stopPetrificationUpdates();
+        
+        // Update every 100ms for smooth animations
+        this._petrificationUpdateInterval = setInterval(() => {
+            this.updatePetrificationVisuals();
+        }, 100);
+    }
+    
+    stopPetrificationUpdates() {
+        if (this._petrificationUpdateInterval) {
+            clearInterval(this._petrificationUpdateInterval);
+            this._petrificationUpdateInterval = null;
+        }
+        
+        // Clear all petrification classes
+        this.blockElements.forEach((el) => {
+            el.classList.remove('petrified', 'warning-7s', 'warning-3s');
+        });
+    }
+    
+    updatePetrificationVisuals() {
+        if (!this.petrificationManager || !this.petrificationManager.isEnabled()) {
+            return;
+        }
+        
+        this.blockElements.forEach((el, blockId) => {
+            const state = this.petrificationManager.getBlockState(blockId);
+            
+            // Remove all petrification classes
+            el.classList.remove('petrified', 'warning-7s', 'warning-3s');
+            
+            // Add appropriate class based on state
+            if (state.petrified) {
+                el.classList.add('petrified');
+            } else if (state.warning === '3s') {
+                el.classList.add('warning-3s');
+            } else if (state.warning === '7s') {
+                el.classList.add('warning-7s');
+            }
+        });
     }
 }
