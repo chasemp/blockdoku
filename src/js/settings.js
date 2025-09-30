@@ -107,6 +107,11 @@ class SettingsManager {
         if (showHighScore) {
             showHighScore.checked = this.settings.showHighScore === true; // Default to false
         }
+        
+        const showSpeedBonus = document.getElementById('show-speed-bonus');
+        if (showSpeedBonus) {
+            showSpeedBonus.checked = this.settings.showSpeedBonus === true; // Default to false
+        }
 
         // Combo display mode - handle radio buttons
         const comboStreak = document.getElementById('combo-streak');
@@ -211,6 +216,13 @@ class SettingsManager {
         if (showHighScore) {
             showHighScore.addEventListener('change', (e) => {
                 this.updateSetting('showHighScore', e.target.checked);
+            });
+        }
+        
+        const showSpeedBonus = document.getElementById('show-speed-bonus');
+        if (showSpeedBonus) {
+            showSpeedBonus.addEventListener('change', (e) => {
+                this.updateSetting('showSpeedBonus', e.target.checked);
             });
         }
 
