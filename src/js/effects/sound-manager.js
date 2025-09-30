@@ -160,30 +160,25 @@ export class SoundManager {
     // Get grouped sound effects for simplified settings
     getGroupedSoundEffects() {
         return {
-            neutral: {
-                name: 'Neutral Events',
+            events: {
+                name: 'Events',
                 description: 'General gameplay actions like block placement and UI interactions',
-                sounds: ['blockPlace', 'blockRotate', 'buttonClick', 'undo', 'redo']
+                sounds: ['blockPlace', 'blockRotate', 'buttonClick', 'undo', 'redo', 'hint']
             },
-            positive: {
-                name: 'Positive Events', 
+            success: {
+                name: 'Success', 
                 description: 'Achievements, rewards, and successful actions',
                 sounds: ['lineClear', 'levelUp', 'combo', 'scoreGain', 'perfect', 'chain', 'timeBonus']
             },
             warning: {
-                name: 'Warning Events',
+                name: 'Warning',
                 description: 'Time pressure alerts and urgent notifications',
                 sounds: ['timeWarning', 'timeCritical']
             },
-            error: {
-                name: 'Error Events',
+            failure: {
+                name: 'Failure',
                 description: 'Mistakes and invalid actions',
                 sounds: ['error']
-            },
-            helper: {
-                name: 'Helper Events',
-                description: 'Assistance and guidance features',
-                sounds: ['hint']
             }
         };
     }
@@ -606,7 +601,7 @@ export class SoundManager {
         
         // Apply the preset to all sounds in the group
         for (const soundKey of groupInfo.sounds) {
-            this.setCustomSoundMapping(soundKey, presetId);
+            this.setCustomSound(soundKey, presetId);
         }
     }
     
