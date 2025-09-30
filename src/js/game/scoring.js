@@ -56,6 +56,7 @@ export class ScoringSystem {
         // Speed bonus configuration
         this.speedBonusConfig = {
             enabled: true,
+            punishmentMode: false,  // New: if true, speed reduces points instead of adding
             thresholds: [
                 { maxTime: 500, bonus: 10, label: 'Lightning Fast' },    // < 0.5s
                 { maxTime: 1000, bonus: 5, label: 'Very Fast' },         // < 1.0s
@@ -427,8 +428,17 @@ export class ScoringSystem {
                     timestamp: currentTime
                 });
                 this.totalSpeedBonus += speedBonus;
-                this.score += speedBonus;
-                this.lastScoreGained += speedBonus;
+                
+                // Apply speed bonus or punishment based on mode
+                if (this.speedBonusConfig.punishmentMode) {
+                    // Punishment mode: subtract from score
+                    this.score -= speedBonus;
+                    this.lastScoreGained -= speedBonus;
+                } else {
+                    // Normal mode: add to score
+                    this.score += speedBonus;
+                    this.lastScoreGained += speedBonus;
+                }
                 
                 // Update fastest placement
                 if (!this.fastestPlacement || timeSinceLastPlacement < this.fastestPlacement) {
@@ -456,8 +466,15 @@ export class ScoringSystem {
                     bonus = Math.floor(bonus * this.speedBonusConfig.streakMultiplier);
                 }
                 
+                // In punishment mode, scale penalty with level (small but noticeable)
+                // Each level adds ~3% to the penalty
+                if (this.speedBonusConfig.punishmentMode) {
+                    const levelMultiplier = 1 + (this.level - 1) * 0.03;
+                    bonus = Math.floor(bonus * levelMultiplier);
+                }
+                
                 // Cap the bonus
-                return Math.min(bonus, this.speedBonusConfig.maxBonus);
+                return Math.min(bonus, this.speedBonusConfig.maxBonus * (this.speedBonusConfig.punishmentMode ? 2 : 1));
             }
         }
         
@@ -509,6 +526,20 @@ export class ScoringSystem {
     // Check if speed bonus is enabled
     isSpeedBonusEnabled() {
         return this.speedBonusConfig.enabled;
+    }
+    
+    // Enable or disable speed punishment mode
+    setSpeedPunishmentMode(enabled) {
+        this.speedBonusConfig.punishmentMode = enabled;
+        // If enabling punishment mode, also enable speed tracking
+        if (enabled) {
+            this.speedBonusConfig.enabled = true;
+        }
+    }
+    
+    // Check if speed punishment mode is enabled
+    isSpeedPunishmentMode() {
+        return this.speedBonusConfig.punishmentMode;
     }
     
     // Reset streak count (called when a non-clearing block is placed)

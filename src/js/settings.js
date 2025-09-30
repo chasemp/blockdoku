@@ -113,6 +113,11 @@ class SettingsManager {
             enableSpeedBonus.checked = this.settings.enableSpeedBonus !== false; // Default to true
         }
         
+        const enableSpeedPunishment = document.getElementById('enable-speed-punishment');
+        if (enableSpeedPunishment) {
+            enableSpeedPunishment.checked = this.settings.enableSpeedPunishment === true; // Default to false
+        }
+        
         const showSpeedBonus = document.getElementById('show-speed-bonus');
         if (showSpeedBonus) {
             showSpeedBonus.checked = this.settings.showSpeedBonus === true; // Default to false
@@ -345,6 +350,29 @@ class SettingsManager {
         if (enableSpeedBonus) {
             enableSpeedBonus.addEventListener('change', (e) => {
                 this.updateSetting('enableSpeedBonus', e.target.checked);
+                // If speed bonus is disabled, also disable speed punishment
+                if (!e.target.checked) {
+                    const speedPunishment = document.getElementById('enable-speed-punishment');
+                    if (speedPunishment && speedPunishment.checked) {
+                        speedPunishment.checked = false;
+                        this.updateSetting('enableSpeedPunishment', false);
+                    }
+                }
+            });
+        }
+        
+        const enableSpeedPunishment = document.getElementById('enable-speed-punishment');
+        if (enableSpeedPunishment) {
+            enableSpeedPunishment.addEventListener('change', (e) => {
+                this.updateSetting('enableSpeedPunishment', e.target.checked);
+                // If speed punishment is enabled, ensure speed tracking is also enabled
+                if (e.target.checked) {
+                    const speedBonus = document.getElementById('enable-speed-bonus');
+                    if (speedBonus && !speedBonus.checked) {
+                        speedBonus.checked = true;
+                        this.updateSetting('enableSpeedBonus', true);
+                    }
+                }
             });
         }
         
