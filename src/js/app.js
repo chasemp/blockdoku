@@ -124,7 +124,7 @@ class BlockdokuGame {
             // Always reload game state when returning from settings (if not game over)
             if (!this.isGameOver) {
                 this.loadGameState();
-                this.render();
+                this.draw();
             }
         });
         
@@ -138,7 +138,7 @@ class BlockdokuGame {
                 // Always reload game state when settings change (if not game over)
                 if (!this.isGameOver) {
                     this.loadGameState();
-                    this.render();
+                    this.draw();
                 }
             }
         });
@@ -2882,7 +2882,7 @@ class BlockdokuGame {
         
         // Redraw the board with new theme colors after a small delay to ensure CSS is loaded
         setTimeout(() => {
-            this.render();
+            this.draw();
         }, 50);
         
         this.saveSettings();
