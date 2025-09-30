@@ -335,7 +335,10 @@ class BlockdokuGame {
         }
 
         // Update placeability indicators each tick for responsiveness
-        this.updatePlaceabilityIndicators();
+        // Only update if game is initialized and has blocks
+        if (this.isInitialized && this.blockManager && this.blockManager.currentBlocks && this.blockManager.currentBlocks.length > 0) {
+            this.updatePlaceabilityIndicators();
+        }
     }
     
     draw() {
@@ -1660,9 +1663,6 @@ class BlockdokuGame {
         if (this.blockPalette && this.blockPalette.stopTimeoutChecking) {
             this.blockPalette.stopTimeoutChecking();
         }
-        
-        // Update placeability indicators for new game
-        this.updatePlaceabilityIndicators();
         
         // Reset animation tracking
         this.previousScore = 0;
