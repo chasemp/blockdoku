@@ -218,7 +218,11 @@ class BlockdokuGame {
         if (this.blockPalette) {
             this.blockPalette.render();
         }
-        this.generateNewBlocks();
+        
+        // Only generate new blocks if no blocks were loaded from saved state
+        if (!this.blockManager.currentBlocks || this.blockManager.currentBlocks.length === 0) {
+            this.generateNewBlocks();
+        }
         
         // Initialize timer system for current difficulty
         this.timerSystem.initialize();
@@ -3396,11 +3400,11 @@ class BlockdokuGame {
                 blockTypes = 'all';
                 break;
             case 'hard':
-                blockCount = 4;
+                blockCount = 3;
                 blockTypes = 'small'; // Prefer smaller, more complex blocks
                 break;
             case 'expert':
-                blockCount = 5;
+                blockCount = 3;
                 blockTypes = 'complex'; // Complex irregular shapes
                 break;
         }

@@ -143,8 +143,21 @@ export class BlockManager {
         
         this.currentBlocks = [];
         
+        // Create a copy of available shapes to avoid modifying the original
+        let remainingShapes = [...availableShapes];
+        
         for (let i = 0; i < count; i++) {
-            const randomKey = availableShapes[Math.floor(Math.random() * availableShapes.length)];
+            // If we've used all available shapes, reset the pool
+            if (remainingShapes.length === 0) {
+                remainingShapes = [...availableShapes];
+            }
+            
+            const randomIndex = Math.floor(Math.random() * remainingShapes.length);
+            const randomKey = remainingShapes[randomIndex];
+            
+            // Remove the selected shape to avoid duplicates
+            remainingShapes.splice(randomIndex, 1);
+            
             const block = {
                 ...this.blockShapes[randomKey],
                 id: `block_${i}_${Date.now()}`,
