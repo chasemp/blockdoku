@@ -2972,220 +2972,48 @@ class BlockdokuGame {
     }
 
     showGameOverModal(stats) {
-        // Remove any existing game over modal
-        const existingModal = document.getElementById('game-over-modal');
-        if (existingModal) {
-            existingModal.remove();
-        }
-        
-        // Create a simple game over notification
-        const modal = document.createElement('div');
-        modal.id = 'game-over-modal';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            font-family: Arial, sans-serif;
-        `;
-        
-        // Add CSS animation for prize bounce effect
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes bounce {
-                0%, 20%, 50%, 80%, 100% {
-                    transform: translateY(0);
-                }
-                40% {
-                    transform: translateY(-10px);
-                }
-                60% {
-                    transform: translateY(-5px);
-                }
-            }
-        `;
-        document.head.appendChild(style);
-        
-        const modalContent = document.createElement('div');
-        modalContent.style.cssText = `
-            background: var(--card-bg, #2c3e50);
-            color: var(--text-color, white);
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            border: 2px solid var(--primary-color, #3498db);
-        `;
-        
+        // Save game stats to localStorage for lastgame.html page
         const isHighScore = this.storage.isHighScore(stats.score);
         
         // Get prize for this score (only if prize recognition is enabled)
-        const prizeRecognitionEnabled = this.enablePrizeRecognition !== false; // Default to true
+        const prizeRecognitionEnabled = this.enablePrizeRecognition !== false;
         const prize = prizeRecognitionEnabled ? this.getPrizeForScore(stats.score) : null;
         const nextPrizeInfo = prizeRecognitionEnabled ? this.getNextPrizeInfo(stats.score) : null;
         
-		// Build detailed stats and breakdown
-		const difficultyLabel = (stats.difficulty?.toUpperCase?.() || this.difficulty.toUpperCase());
-		const multiplier = stats.difficultyMultiplier || (this.difficultyManager?.getScoreMultiplier?.() || 1);
-		const breakdown = stats.breakdown || { linePoints: 0, squarePoints: 0, comboBonusPoints: 0, placementPoints: 0 };
-		const clears = {
-			rows: stats.rowClears || 0,
-			columns: stats.columnClears || 0,
-			squares: stats.squareClears || 0
-		};
-
-        // Always show both combo types in game over modal
-        const comboSummary = `<p style=\"margin: 5px 0;\">Max Streak: ${stats.maxCombo}</p><p style=\"margin: 5px 0;\">Total Combos: ${stats.totalCombos || 0}</p><p style=\"margin: 5px 0;\">Max Combo Streak: ${stats.maxStreakCount || 0}</p>`;
-
-        modalContent.innerHTML = `
-			<h2 style="margin: 0 0 20px 0; color: var(--primary-color, #3498db);">Game Over!</h2>
-			
-			${prizeRecognitionEnabled ? `
-			<!-- Prize Section -->
-			<div style="margin: 15px 0; padding: 20px; background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,165,0,0.1)); border: 2px solid #ffd700; border-radius: 15px; text-align: center;">
-				<div style="font-size: 4em; margin-bottom: 10px; animation: bounce 1s ease-in-out;">${prize.emoji}</div>
-				<h3 style="margin: 0 0 8px 0; color: #ffd700; font-size: 1.4em; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">${prize.name}</h3>
-				<p style="margin: 0 0 15px 0; color: var(--text-color, white); font-style: italic; font-size: 1.1em;">${prize.message}</p>
-				${nextPrizeInfo ? `
-					<div style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,215,0,0.3);">
-						<p style="margin: 0 0 8px 0; color: #ffd700; font-size: 0.9em; font-weight: bold;">Next Prize: ${nextPrizeInfo.nextPrize.emoji} ${nextPrizeInfo.nextPrize.name}</p>
-						<div style="background: rgba(0,0,0,0.3); border-radius: 10px; height: 8px; margin: 5px 0;">
-							<div style="background: linear-gradient(90deg, #ffd700, #ffed4e); height: 100%; border-radius: 10px; width: ${nextPrizeInfo.progress}%; transition: width 0.5s ease;"></div>
-						</div>
-						<p style="margin: 5px 0 0 0; color: var(--text-color, white); font-size: 0.8em;">${nextPrizeInfo.pointsNeeded.toLocaleString()} points to go!</p>
-					</div>
-				` : `
-					<div style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,215,0,0.3);">
-						<p style="margin: 0; color: #ffd700; font-size: 0.9em; font-weight: bold;">🏆 You've reached the highest tier! 🏆</p>
-					</div>
-				`}
-			</div>
-			` : ''}
-			
-			<div style="margin: 15px 0;">
-				<p style=\"margin: 5px 0; font-size: 1.2em;\"><strong>Final Score: ${stats.score}</strong></p>
-				<p style=\"margin: 5px 0;\">Level: ${stats.level}</p>
-				<p style=\"margin: 5px 0;\">Lines Cleared: ${stats.linesCleared}</p>
-                ${comboSummary}
-				<p style=\"margin: 5px 0;\">Difficulty: ${difficultyLabel} (x${multiplier})</p>
-				${isHighScore ? '<p style="color: #ffd700; font-weight: bold; margin: 10px 0;">🎉 New High Score! 🎉</p>' : ''}
-			</div>
-			<div style=\"text-align: left; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);\">
-				<div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 10px;\">
-					<div>
-						<h3 style=\"margin: 0 0 6px 0; color: var(--primary-color, #3498db); font-size: 1em;\">Clears</h3>
-						<p style=\"margin: 4px 0;\">Rows: <strong>${clears.rows}</strong></p>
-						<p style=\"margin: 4px 0;\">Columns: <strong>${clears.columns}</strong></p>
-						<p style=\"margin: 4px 0;\">3x3 Squares: <strong>${clears.squares}</strong></p>
-					</div>
-					<div>
-						<h3 style=\"margin: 0 0 6px 0; color: var(--primary-color, #3498db); font-size: 1em;\">Score Breakdown</h3>
-						<p style=\"margin: 4px 0;\">Lines: <strong>${breakdown.linePoints.toLocaleString()}</strong></p>
-						<p style=\"margin: 4px 0;\">Squares: <strong>${breakdown.squarePoints.toLocaleString()}</strong></p>
-						<p style=\"margin: 4px 0;\">Placements: <strong>${breakdown.placementPoints.toLocaleString()}</strong></p>
-						<p style=\"margin: 4px 0;\">Combo Bonus: <strong>${breakdown.comboBonusPoints.toLocaleString()}</strong></p>
-						<p style=\"margin: 4px 0;\">Streak Bonus: <strong>${(breakdown.streakBonusPoints || 0).toLocaleString()}</strong></p>
-						<p style=\"margin: 8px 0 4px 0; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.2); font-weight: bold; color: var(--primary-color, #3498db);">Total: <strong>${(breakdown.linePoints + breakdown.squarePoints + breakdown.placementPoints + breakdown.comboBonusPoints + (breakdown.streakBonusPoints || 0)).toLocaleString()}</strong></p>
-					</div>
-				</div>
-				${stats.petrificationStats && this.enablePetrification ? `
-				<div style="margin-top: 12px; padding: 10px; background: rgba(150, 200, 255, 0.08); border: 1px solid rgba(150, 200, 255, 0.2); border-radius: 8px;">
-					<h3 style="margin: 0 0 6px 0; color: #96c8ff; font-size: 1em;">❄ Petrification Stats</h3>
-					<p style="margin: 4px 0;">Grid Cells Petrified: <strong>${stats.petrificationStats.gridCellsPetrified || 0}</strong></p>
-					<p style="margin: 4px 0;">Blocks Petrified: <strong>${stats.petrificationStats.blocksPetrified || 0}</strong></p>
-					<p style="margin: 4px 0;">Grid Cells Thawed: <strong>${stats.petrificationStats.gridCellsThawed || 0}</strong></p>
-					<p style="margin: 4px 0;">Blocks Thawed: <strong>${stats.petrificationStats.blocksThawed || 0}</strong></p>
-				</div>
-				` : ''}
-			</div>
-			<div style="margin-top: 18px; display: flex; justify-content: center; flex-wrap: wrap;">
-				<button id="new-game-btn" style="margin: 5px; padding: 12px 24px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold;">
-					New Game
-				</button>
-				<button id="share-score-btn" style="margin: 5px; padding: 12px 24px; background: var(--primary-color, #3498db); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold;">
-					Share
-				</button>
-				<button id="close-modal-btn" style="margin: 5px; padding: 12px 24px; background: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold;">
-					Close
-				</button>
-			</div>
-		`;
-        
-        modal.appendChild(modalContent);
-        document.body.appendChild(modal);
-        
-        // Add proper event listeners
-		const newGameBtn = document.getElementById('new-game-btn');
-		const closeBtn = document.getElementById('close-modal-btn');
-		const shareBtn = document.getElementById('share-score-btn');
-        
-        const handleNewGame = () => {
-            modal.remove();
-            this.isGameOver = false;
-            this.newGame();
+        // Build detailed stats and breakdown
+        const lastGameData = {
+            score: stats.score,
+            level: stats.level,
+            linesCleared: stats.linesCleared,
+            maxCombo: stats.maxCombo,
+            totalCombos: stats.totalCombos || 0,
+            maxStreakCount: stats.maxStreakCount || 0,
+            difficulty: stats.difficulty || this.difficulty,
+            difficultyMultiplier: stats.difficultyMultiplier || (this.difficultyManager?.getScoreMultiplier?.() || 1),
+            isHighScore: isHighScore,
+            breakdown: stats.breakdown || { linePoints: 0, squarePoints: 0, comboBonusPoints: 0, placementPoints: 0, streakBonusPoints: 0 },
+            rowClears: stats.rowClears || 0,
+            columnClears: stats.columnClears || 0,
+            squareClears: stats.squareClears || 0,
+            petrificationStats: stats.petrificationStats,
+            enablePetrification: this.enablePetrification,
+            prizeRecognitionEnabled: prizeRecognitionEnabled,
+            prize: prize,
+            nextPrize: nextPrizeInfo?.nextPrize || null,
+            nextPrizeProgress: nextPrizeInfo?.progress || 0,
+            nextPrizePointsNeeded: nextPrizeInfo?.pointsNeeded || 0,
+            timestamp: Date.now()
         };
         
-        const handleClose = () => {
-            modal.remove();
-        };
+        // Save to localStorage
+        try {
+            localStorage.setItem('blockdoku_lastgame', JSON.stringify(lastGameData));
+        } catch (error) {
+            console.error('Failed to save last game data:', error);
+        }
         
-        newGameBtn.addEventListener('click', handleNewGame);
-        newGameBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            handleNewGame();
-        }, { passive: false });
-        
-        closeBtn.addEventListener('click', handleClose);
-        closeBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            handleClose();
-        }, { passive: false });
-
-		// Share handler
-		const shareHandler = async () => {
-			try {
-				const difficultyText = (stats.difficulty?.toUpperCase?.() || this.difficulty.toUpperCase());
-				const shareUrl = (window.location && window.location.origin) ? (window.location.origin + window.location.pathname) : (window.location.href || '');
-                const shareComboText = `Max Streak ${stats.maxCombo}, Total Combos ${stats.totalCombos || 0}`;
-                const text = `I scored ${stats.score} in Blockdoku (${difficultyText}) — Level ${stats.level}, ${stats.linesCleared} lines, ${shareComboText}!`;
-				if (navigator.share) {
-					await navigator.share({ title: 'My Blockdoku Score', text, url: shareUrl });
-				} else if (navigator.clipboard && navigator.clipboard.writeText) {
-					await navigator.clipboard.writeText(`${text} ${shareUrl}`);
-					alert('Share link copied to clipboard!');
-				} else {
-					// Fallback prompt
-					window.prompt('Copy this to share:', `${text} ${shareUrl}`);
-				}
-			} catch (err) {
-				console.error('Share failed:', err);
-			}
-		};
-		if (shareBtn) {
-			shareBtn.addEventListener('click', shareHandler);
-			shareBtn.addEventListener('touchstart', (e) => { e.preventDefault(); shareHandler(); }, { passive: false });
-		}
-        
-        // Prevent touch events from going through the modal
-        modal.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-        }, { passive: false });
-        
-        modal.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-        }, { passive: false });
-        
-        modal.addEventListener('touchend', (e) => {
-            e.preventDefault();
-        }, { passive: false });
+        // Navigate to lastgame.html page
+        window.location.href = 'lastgame.html';
     }
 
     getStats() {
@@ -3819,6 +3647,17 @@ class BlockdokuGame {
 // Initialize game when DOM is loaded
 function initializeGame() {
     window.game = new BlockdokuGame();
+    
+    // Check if we should start a new game (from lastgame.html "New Game" button)
+    const shouldStartNewGame = localStorage.getItem('blockdoku_start_new_game');
+    if (shouldStartNewGame === 'true') {
+        localStorage.removeItem('blockdoku_start_new_game');
+        // Clear the game over flag and start a fresh game
+        if (window.game) {
+            window.game.isGameOver = false;
+            window.game.newGame();
+        }
+    }
     
     // Add global function to reset stuck UI state
     window.resetStuckUI = function() {
