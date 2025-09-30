@@ -147,6 +147,8 @@ export class GameStorage {
             enableHints: false,
             enableTimer: false,
             enablePetrification: false,
+            enableDeadPixels: false,
+            deadPixelsIntensity: 0,
             enableUndo: false,
             showPoints: false,
             showHighScore: false,
