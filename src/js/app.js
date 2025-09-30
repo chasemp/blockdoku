@@ -1825,8 +1825,8 @@ class BlockdokuGame {
         const levelElement = document.getElementById('level');
         const comboElement = document.getElementById('combo');
         const comboLabelElement = document.getElementById('combo-label');
-        const speedBonusElement = document.getElementById('speed-bonus');
-        const speedBonusValueElement = document.getElementById('speed-bonus-value');
+        const speedTimerElement = document.getElementById('speed-timer');
+        const speedTimerValueElement = document.getElementById('speed-timer-value');
         
         const currentCombo = this.scoringSystem.getCombo();
         const totalCombos = this.scoringSystem.getTotalCombos();
@@ -1882,28 +1882,28 @@ class BlockdokuGame {
             comboElement.textContent = currentCombo;
         }
         
-        // Update speed bonus display in utility bar
-        if (speedBonusElement && speedBonusValueElement) {
+        // Update speed timer display in utility bar
+        if (speedTimerElement && speedTimerValueElement) {
             const settings = this.storage.loadSettings();
-            const showSpeedBonus = settings.showSpeedBonus === true;
+            const showSpeedTimer = settings.showSpeedTimer === true;
             
-            if (showSpeedBonus && speedStats.totalSpeedBonus > 0) {
-                speedBonusElement.style.display = 'flex';
-                speedBonusValueElement.textContent = speedStats.totalSpeedBonus;
+            if (showSpeedTimer) {
+                speedTimerElement.style.display = 'flex';
+                speedTimerValueElement.textContent = speedStats.totalSpeedBonus;
                 
                 // Add pulse animation for recent speed bonuses
                 if (speedStats.speedBonuses.length > 0) {
                     const lastBonus = speedStats.speedBonuses[speedStats.speedBonuses.length - 1];
                     const timeSinceLastBonus = Date.now() - lastBonus.timestamp;
                     if (timeSinceLastBonus < 2000) { // Within last 2 seconds
-                        speedBonusElement.classList.add('speed-pulse');
+                        speedTimerElement.classList.add('speed-pulse');
                         setTimeout(() => {
-                            speedBonusElement.classList.remove('speed-pulse');
+                            speedTimerElement.classList.remove('speed-pulse');
                         }, 600);
                     }
                 }
             } else {
-                speedBonusElement.style.display = 'none';
+                speedTimerElement.style.display = 'none';
             }
         }
         
@@ -2196,13 +2196,13 @@ class BlockdokuGame {
         
         // Check if any utility bar content is visible
         const timerDisplay = document.getElementById('timer-display');
-        const speedBonus = document.getElementById('speed-bonus');
+        const speedTimer = document.getElementById('speed-timer');
         const hintControls = document.getElementById('hint-controls');
         const personalBests = document.getElementById('personal-bests');
         
         const hasContent = (
             (timerDisplay && timerDisplay.style.display !== 'none') ||
-            (speedBonus && speedBonus.style.display !== 'none') ||
+            (speedTimer && speedTimer.style.display !== 'none') ||
             (hintControls && hintControls.style.display !== 'none') ||
             (personalBests && personalBests.style.display !== 'none')
         );
@@ -2218,7 +2218,7 @@ class BlockdokuGame {
         this.updateSlotActiveState('hint-slot', hintControls);
         this.updateSlotActiveState('timer-slot', timerDisplay);
         this.updateSlotActiveState('personal-best-slot', personalBests);
-        this.updateSlotActiveState('speed-bonus-slot', speedBonus);
+        this.updateSlotActiveState('speed-timer-slot', speedTimer);
     }
     
     updateSlotActiveState(slotId, contentElement) {
@@ -3448,9 +3448,9 @@ class BlockdokuGame {
         // Show placement points feedback if enabled
         this.showPlacementPointsFeedback(this.scoringSystem.basePoints.single, row, col);
         
-        // Show speed bonus feedback if earned
+        // Show speed timer feedback if earned
         if (speedBonusGained > 0) {
-            this.showSpeedBonusFeedback(speedBonusGained, row, col);
+            this.showSpeedTimerFeedback(speedBonusGained, row, col);
         }
         
         // Add placement effects
@@ -3503,12 +3503,12 @@ class BlockdokuGame {
         this.autoSelectNextBlock();
     }
     
-    // Show visual feedback for speed bonus
-    showSpeedBonusFeedback(bonus, row, col) {
+    // Show visual feedback for speed timer
+    showSpeedTimerFeedback(bonus, row, col) {
         const settings = this.storage.loadSettings();
-        const showSpeedBonus = settings.showSpeedBonus === true;
+        const showSpeedTimer = settings.showSpeedTimer === true;
         
-        if (!showSpeedBonus) return;
+        if (!showSpeedTimer) return;
         
         // Calculate position on canvas
         const cellSize = this.cellSize;
@@ -3518,9 +3518,9 @@ class BlockdokuGame {
         // Determine the current speed mode
         const speedMode = this.scoringSystem.getSpeedMode();
         
-        // Create speed bonus text element
+        // Create speed timer text element
         const speedText = document.createElement('div');
-        speedText.className = 'speed-bonus-text';
+        speedText.className = 'speed-timer-text';
         
         // Set text and color based on mode
         if (speedMode === 'punishment') {
@@ -3540,7 +3540,7 @@ class BlockdokuGame {
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
             pointer-events: none;
             z-index: 1000;
-            animation: speedBonusFloat 1.5s ease-out forwards;
+            animation: speedTimerFloat 1.5s ease-out forwards;
         `;
         
         // Add to board overlay
@@ -3557,7 +3557,7 @@ class BlockdokuGame {
         }
         
         // Add particle effects
-        this.effectsManager.onSpeedBonus(x, y, bonus);
+        this.effectsManager.onSpeedTimer(x, y, bonus);
     }
 
     // Reset stuck UI state - clears any pending clears and refreshes blocks
