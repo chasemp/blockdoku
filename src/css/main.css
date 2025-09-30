@@ -2150,7 +2150,7 @@ html.light-theme .settings-section .difficulty-option.selected {
 }
 
 .pwa-install-button {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -2164,12 +2164,13 @@ html.light-theme .settings-section .difficulty-option.selected {
     justify-content: center;
     gap: 0.5rem;
     width: 100%;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.25);
 }
 
 .pwa-install-button:hover {
+    background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.35);
 }
 
 .pwa-install-button:active {
@@ -2217,7 +2218,7 @@ html.light-theme .settings-section .difficulty-option.selected {
     justify-content: center;
     gap: 0.5rem;
     width: 100%;
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     position: relative;
     overflow: hidden;
@@ -2242,12 +2243,12 @@ html.light-theme .settings-section .difficulty-option.selected {
     background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
     border-color: #c82333;
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(220, 53, 69, 0.35);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
 
 .reset-stats-button:active {
     transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .reset-text {
