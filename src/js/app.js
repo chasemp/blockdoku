@@ -1155,8 +1155,10 @@ class BlockdokuGame {
             this.startLineClearAnimation(clearedLines);
         } else {
             console.log('No lines detected for clearing');
-            // Reset streak when no clears occur after block placement
+            // Reset streak and combo when no clears occur after block placement
             this.scoringSystem.resetStreak();
+            // Update UI to reflect combo reset
+            this.updateUI();
         }
     }
     
@@ -1195,6 +1197,10 @@ class BlockdokuGame {
                 this.scoringSystem.totalCombos++;
                 this.scoringSystem.maxTotalCombos = Math.max(this.scoringSystem.maxTotalCombos, this.scoringSystem.totalCombos);
                 this.scoringSystem.comboActivations++;
+                
+                // Update streak count for consecutive combos
+                this.scoringSystem.streakCount++;
+                this.scoringSystem.maxStreakCount = Math.max(this.scoringSystem.maxStreakCount, this.scoringSystem.streakCount);
             } else {
                 this.scoringSystem.combo = 0;
             }
