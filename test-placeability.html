@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placeability Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 3px;
+        }
+        .pass {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .fail {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Blockdoku Placeability Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Instructions</h2>
+        <ol>
+            <li>Open the main game in another tab</li>
+            <li>Place some blocks on the board</li>
+            <li>Observe that unplaceable blocks are dulled out with an X mark</li>
+            <li>Place more blocks and verify that placeability updates dynamically</li>
+            <li>Check that when only one block can be placed, it's highlighted</li>
+            <li>Verify that when no blocks can be placed, all blocks are dulled out</li>
+        </ol>
+    </div>
+    
+    <div class="test-section">
+        <h2>Expected Behavior</h2>
+        <ul>
+            <li>✅ Unplaceable blocks should be grayscale, dimmed, and show an X mark</li>
+            <li>✅ Placeable blocks should appear normal</li>
+            <li>✅ When only one block is placeable, it should be highlighted with a pulsing effect</li>
+            <li>✅ When no blocks are placeable, all blocks should be dulled out</li>
+            <li>✅ Placeability should update immediately when blocks are placed</li>
+            <li>✅ Placeability should update when new blocks are generated</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>CSS Classes Applied</h2>
+        <ul>
+            <li><code>.block-item.unplaceable</code> - Applied to blocks that cannot be placed</li>
+            <li><code>.block-item.placeable</code> - Applied to blocks that can be placed</li>
+            <li><code>.block-item.last-playable</code> - Applied to the only placeable block</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>Implementation Details</h2>
+        <ul>
+            <li>Modified <code>updatePlaceabilityIndicators()</code> to always show placeability state</li>
+            <li>Updated <code>setPlaceability()</code> to support permanent display (durationMs = 0)</li>
+            <li>Enhanced CSS with stronger visual indicators for unplaceable blocks</li>
+            <li>Added placeability updates to <code>generateNewBlocks()</code></li>
+        </ul>
+    </div>
+    
+    <script>
+        // Simple test to verify the implementation
+        console.log('Placeability test page loaded');
+        console.log('Open the main game to test the placeability indicators');
+    </script>
+</body>
+</html>

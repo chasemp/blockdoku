@@ -917,6 +917,8 @@ class BlockdokuGame {
     generateNewBlocks() {
         const newBlocks = this.blockManager.generateRandomBlocks(3, 'all', this.difficultyManager);
         this.blockPalette.updateBlocks(newBlocks);
+        // Update placeability indicators for new blocks
+        this.updatePlaceabilityIndicators();
         // Auto-select the first block when new blocks are generated
         this.autoSelectNextBlock();
     }
@@ -2945,6 +2947,8 @@ class BlockdokuGame {
         
         const newBlocks = this.blockManager.generateRandomBlocks(blockCount, blockTypes, this.difficultyManager);
         this.blockPalette.updateBlocks(newBlocks);
+        // Update placeability indicators for new blocks
+        this.updatePlaceabilityIndicators();
         this.updateBlockPointsDisplay();
         this.autoSelectNextBlock();
     }
@@ -3098,7 +3102,7 @@ class BlockdokuGame {
         }
     }
 
-    // Compute per-block placeability and update palette highlighting for 1.25s when only one playable remains
+    // Compute per-block placeability and update palette highlighting
     updatePlaceabilityIndicators() {
         if (!this.blockManager || !this.blockPalette) return;
         if (!this.blockManager.currentBlocks || this.blockManager.currentBlocks.length === 0) return;
@@ -3106,17 +3110,17 @@ class BlockdokuGame {
         const placeableById = this.computePlaceabilityMap();
         const placeableIds = Object.keys(placeableById).filter(id => placeableById[id]);
         
-        // If exactly one block is playable, briefly highlight it and dim others
-        if (placeableIds.length === 1) {
-            if (this.blockPalette.setPlaceability) {
-                this.blockPalette.setPlaceability(placeableById, { highlightLast: true, durationMs: 1250 });
-            }
-        } else if (placeableIds.length === 0) {
-            // nothing playable - handled by pre-game over indicator when detected in checkGameOver
-        } else {
-            // Do not persist classes during normal play; clear any existing state
-            if (this.blockPalette.clearPlaceability) {
-                this.blockPalette.clearPlaceability();
+        // Always show placeability state - dull out unplaceable blocks
+        if (this.blockPalette.setPlaceability) {
+            if (placeableIds.length === 1) {
+                // If exactly one block is playable, highlight it and dim others
+                this.blockPalette.setPlaceability(placeableById, { highlightLast: true, durationMs: 0 }); // 0 = permanent
+            } else if (placeableIds.length === 0) {
+                // Nothing playable - show pre-game over indicator
+                this.blockPalette.showPreGameOverIndicator(0); // 0 = permanent until cleared
+            } else {
+                // Multiple blocks playable - show normal placeability state
+                this.blockPalette.setPlaceability(placeableById, { highlightLast: false, durationMs: 0 }); // 0 = permanent
             }
         }
     }
