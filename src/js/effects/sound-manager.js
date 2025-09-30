@@ -132,7 +132,8 @@ export class SoundManager {
             undo: getSound('undo', this.createUndoSound),
             redo: getSound('redo', this.createRedoSound),
             perfect: getSound('perfect', this.createPerfectSound),
-            chain: getSound('chain', this.createChainSound)
+            chain: getSound('chain', this.createChainSound),
+            emptyGridBonus: getSound('emptyGridBonus', this.createEmptyGridBonusSound)
         };
     }
     
@@ -155,7 +156,8 @@ export class SoundManager {
             undo: { name: 'Undo', description: 'Undo action' },
             redo: { name: 'Redo', description: 'Redo action' },
             perfect: { name: 'Perfect Clear', description: 'Perfect board clear' },
-            chain: { name: 'Chain', description: 'Chain combo effect' }
+            chain: { name: 'Chain', description: 'Chain combo effect' },
+            emptyGridBonus: { name: 'Empty Grid Bonus', description: 'When earning empty grid bonus points' }
         };
     }
     
@@ -170,7 +172,7 @@ export class SoundManager {
             success: {
                 name: 'Success', 
                 description: 'Achievements, rewards, and successful actions',
-                sounds: ['lineClear', 'levelUp', 'combo', 'speedBonus', 'scoreGain', 'perfect', 'chain', 'timeBonus']
+                sounds: ['lineClear', 'levelUp', 'combo', 'speedBonus', 'scoreGain', 'perfect', 'chain', 'timeBonus', 'emptyGridBonus']
             },
             warning: {
                 name: 'Warning',
@@ -471,6 +473,26 @@ export class SoundManager {
         }
         
         return { buffer, volume: 0.5 };
+    }
+    
+    createEmptyGridBonusSound() {
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 1.2, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < data.length; i++) {
+            const t = i / this.audioContext.sampleRate;
+            // Create a bright, celebratory sound with multiple harmonics
+            const frequency = 200 + t * 400; // Rising pitch
+            const harmonic = Math.sin(2 * Math.PI * frequency * t) + 
+                           0.6 * Math.sin(2 * Math.PI * frequency * 2 * t) +
+                           0.4 * Math.sin(2 * Math.PI * frequency * 3 * t) +
+                           0.2 * Math.sin(2 * Math.PI * frequency * 4 * t);
+            // Add some vibrato for excitement
+            const vibrato = 1 + 0.1 * Math.sin(2 * Math.PI * 8 * t);
+            data[i] = harmonic * vibrato * Math.exp(-t * 0.8) * 0.4;
+        }
+        
+        return { buffer, volume: 0.6 };
     }
     
     // Resume audio context (required for some browsers)

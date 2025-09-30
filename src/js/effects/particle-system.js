@@ -86,6 +86,24 @@ export class ParticleSystem {
         this.particles.push(new LevelUpParticle(x, y));
     }
     
+    // Create empty grid bonus celebration
+    createEmptyGridBonusEffect(x, y) {
+        if (!this.isEnabled) return;
+        
+        // Create special green sparkles for empty grid bonus
+        for (let i = 0; i < 20; i++) {
+            this.particles.push(new EmptyGridBonusParticle(x, y));
+        }
+        
+        // Create some confetti with green theme
+        for (let i = 0; i < 15; i++) {
+            this.particles.push(new EmptyGridConfettiParticle(x, y));
+        }
+        
+        // Create floating text
+        this.particles.push(new EmptyGridBonusTextParticle(x, y));
+    }
+    
     // Create combo effect
     createComboEffect(x, y, combo) {
         if (!this.isEnabled) return;
@@ -353,6 +371,106 @@ class ComboParticle extends Particle {
         ctx.textAlign = 'center';
         ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
         ctx.shadowBlur = 3;
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.restore();
+    }
+}
+
+// Empty grid bonus sparkle particle
+class EmptyGridBonusParticle extends Particle {
+    constructor(x, y) {
+        super(x, y);
+        this.vx = (Math.random() - 0.5) * 6;
+        this.vy = (Math.random() - 0.5) * 6;
+        this.maxLife = 1.2;
+        this.life = this.maxLife;
+        this.size = Math.random() * 4 + 2;
+        this.color = `hsl(${Math.random() * 40 + 120}, 100%, 60%)`; // Green to cyan
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.3;
+    }
+    
+    update() {
+        super.update();
+        this.rotation += this.rotationSpeed;
+        this.vy += 0.05; // Light gravity
+        this.size *= 0.99; // Shrink slightly
+    }
+    
+    render(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 8;
+        ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+        ctx.restore();
+    }
+}
+
+// Empty grid bonus confetti particle
+class EmptyGridConfettiParticle extends Particle {
+    constructor(x, y) {
+        super(x, y);
+        this.vx = (Math.random() - 0.5) * 10;
+        this.vy = Math.random() * -8 - 3; // Upward velocity
+        this.maxLife = 2.5;
+        this.life = this.maxLife;
+        this.size = Math.random() * 5 + 3;
+        this.colors = ['#00ff88', '#00cc66', '#00ffaa', '#66ff99', '#00ff77', '#33ff88'];
+        this.color = this.colors[Math.floor(Math.random() * this.colors.length)];
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.4;
+    }
+    
+    update() {
+        super.update();
+        this.rotation += this.rotationSpeed;
+        this.vy += 0.2; // Gravity
+        this.vx *= 0.98; // Air resistance
+    }
+    
+    render(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 6;
+        ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+        ctx.restore();
+    }
+}
+
+// Empty grid bonus text particle
+class EmptyGridBonusTextParticle extends Particle {
+    constructor(x, y) {
+        super(x, y);
+        this.vx = 0;
+        this.vy = -1.5;
+        this.maxLife = 2.0;
+        this.life = this.maxLife;
+        this.text = 'EMPTY GRID BONUS!';
+        this.color = '#00ff88';
+        this.fontSize = 22;
+    }
+    
+    update() {
+        super.update();
+        this.fontSize += 0.4;
+    }
+    
+    render(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.font = `bold ${this.fontSize}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0, 255, 136, 0.8)';
+        ctx.shadowBlur = 6;
         ctx.fillText(this.text, this.x, this.y);
         ctx.restore();
     }
