@@ -2576,7 +2576,6 @@ class BlockdokuGame {
             this.particlesEnabled = settings.particlesEnabled !== false;
             this.hapticEnabled = settings.hapticEnabled !== false;
             this.enablePrizeRecognition = settings.enablePrizeRecognition !== false; // Default to true
-            this.speedEnabled = settings.speedEnabled !== false; // Default to true
             this.successModeEnabled = settings.successModeEnabled !== false; // Default to true
             
             // Apply petrification setting
@@ -3382,11 +3381,9 @@ class BlockdokuGame {
     placeBlock(row, col) {
         if (!this.canPlaceBlock(row, col)) return;
         
-        // Record placement time for speed bonus calculation (if enabled)
+        // Record placement time for speed bonus calculation
         const previousSpeedBonus = this.scoringSystem.totalSpeedBonus;
-        if (this.speedEnabled) {
-            this.scoringSystem.recordPlacementTime();
-        }
+        this.scoringSystem.recordPlacementTime();
         const speedBonusGained = this.scoringSystem.totalSpeedBonus - previousSpeedBonus;
         
         // Place the block on the board
