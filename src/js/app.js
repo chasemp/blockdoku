@@ -77,7 +77,7 @@ class BlockdokuGame {
         this.offlineManager = new OfflineManager();
         
         // Difficulty system
-        this.difficultyManager = new DifficultyManager();
+        this.difficultyManager = new DifficultyManager(this);
         this.hintSystem = new HintSystem(this, this.difficultyManager);
         this.timerSystem = new TimerSystem(this.difficultyManager);
         this.difficultySelector = new DifficultySelector(this, this.difficultyManager);
@@ -3348,28 +3348,28 @@ class BlockdokuGame {
     }
 
     applyDifficultySettings() {
-        // Apply difficulty-specific settings
+        // Apply difficulty-specific settings (but preserve user's hints setting)
         switch (this.difficulty) {
             case 'easy':
-                this.enableHints = true;
+                // Don't override enableHints - let user setting take precedence
                 this.enableTimer = false;
                 this.moveLimit = null;
                 this.timeLimit = null;
                 break;
             case 'normal':
-                this.enableHints = false;
+                // Don't override enableHints - let user setting take precedence
                 this.enableTimer = false;
                 this.moveLimit = null;
                 this.timeLimit = null;
                 break;
             case 'hard':
-                this.enableHints = false;
+                // Don't override enableHints - let user setting take precedence
                 this.enableTimer = false;
                 this.moveLimit = 50; // Limited moves
                 this.timeLimit = null;
                 break;
             case 'expert':
-                this.enableHints = false;
+                // Don't override enableHints - let user setting take precedence
                 this.enableTimer = true;
                 this.moveLimit = 30; // Very limited moves
                 this.timeLimit = 300; // 5 minutes
