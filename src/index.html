@@ -32,7 +32,23 @@
             </div>
         </header>
         
-        <!-- Utility Bar (between header and score bar) -->
+        <!-- Score/Level/Combo Bar (right under header) -->
+        <div class="game-info">
+            <div class="score">
+                <span>Score </span>
+                <span id="score">0</span>
+            </div>
+            <div class="level">
+                <span>Level </span>
+                <span id="level">1</span>
+            </div>
+            <div class="combo">
+                <span id="combo-label">Combo</span>
+                <span id="combo">0</span>
+            </div>
+        </div>
+        
+        <!-- Utility Bar (between score bar and game board) -->
         <div class="utility-bar" id="utility-bar">
             <div class="utility-left" id="utility-left"></div>
             <div class="utility-center">
@@ -55,20 +71,6 @@
         
         <main class="main">
             <div class="game-container">
-                <div class="game-info">
-                    <div class="score">
-                        <span>Score </span>
-                        <span id="score">0</span>
-                    </div>
-                    <div class="level">
-                        <span>Level </span>
-                        <span id="level">1</span>
-                    </div>
-                    <div class="combo">
-                        <span id="combo-label">Combo</span>
-                        <span id="combo">0</span>
-                    </div>
-                </div>
                 
                 <div class="game-area">
                     <div class="game-board-container">
