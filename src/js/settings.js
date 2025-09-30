@@ -6,7 +6,7 @@ import { SoundManager } from './effects/sound-manager.js';
 // If that generator is skipped, the About section will show fallback values.
 import { buildInfo } from './utils/build-info.js';
 
-class SettingsManager {
+export class SettingsManager {
     constructor() {
         this.storage = new GameStorage();
         this.settings = this.storage.loadSettings();
@@ -1433,6 +1433,12 @@ class SettingsManager {
 }
 
 // Initialize settings when page loads
-document.addEventListener('DOMContentLoaded', () => {
+// For ES modules, we can instantiate immediately since the script loads after DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        new SettingsManager();
+    });
+} else {
+    // DOM is already ready, instantiate immediately
     new SettingsManager();
-});
+}

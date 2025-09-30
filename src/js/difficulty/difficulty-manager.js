@@ -4,10 +4,11 @@
  */
 
 export class DifficultyManager {
-    constructor() {
+    constructor(game = null) {
         this.currentDifficulty = 'normal';
         this.difficultySettings = this.initializeDifficultySettings();
         this.gameRules = this.initializeGameRules();
+        this.game = game; // Reference to game for checking user settings
     }
     
     initializeDifficultySettings() {
@@ -112,6 +113,13 @@ export class DifficultyManager {
     }
     
     isHintsEnabled() {
+        // User setting takes precedence over difficulty setting
+        // If user has explicitly enabled hints, allow them regardless of difficulty
+        if (this.game && this.game.enableHints) {
+            return true;
+        }
+        
+        // Otherwise, use difficulty-specific setting
         return this.difficultySettings[this.currentDifficulty].hintsEnabled;
     }
     
