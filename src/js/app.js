@@ -1762,6 +1762,11 @@ class BlockdokuGame {
             this.blockPalette.stopTimeoutChecking();
         }
         
+        // Reset palette drag state for new game
+        if (this.blockPalette && this.blockPalette.resetDragState) {
+            this.blockPalette.resetDragState();
+        }
+        
         // Reset animation tracking
         this.previousScore = 0;
         this.previousLevel = 1;
@@ -2882,6 +2887,11 @@ class BlockdokuGame {
             this.blockPalette.pauseTimeoutChecking();
         }
         
+        // Reset palette drag state to clean up any ongoing drag operation
+        if (this.blockPalette && this.blockPalette.resetDragState) {
+            this.blockPalette.resetDragState();
+        }
+        
         // Stop the game loop
         this.stopGameLoop();
         
@@ -3413,6 +3423,15 @@ class BlockdokuGame {
         this.updateDifficultyUI();
         this.updateDifficultyButton();
         this.saveSettings();
+        
+        // Reset the game when difficulty changes (if game was in progress)
+        if (gameInProgress) {
+            // Reset palette drag state before starting new game
+            if (this.blockPalette && this.blockPalette.resetDragState) {
+                this.blockPalette.resetDragState();
+            }
+            this.newGame();
+        }
     }
 
     selectTheme(theme) {
@@ -3566,6 +3585,12 @@ class BlockdokuGame {
         
         // Reset timeout for the placed block before removing it
         this.blockPalette.resetPieceTimeout(this.selectedBlock.id);
+        
+        // Reset palette drag state before removing the block
+        // This prevents the palette from trying to interact with a removed block
+        if (this.blockPalette.resetDragState) {
+            this.blockPalette.resetDragState();
+        }
         
         // Remove the used block and untrack it from petrification
         this.petrificationManager.untrackBlock(this.selectedBlock.id);
