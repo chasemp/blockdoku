@@ -15,6 +15,11 @@ export class ScoringSystem {
         this.totalCombos = 0;              // Total cumulative combos (never resets)
         this.maxTotalCombos = 0;           // Maximum total combos in a single game
         
+        // Streak bonus tracking system
+        this.streakCount = 0;              // Current consecutive combo streak (resets on non-clearing placement)
+        this.maxStreakCount = 0;           // Maximum streak achieved
+        this.totalStreakBonus = 0;         // Total streak bonus points earned
+        
         // Speed tracking system
         this.placementTimes = [];          // Array of timestamps for each block placement
         this.speedBonuses = [];            // Array of speed bonuses earned
@@ -302,6 +307,10 @@ export class ScoringSystem {
                 this.combo++;
                 this.maxCombo = Math.max(this.maxCombo, this.combo);
                 
+                // Update streak count for consecutive combos
+                this.streakCount++;
+                this.maxStreakCount = Math.max(this.maxStreakCount, this.streakCount);
+                
                 // Update total combos (never resets, cumulative)
                 this.totalCombos++;
                 this.maxTotalCombos = Math.max(this.maxTotalCombos, this.totalCombos);
@@ -342,21 +351,28 @@ export class ScoringSystem {
         
         // Calculate combo bonus if applicable
         let comboBonus = 0;
+        let streakBonus = 0;
         if (isComboEvent) {
             comboBonus = this.calculateComboBonus(totalClears);
             scoreGained += comboBonus;
+            
+            // Calculate streak bonus for consecutive combos
+            streakBonus = this.calculateStreakBonus(this.streakCount);
+            scoreGained += streakBonus;
         }
         
         // Apply difficulty multiplier only (no level multiplier)
         const baseScoreGained = linePointsAdded + squarePointsAdded;
         const multipliedBaseScore = Math.floor(baseScoreGained * difficultyMultiplier);
         const multipliedComboBonus = Math.floor(comboBonus * difficultyMultiplier);
-        scoreGained = multipliedBaseScore + multipliedComboBonus;
+        const multipliedStreakBonus = Math.floor(streakBonus * difficultyMultiplier);
+        scoreGained = multipliedBaseScore + multipliedComboBonus + multipliedStreakBonus;
         
         // Update tracking variables
         this.pointsBreakdown.linePoints += Math.floor(linePointsAdded * difficultyMultiplier);
         this.pointsBreakdown.squarePoints += Math.floor(squarePointsAdded * difficultyMultiplier);
         this.pointsBreakdown.comboBonusPoints += multipliedComboBonus;
+        this.pointsBreakdown.streakBonusPoints += multipliedStreakBonus;
         
         this.score += scoreGained;
         this.lastScoreGained = scoreGained;
@@ -633,6 +649,29 @@ export class ScoringSystem {
         }
         
         return bonus;
+    }
+    
+    // Calculate streak bonus based on consecutive combo streak
+    // 2nd combo in streak: +20 points
+    // 3rd combo in streak: +30 points
+    // 4th combo in streak: +40 points
+    // 5th combo in streak: +50 points
+    // 6th combo in streak: +60 points
+    // 7th combo in streak: +70 points
+    // 8th combo in streak: +80 points
+    // 9th combo in streak: +90 points
+    // 10th combo in streak: +100 points
+    // 11th+ combo in streak: +100 points each
+    calculateStreakBonus(streakCount) {
+        if (streakCount < 2) return 0;
+        
+        // For streak count 2-10, use progressive bonus
+        if (streakCount <= 10) {
+            return streakCount * 10; // 20, 30, 40, 50, 60, 70, 80, 90, 100
+        }
+        
+        // For streak count 11+, use 100 + (streakCount - 10) * 100
+        return 100 + (streakCount - 10) * 100;
     }
 
     getStats() {
