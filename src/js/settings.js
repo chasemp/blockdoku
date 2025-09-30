@@ -9,14 +9,16 @@ import { buildInfo } from './utils/build-info.js';
 class SettingsManager {
     constructor() {
         this.storage = new GameStorage();
-        this.currentTheme = 'wood';
-        this.currentDifficulty = 'normal';
         this.settings = this.storage.loadSettings();
+        
+        // Load current values from storage FIRST, don't default them
+        this.currentTheme = this.settings.theme || 'wood';
+        this.currentDifficulty = this.settings.difficulty || 'normal';
+        
         this.pwaInstallManager = null;
         this.confirmationDialog = new ConfirmationDialog();
         this.soundManager = new SoundManager();
         
-        console.log('SettingsManager constructor - initial settings:', this.settings);
         
         this.init();
     }
@@ -42,10 +44,6 @@ class SettingsManager {
         this.currentTheme = this.settings.theme || 'wood';
         this.currentDifficulty = this.settings.difficulty || 'normal';
         
-        console.log('SettingsManager loadSettings:');
-        console.log('Loaded theme:', this.currentTheme);
-        console.log('Loaded difficulty:', this.currentDifficulty);
-        console.log('Full settings:', this.settings);
         
         // Apply the loaded theme immediately
         this.applyTheme(this.currentTheme);
@@ -1306,9 +1304,6 @@ class SettingsManager {
             theme: this.currentTheme,
             difficulty: this.currentDifficulty
         };
-        console.log('saveSettings called with:', settings);
-        console.log('Current theme:', this.currentTheme);
-        console.log('Current difficulty:', this.currentDifficulty);
         this.storage.saveSettings(settings);
     }
     

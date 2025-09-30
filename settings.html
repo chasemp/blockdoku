@@ -678,12 +678,12 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="./assets/settings-CexShXDP.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/wood-B4vXo_re.js">
-  <link rel="modulepreload" crossorigin href="./assets/sound-manager-2M6lP_n2.js">
+  <script type="module" crossorigin src="./assets/settings-CE-jLhgt.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/wood-BFBTfjaZ.js">
+  <link rel="modulepreload" crossorigin href="./assets/sound-manager-D85b1tFB.js">
   <link rel="modulepreload" crossorigin href="./assets/build-info-Dwp5dZmk.js">
-  <link rel="stylesheet" crossorigin href="./assets/wood-BuT2YBc8.css">
-  <link rel="stylesheet" crossorigin href="./assets/main-CEWoWtIg.css">
+  <link rel="stylesheet" crossorigin href="./assets/wood-BK4Q7u72.css">
+  <link rel="stylesheet" crossorigin href="./assets/main-DquBNDUx.css">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
     <div class="settings-container">
@@ -889,16 +889,52 @@
                 <div class="setting-item">
                     <label>
                         <input type="checkbox" id="animations-enabled" />
-                        Animations
+                        Master animations
                     </label>
                     <p class="setting-description">Enable smooth transitions and visual effects during gameplay</p>
                 </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="particles-enabled" />
-                        Particle effects
-                    </label>
-                    <p class="setting-description">Show particle effects when clearing lines and achieving combos</p>
+                
+                <!-- Enhanced Animation Settings -->
+                <div class="animation-settings" id="animation-settings">
+                    <h3 style="margin: 1.5rem 0 1rem 0; color: var(--text-color); font-size: 1.1rem;">Enhanced Animation Controls</h3>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="block-hover-effects" />
+                            Block hover effects
+                        </label>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="block-selection-glow" />
+                            Block selection glow
+                        </label>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="block-entrance-animations" />
+                            Block entrance animations
+                        </label>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="particle-effects" />
+                            Particle effects
+                        </label>
+                        <p class="setting-description">Show particle effects when clearing lines and achieving combos</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label for="animation-speed">Animation speed:</label>
+                        <select id="animation-speed" style="margin-left: 0.5rem; padding: 0.25rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color);">
+                            <option value="slow">Slow</option>
+                            <option value="normal" selected>Normal</option>
+                            <option value="fast">Fast</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="setting-item">
                     <label>
