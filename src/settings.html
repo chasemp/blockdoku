@@ -787,39 +787,82 @@
                         </label>
                     </div>
                 </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="enable-hints" />
-                        Enable hints
-                    </label>
-                    <p class="setting-description">Show placement suggestions for blocks when you're stuck</p>
+                
+                <!-- Game Modes Section -->
+                <div class="game-modes-settings">
+                    <h3>Game Modes</h3>
+                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Enable special game modes that add unique challenges and mechanics. Multiple modes can be active simultaneously!</p>
+                    
+                    <!-- Petrification Mode -->
+                    <div class="setting-item game-mode-item">
+                        <label>
+                            <input type="checkbox" id="enable-petrification" />
+                            Enable petrification
+                        </label>
+                        <p class="setting-description">Grid cells petrify after 10s and blocks after 30s in place. Petrified cells can't be cleared until a clear event happens. Adds strategic time pressure!</p>
+                    </div>
+                    
+                    <!-- Dead Pixels Mode -->
+                    <div class="setting-item game-mode-item">
+                        <label>
+                            <input type="checkbox" id="enable-dead-pixels" />
+                            Enable dead pixels
+                        </label>
+                        <p class="setting-description">Add "dead" pixels to the board that cannot be used for block placement, like a broken screen. Toggle on/off anytime!</p>
+                    </div>
+                    <div class="setting-item" id="dead-pixels-intensity-container" style="margin-left: 2rem; display: none;">
+                        <label for="dead-pixels-intensity">Dead Pixels Intensity: <span id="dead-pixels-intensity-value">0</span></label>
+                        <input type="range" id="dead-pixels-intensity" min="0" max="5" value="0" step="1" style="width: 100%; max-width: 300px; margin-top: 0.5rem;" />
+                        <p class="setting-description" style="font-size: 0.85rem; margin-top: 0.5rem;">0 = Off, 5 = Maximum dead pixels (~15-20)</p>
+                    </div>
+                    
+                    <!-- Speed Mode Settings -->
+                    <div class="speed-mode-settings">
+                        <h4>Speed Tracking Mode</h4>
+                        <p class="setting-description" style="margin-bottom: 0.5rem; margin-left: 0;">Choose how placement speed affects your score</p>
+                        <div class="speed-mode-options">
+                            <label class="speed-mode-option">
+                                <input type="radio" name="speed-mode" value="bonus" id="speed-mode-bonus" checked />
+                                <span class="speed-mode-label">
+                                    <strong>Bonus</strong>
+                                    <small>Faster = more points</small>
+                                </span>
+                            </label>
+                            <label class="speed-mode-option">
+                                <input type="radio" name="speed-mode" value="punishment" id="speed-mode-punishment" />
+                                <span class="speed-mode-label">
+                                    <strong>Punishment</strong>
+                                    <small>Faster = less points (scales with level)</small>
+                                </span>
+                            </label>
+                            <label class="speed-mode-option">
+                                <input type="radio" name="speed-mode" value="ignored" id="speed-mode-ignored" />
+                                <span class="speed-mode-label">
+                                    <strong>Ignored</strong>
+                                    <small>Speed doesn't affect score</small>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="enable-timer" />
-                        Enable timer
-                    </label>
-                    <p class="setting-description">Add time pressure to increase difficulty and excitement</p>
-                </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="enable-petrification" />
-                        Enable petrification
-                    </label>
-                    <p class="setting-description">Grid cells petrify after 10s and blocks after 30s in place. Petrified cells can't be cleared until a clear event happens. Adds strategic time pressure!</p>
-                </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="enable-dead-pixels" />
-                        Enable dead pixels
-                    </label>
-                    <p class="setting-description">Add "dead" pixels to the board that cannot be used for block placement, like a broken screen. Toggle on/off anytime!</p>
-                </div>
-                <div class="setting-item" id="dead-pixels-intensity-container" style="margin-left: 2rem; display: none;">
-                    <label for="dead-pixels-intensity">Dead Pixels Intensity: <span id="dead-pixels-intensity-value">0</span></label>
-                    <input type="range" id="dead-pixels-intensity" min="0" max="5" value="0" step="1" style="width: 100%; max-width: 300px; margin-top: 0.5rem;" />
-                    <p class="setting-description" style="font-size: 0.85rem; margin-top: 0.5rem;">0 = Off, 5 = Maximum dead pixels (~15-20)</p>
-                </div>
+                
+                <!-- Basic Game Settings -->
+                <div class="basic-game-settings">
+                    <h3>Basic Settings</h3>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="enable-hints" />
+                            Enable hints
+                        </label>
+                        <p class="setting-description">Show placement suggestions for blocks when you're stuck</p>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="enable-timer" />
+                            Enable timer
+                        </label>
+                        <p class="setting-description">Add time pressure to increase difficulty and excitement</p>
+                    </div>
                 <div class="setting-item">
                     <label>
                         <input type="checkbox" id="show-high-score" />
@@ -877,47 +920,20 @@
                     <p class="setting-description">Automatically detect and highlight special prize patterns for bonus points</p>
                 </div>
                 
-                <!-- Speed Mode Settings -->
-                <div class="speed-mode-settings">
-                    <h3>Speed Tracking Mode</h3>
-                    <div class="speed-mode-options">
-                        <label class="speed-mode-option">
-                            <input type="radio" name="speed-mode" value="bonus" id="speed-mode-bonus" checked />
-                            <span class="speed-mode-label">
-                                <strong>Bonus</strong>
-                                <small>Faster = more points</small>
-                            </span>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="success-mode-enabled" />
+                            Enable success mode
                         </label>
-                        <label class="speed-mode-option">
-                            <input type="radio" name="speed-mode" value="punishment" id="speed-mode-punishment" />
-                            <span class="speed-mode-label">
-                                <strong>Punishment</strong>
-                                <small>Faster = less points (scales with level)</small>
-                            </span>
-                        </label>
-                        <label class="speed-mode-option">
-                            <input type="radio" name="speed-mode" value="ignored" id="speed-mode-ignored" />
-                            <span class="speed-mode-label">
-                                <strong>Ignored</strong>
-                                <small>Speed doesn't affect score</small>
-                            </span>
-                        </label>
+                        <p class="setting-description">Show enhanced success animations and effects when achieving combos</p>
                     </div>
-                </div>
-                
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="success-mode-enabled" />
-                        Enable success mode
-                    </label>
-                    <p class="setting-description">Show enhanced success animations and effects when achieving combos</p>
-                </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="show-speed-bonus" />
-                        Show speed tracker in utility bar
-                    </label>
-                </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="show-speed-bonus" />
+                            Show speed tracker in utility bar
+                        </label>
+                        <p class="setting-description">Display speed bonus/punishment tracker in the utility bar when speed mode is active</p>
+                    </div>
                 <!-- PWA Install Button -->
                 <div class="setting-item pwa-install-item">
                     <button id="pwa-install-button" class="pwa-install-button">
