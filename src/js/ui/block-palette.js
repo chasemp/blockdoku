@@ -371,15 +371,17 @@ export class BlockPalette {
             }
         }
 
-        // Auto clear after duration
-        this._placeabilityTimeout = setTimeout(() => {
-            this.clearPlaceability();
-        }, durationMs);
+        // Auto clear after duration (only if durationMs > 0)
+        if (durationMs > 0) {
+            this._placeabilityTimeout = setTimeout(() => {
+                this.clearPlaceability();
+            }, durationMs);
+        }
     }
 
     /**
-     * Temporarily dim entire palette to indicate imminent game over.
-     * Automatically clears after duration.
+     * Dim entire palette to indicate imminent game over.
+     * Automatically clears after duration (if durationMs > 0).
      */
     showPreGameOverIndicator(durationMs = 1250) {
         if (!this.container) return;
@@ -394,9 +396,12 @@ export class BlockPalette {
         if (this._placeabilityTimeout) {
             clearTimeout(this._placeabilityTimeout);
         }
-        this._placeabilityTimeout = setTimeout(() => {
-            this.clearPlaceability();
-        }, durationMs);
+        // Only set timeout if durationMs > 0
+        if (durationMs > 0) {
+            this._placeabilityTimeout = setTimeout(() => {
+                this.clearPlaceability();
+            }, durationMs);
+        }
     }
 
     clearPlaceability() {

@@ -814,11 +814,30 @@ body {
 
 /* Palette placeability states */
 .block-item.unplaceable {
-    filter: grayscale(80%) brightness(0.7) opacity(0.6);
+    filter: grayscale(90%) brightness(0.5) opacity(0.4);
+    cursor: not-allowed;
+    pointer-events: none;
+    position: relative;
+}
+
+.block-item.unplaceable::after {
+    content: '✕';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ff4444;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+    z-index: 10;
+    pointer-events: none;
 }
 
 .block-item.placeable {
     filter: none;
+    cursor: pointer;
+    pointer-events: auto;
 }
 
 .block-item.last-playable {
