@@ -138,7 +138,7 @@
             left: 0;
             height: 100%;
             background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
-            animation: pressProgress 1.5s linear forwards;
+            animation: pressProgress 0.75s linear forwards;
         }
         
         @keyframes pressProgress {
@@ -163,7 +163,7 @@
             left: 0;
             height: 100%;
             background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
-            animation: pressProgress 1.5s linear forwards;
+            animation: pressProgress 0.75s linear forwards;
         }
         
         /* Override for light theme to ensure readability */
@@ -600,68 +600,90 @@
             }
         }
         
-        /* Speed Mode Toggle Button */
-        .speed-mode-toggle-btn {
-            width: 100%;
-            padding: 1rem 1.5rem;
+        /* Speed Mode Settings */
+        .speed-mode-settings {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+        }
+        
+        .speed-mode-settings h3 {
+            margin: 0 0 1rem 0;
+            color: var(--text-color);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .speed-mode-options {
+            display: grid;
+            gap: 0.75rem;
+        }
+        
+        .speed-mode-option {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
             background: var(--card-bg);
             border: 2px solid var(--border-color);
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            text-align: left;
-            font-family: inherit;
         }
         
-        .speed-mode-toggle-btn:hover {
+        .speed-mode-option:hover {
             border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateX(4px);
         }
         
-        .speed-mode-toggle-btn:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        .speed-mode-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
         }
         
-        .speed-mode-text {
+        .speed-mode-option input[type="radio"]:checked ~ .speed-mode-label {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .speed-mode-label {
             display: flex;
             flex-direction: column;
             gap: 0.25rem;
             flex: 1;
         }
         
-        .speed-mode-text strong {
+        .speed-mode-label strong {
             color: var(--text-color);
             font-size: 1rem;
-            font-weight: 600;
+            transition: color 0.3s ease;
         }
         
-        .speed-mode-text small {
+        .speed-mode-label small {
             color: var(--text-muted);
             font-size: 0.85rem;
         }
         
-        .speed-mode-arrow {
-            color: var(--primary-color);
-            font-size: 1.2rem;
-            font-weight: bold;
-            transition: transform 0.3s ease;
-        }
-        
-        .speed-mode-toggle-btn:hover .speed-mode-arrow {
-            transform: rotate(90deg);
+        @media (max-width: 768px) {
+            .speed-mode-settings {
+                padding: 1rem;
+            }
+            
+            .speed-mode-option {
+                padding: 0.75rem;
+            }
         }
     </style>
-  <script type="module" crossorigin src="./assets/settings-C6riNi7o.js"></script>
+  <script type="module" crossorigin src="./assets/settings-BWA1XFmt.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/wood-B4vXo_re.js">
-  <link rel="modulepreload" crossorigin href="./assets/sound-manager-CEn9X5cB.js">
+  <link rel="modulepreload" crossorigin href="./assets/sound-manager-De0LAIoL.js">
   <link rel="modulepreload" crossorigin href="./assets/build-info-Dwp5dZmk.js">
   <link rel="stylesheet" crossorigin href="./assets/wood-BuT2YBc8.css">
-  <link rel="stylesheet" crossorigin href="./assets/sound-manager-Dfwp3y4C.css">
+  <link rel="stylesheet" crossorigin href="./assets/sound-manager-CEWoWtIg.css">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
     <div class="settings-container">
@@ -755,99 +777,167 @@
                 <!-- Combo Display Settings -->
                 <div class="combo-display-settings">
                     <h3>Combo Display</h3>
+                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Choose how combo points are displayed during gameplay</p>
                     <div class="combo-options">
                         <label class="combo-option">
                             <input type="radio" name="combo-display-mode" value="streak" id="combo-streak" />
                             <span class="combo-label">Streak</span>
+                            <span class="combo-description">Show current streak count</span>
                         </label>
                         <label class="combo-option">
                             <input type="radio" name="combo-display-mode" value="cumulative" id="combo-cumulative" checked />
                             <span class="combo-label">Cumulative</span>
+                            <span class="combo-description">Show total combo points earned</span>
                         </label>
                     </div>
                 </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="enable-hints" />
-                        Enable hints
-                    </label>
+                
+                <!-- Game Modes Section -->
+                <div class="game-modes-settings">
+                    <h3>Game Modes</h3>
+                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Enable special game modes that add unique challenges and mechanics. Multiple modes can be active simultaneously!</p>
+                    
+                    <!-- Petrification Mode -->
+                    <div class="setting-item game-mode-item">
+                        <label>
+                            <input type="checkbox" id="enable-petrification" />
+                            Enable petrification
+                        </label>
+                        <p class="setting-description">Grid cells petrify after 10s and blocks after 30s in place. Petrified cells can't be cleared until a clear event happens. Adds strategic time pressure!</p>
+                    </div>
+                    
+                    <!-- Dead Pixels Mode -->
+                    <div class="setting-item game-mode-item">
+                        <label>
+                            <input type="checkbox" id="enable-dead-pixels" />
+                            Enable dead pixels
+                        </label>
+                        <p class="setting-description">Add "dead" pixels to the board that cannot be used for block placement, like a broken screen. Toggle on/off anytime!</p>
+                    </div>
+                    <div class="setting-item" id="dead-pixels-intensity-container" style="margin-left: 2rem; display: none;">
+                        <label for="dead-pixels-intensity">Dead Pixels Intensity: <span id="dead-pixels-intensity-value">0</span></label>
+                        <input type="range" id="dead-pixels-intensity" min="0" max="5" value="0" step="1" style="width: 100%; max-width: 300px; margin-top: 0.5rem;" />
+                        <p class="setting-description" style="font-size: 0.85rem; margin-top: 0.5rem;">0 = Off, 5 = Maximum dead pixels (~15-20)</p>
+                    </div>
+                    
+                    <!-- Speed Mode Settings -->
+                    <div class="speed-mode-settings">
+                        <h4>Speed Tracking Mode</h4>
+                        <p class="setting-description" style="margin-bottom: 0.5rem; margin-left: 0;">Choose how placement speed affects your score</p>
+                        <div class="speed-mode-options">
+                            <label class="speed-mode-option">
+                                <input type="radio" name="speed-mode" value="bonus" id="speed-mode-bonus" checked />
+                                <span class="speed-mode-label">
+                                    <strong>Bonus</strong>
+                                    <small>Faster = more points</small>
+                                </span>
+                            </label>
+                            <label class="speed-mode-option">
+                                <input type="radio" name="speed-mode" value="punishment" id="speed-mode-punishment" />
+                                <span class="speed-mode-label">
+                                    <strong>Punishment</strong>
+                                    <small>Faster = less points (scales with level)</small>
+                                </span>
+                            </label>
+                            <label class="speed-mode-option">
+                                <input type="radio" name="speed-mode" value="ignored" id="speed-mode-ignored" />
+                                <span class="speed-mode-label">
+                                    <strong>Ignored</strong>
+                                    <small>Speed doesn't affect score</small>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="enable-timer" />
-                        Enable timer
-                    </label>
-                </div>
+                
+                <!-- Basic Game Settings -->
+                <div class="basic-game-settings">
+                    <h3>Basic Settings</h3>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="enable-hints" />
+                            Enable hints
+                        </label>
+                        <p class="setting-description">Show placement suggestions for blocks when you're stuck</p>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="enable-timer" />
+                            Enable timer
+                        </label>
+                        <p class="setting-description">Add time pressure to increase difficulty and excitement</p>
+                    </div>
                 <div class="setting-item">
                     <label>
                         <input type="checkbox" id="show-high-score" />
                         Show current high score in header
                     </label>
+                    <p class="setting-description">Display your best score in the game header for motivation</p>
                 </div>
                 <div class="setting-item">
                     <label>
                         <input type="checkbox" id="sound-enabled" />
                         Sound effects
                     </label>
+                    <p class="setting-description">Play audio feedback for game actions and events</p>
                 </div>
                 <div class="setting-item">
                     <label>
                         <input type="checkbox" id="animations-enabled" />
                         Animations
                     </label>
+                    <p class="setting-description">Enable smooth transitions and visual effects during gameplay</p>
                 </div>
                 <div class="setting-item">
                     <label>
                         <input type="checkbox" id="particles-enabled" />
                         Particle effects
                     </label>
+                    <p class="setting-description">Show particle effects when clearing lines and achieving combos</p>
                 </div>
                 <div class="setting-item">
                     <label>
                         <input type="checkbox" id="haptic-enabled" />
                         Haptic feedback
                     </label>
+                    <p class="setting-description">Vibrate device for tactile feedback on supported devices</p>
                 </div>
                 <div class="setting-item">
                     <label>
                         <input type="checkbox" id="auto-save" />
                         Auto-save game
                     </label>
+                    <p class="setting-description">Automatically save your progress so you can resume later</p>
                 </div>
                 <div class="setting-item">
                     <label>
                         <input type="checkbox" id="show-points" />
                         Show block points
                     </label>
+                    <p class="setting-description">Display point values on each block to help with scoring strategy</p>
                 </div>
                 <div class="setting-item">
                     <label>
                         <input type="checkbox" id="enable-prize-recognition" checked />
                         Enable prize recognition
                     </label>
+                    <p class="setting-description">Automatically detect and highlight special prize patterns for bonus points</p>
                 </div>
                 
-                <!-- Speed Mode Settings -->
-                <div class="setting-item">
-                    <label>
-                        <button type="button" id="speed-mode-toggle" class="speed-mode-toggle-btn">
-                            <span class="speed-mode-text">
-                                <strong id="speed-mode-title">Ignored</strong>
-                                <small id="speed-mode-description">Speed doesn't affect score</small>
-                            </span>
-                            <span class="speed-mode-arrow">↻</span>
-                        </button>
-                    </label>
-                    <p class="setting-description">Click to cycle through speed tracking modes</p>
-                </div>
-                
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="success-mode-enabled" />
-                        Enable success mode
-                    </label>
-                    <p class="setting-description">Show enhanced success animations and effects when achieving combos</p>
-                </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="success-mode-enabled" />
+                            Enable success mode
+                        </label>
+                        <p class="setting-description">Show enhanced success animations and effects when achieving combos</p>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="show-speed-bonus" />
+                            Show speed tracker in utility bar
+                        </label>
+                        <p class="setting-description">Display speed bonus/punishment tracker in the utility bar when speed mode is active</p>
+                    </div>
                 <!-- PWA Install Button -->
                 <div class="setting-item pwa-install-item">
                     <button id="pwa-install-button" class="pwa-install-button">
