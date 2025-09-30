@@ -186,6 +186,21 @@ class SettingsManager {
                 this.showSection(item.dataset.section);
             };
             
+            const resetPressState = () => {
+                // Clear timeout
+                if (pressTimeout) {
+                    clearTimeout(pressTimeout);
+                    pressTimeout = null;
+                }
+                
+                // Reset state
+                isPressed = false;
+                pressStartTime = null;
+                
+                // Remove visual feedback
+                item.classList.remove('pressing');
+            };
+            
             const startPress = (e) => {
                 e.preventDefault();
                 if (isPressed) return; // Already pressing
@@ -196,20 +211,20 @@ class SettingsManager {
                 // Add visual feedback
                 item.classList.add('pressing');
                 
-                // Set timeout for 1.5 seconds
+                // Set timeout for 0.75 seconds
                 pressTimeout = setTimeout(() => {
                     if (isPressed) {
                         handleNavActivation(e);
-                        this.resetPressState(item, pressTimeout, isPressed);
+                        resetPressState();
                     }
-                }, 1500);
+                }, 750);
             };
             
             const cancelPress = (e) => {
                 if (!isPressed) return;
                 
                 e.preventDefault();
-                this.resetPressState(item, pressTimeout, isPressed);
+                resetPressState();
             };
             
             // Mouse events
@@ -242,6 +257,21 @@ class SettingsManager {
                 this.selectTheme(e.currentTarget.dataset.theme);
             };
             
+            const resetPressState = () => {
+                // Clear timeout
+                if (pressTimeout) {
+                    clearTimeout(pressTimeout);
+                    pressTimeout = null;
+                }
+                
+                // Reset state
+                isPressed = false;
+                pressStartTime = null;
+                
+                // Remove visual feedback
+                option.classList.remove('pressing');
+            };
+            
             const startPress = (e) => {
                 e.preventDefault();
                 if (isPressed) return;
@@ -253,15 +283,15 @@ class SettingsManager {
                 pressTimeout = setTimeout(() => {
                     if (isPressed) {
                         handleThemeActivation(e);
-                        this.resetPressState(option, pressTimeout, isPressed);
+                        resetPressState();
                     }
-                }, 1500);
+                }, 750);
             };
             
             const cancelPress = (e) => {
                 if (!isPressed) return;
                 e.preventDefault();
-                this.resetPressState(option, pressTimeout, isPressed);
+                resetPressState();
             };
             
             option.addEventListener('mousedown', startPress);
@@ -289,6 +319,21 @@ class SettingsManager {
                 await this.selectDifficulty(e.currentTarget.dataset.difficulty);
             };
             
+            const resetPressState = () => {
+                // Clear timeout
+                if (pressTimeout) {
+                    clearTimeout(pressTimeout);
+                    pressTimeout = null;
+                }
+                
+                // Reset state
+                isPressed = false;
+                pressStartTime = null;
+                
+                // Remove visual feedback
+                option.classList.remove('pressing');
+            };
+            
             const startPress = (e) => {
                 e.preventDefault();
                 if (isPressed) return;
@@ -300,15 +345,15 @@ class SettingsManager {
                 pressTimeout = setTimeout(async () => {
                     if (isPressed) {
                         await handleDifficultyActivation(e);
-                        this.resetPressState(option, pressTimeout, isPressed);
+                        resetPressState();
                     }
-                }, 1500);
+                }, 750);
             };
             
             const cancelPress = (e) => {
                 if (!isPressed) return;
                 e.preventDefault();
-                this.resetPressState(option, pressTimeout, isPressed);
+                resetPressState();
             };
             
             option.addEventListener('mousedown', startPress);
@@ -506,15 +551,6 @@ class SettingsManager {
         }
     }
     
-    resetPressState(item, pressTimeout, isPressed) {
-        // Clear timeout
-        if (pressTimeout) {
-            clearTimeout(pressTimeout);
-        }
-        
-        // Remove visual feedback
-        item.classList.remove('pressing');
-    }
     
     showSection(sectionName) {
         // Update navigation
