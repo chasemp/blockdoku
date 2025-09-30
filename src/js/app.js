@@ -2340,6 +2340,7 @@ class BlockdokuGame {
             this.showPoints = settings.showPoints || false;
             this.particlesEnabled = settings.particlesEnabled !== false;
             this.hapticEnabled = settings.hapticEnabled !== false;
+            this.enablePrizeRecognition = settings.enablePrizeRecognition !== false; // Default to true
             
             // Check for pending difficulty changes from settings page
             const pendingDifficulty = localStorage.getItem('blockdoku_pending_difficulty');
@@ -2627,9 +2628,10 @@ class BlockdokuGame {
         
         const isHighScore = this.storage.isHighScore(stats.score);
         
-        // Get prize for this score
-        const prize = this.getPrizeForScore(stats.score);
-        const nextPrizeInfo = this.getNextPrizeInfo(stats.score);
+        // Get prize for this score (only if prize recognition is enabled)
+        const prizeRecognitionEnabled = this.enablePrizeRecognition !== false; // Default to true
+        const prize = prizeRecognitionEnabled ? this.getPrizeForScore(stats.score) : null;
+        const nextPrizeInfo = prizeRecognitionEnabled ? this.getNextPrizeInfo(stats.score) : null;
         
 		// Build detailed stats and breakdown
 		const difficultyLabel = (stats.difficulty?.toUpperCase?.() || this.difficulty.toUpperCase());
@@ -2647,6 +2649,7 @@ class BlockdokuGame {
         modalContent.innerHTML = `
 			<h2 style="margin: 0 0 20px 0; color: var(--primary-color, #3498db);">Game Over!</h2>
 			
+			${prizeRecognitionEnabled ? `
 			<!-- Prize Section -->
 			<div style="margin: 15px 0; padding: 20px; background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,165,0,0.1)); border: 2px solid #ffd700; border-radius: 15px; text-align: center;">
 				<div style="font-size: 4em; margin-bottom: 10px; animation: bounce 1s ease-in-out;">${prize.emoji}</div>
@@ -2666,6 +2669,7 @@ class BlockdokuGame {
 					</div>
 				`}
 			</div>
+			` : ''}
 			
 			<div style="margin: 15px 0;">
 				<p style=\"margin: 5px 0; font-size: 1.2em;\"><strong>Final Score: ${stats.score}</strong></p>
