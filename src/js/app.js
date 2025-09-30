@@ -2176,6 +2176,10 @@ class BlockdokuGame {
         this.applyTheme(settings.theme);
         // Load combo display mode from settings
         this.comboModeActive = settings.comboDisplayMode || 'cumulative';
+        
+        // Load speed bonus setting
+        const enableSpeedBonus = settings.enableSpeedBonus !== false; // Default to true
+        this.scoringSystem.setSpeedBonusEnabled(enableSpeedBonus);
     }
 
     loadGameState() {
