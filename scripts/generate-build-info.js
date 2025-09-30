@@ -19,8 +19,12 @@
  *   or adjust your deploy step to include them.
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Generate build identifier using current date/time
 function generateBuildId() {
@@ -87,8 +91,8 @@ function writeBuildInfo() {
 }
 
 // If run directly, generate and write build info
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
     writeBuildInfo();
 }
 
-module.exports = { generateBuildInfo, writeBuildInfo };
+export { generateBuildInfo, writeBuildInfo };
