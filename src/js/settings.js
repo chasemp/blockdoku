@@ -48,6 +48,9 @@ export class SettingsManager {
         // Apply the loaded theme immediately
         this.applyTheme(this.currentTheme);
         
+        // Fix section placement (ensure About and Sound sections are outside game-section)
+        this.fixSectionPlacement();
+        
         // Load effects settings
         this.loadEffectsSettings();
         
@@ -185,9 +188,9 @@ export class SettingsManager {
             successModeEnabled.checked = this.settings.successModeEnabled !== false; // Default to true
         }
 
-        const showSpeedBonus = document.getElementById('show-speed-bonus');
-        if (showSpeedBonus) {
-            showSpeedBonus.checked = this.settings.showSpeedBonus === true; // Default to false
+        const showSpeedTimer = document.getElementById('show-speed-timer');
+        if (showSpeedTimer) {
+            showSpeedTimer.checked = this.settings.showSpeedTimer === true; // Default to false
         }
 
         // Prize recognition
@@ -270,7 +273,7 @@ export class SettingsManager {
                         handleNavActivation(e);
                         resetPressState();
                     }
-                }, 750);
+                }, 100);
             };
             
             const cancelPress = (e) => {
@@ -305,9 +308,10 @@ export class SettingsManager {
             let pressStartTime = null;
             let pressTimeout = null;
             let isPressed = false;
+            let themeValue = null; // Store theme value to avoid null currentTarget issues
             
-            const handleThemeActivation = (e) => {
-                this.selectTheme(e.currentTarget.dataset.theme);
+            const handleThemeActivation = (theme) => {
+                this.selectTheme(theme);
             };
             
             const resetPressState = () => {
@@ -331,14 +335,15 @@ export class SettingsManager {
                 
                 isPressed = true;
                 pressStartTime = Date.now();
+                themeValue = e.currentTarget.dataset.theme; // Store theme value
                 option.classList.add('pressing');
                 
                 pressTimeout = setTimeout(() => {
-                    if (isPressed) {
-                        handleThemeActivation(e);
+                    if (isPressed && themeValue) {
+                        handleThemeActivation(themeValue);
                         resetPressState();
                     }
-                }, 750);
+                }, 100);
             };
             
             const cancelPress = (e) => {
@@ -357,7 +362,7 @@ export class SettingsManager {
             option.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (!isPressed && (!pressStartTime || (Date.now() - pressStartTime) < 200)) {
-                    handleThemeActivation(e);
+                    handleThemeActivation(e.currentTarget.dataset.theme);
                 }
             });
         });
@@ -400,7 +405,7 @@ export class SettingsManager {
                         await handleDifficultyActivation(e);
                         resetPressState();
                     }
-                }, 750);
+                }, 100);
             };
             
             const cancelPress = (e) => {
@@ -554,10 +559,10 @@ export class SettingsManager {
             });
         }
 
-        const showSpeedBonus = document.getElementById('show-speed-bonus');
-        if (showSpeedBonus) {
-            showSpeedBonus.addEventListener('change', (e) => {
-                this.updateSetting('showSpeedBonus', e.target.checked);
+        const showSpeedTimer = document.getElementById('show-speed-timer');
+        if (showSpeedTimer) {
+            showSpeedTimer.addEventListener('change', (e) => {
+                this.updateSetting('showSpeedTimer', e.target.checked);
             });
         }
 
@@ -604,6 +609,14 @@ export class SettingsManager {
         if (shareScoresButton) {
             shareScoresButton.addEventListener('click', () => {
                 this.shareHighScores();
+            });
+        }
+
+        // View last game button
+        const viewLastGameBtn = document.getElementById('view-last-game-btn');
+        if (viewLastGameBtn) {
+            viewLastGameBtn.addEventListener('click', () => {
+                this.viewLastGame();
             });
         }
 
@@ -1430,15 +1443,59 @@ export class SettingsManager {
             style.remove();
         }, 3000);
     }
+    
+    viewLastGame() {
+        // Check if there's last game data
+        const lastGameData = localStorage.getItem('blockdoku_lastgame');
+        
+        if (!lastGameData) {
+            // No last game data available
+            this.showNotification('No last game data available. Play a game first!');
+            return;
+        }
+        
+        try {
+            // Verify the data is valid JSON
+            const parsedData = JSON.parse(lastGameData);
+            if (!parsedData || !parsedData.score) {
+                throw new Error('Invalid last game data');
+            }
+            
+            // Navigate to last game page
+            window.location.href = 'lastgame.html';
+        } catch (error) {
+            console.error('Error checking last game data:', error);
+            this.showNotification('Error loading last game data. Please try again.');
+        }
+    }
+    
+    fixSectionPlacement() {
+        // Ensure About and Sound Effects sections are outside the game-section
+        const aboutSection = document.getElementById('about-section');
+        const soundSection = document.getElementById('sounds-section');
+        const gameSection = document.getElementById('game-section');
+        
+        if (aboutSection && gameSection && aboutSection.parentElement === gameSection) {
+            // Move About section outside game-section
+            aboutSection.remove();
+            gameSection.insertAdjacentElement('afterend', aboutSection);
+        }
+        
+        if (soundSection && gameSection && soundSection.parentElement === gameSection) {
+            // Move Sound Effects section outside game-section
+            soundSection.remove();
+            gameSection.insertAdjacentElement('afterend', soundSection);
+        }
+    }
 }
 
 // Initialize settings when page loads
 // For ES modules, we can instantiate immediately since the script loads after DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        new SettingsManager();
+        window.settingsManager = new SettingsManager();
     });
 } else {
     // DOM is already ready, instantiate immediately
-    new SettingsManager();
+    window.settingsManager = new SettingsManager();
 }

@@ -692,7 +692,7 @@
             <a href="#" class="nav-item active" data-section="theme">🎨 Theme</a>
             <a href="#" class="nav-item" data-section="difficulty">⚡ Difficulty</a>
             <a href="#" class="nav-item" data-section="scores">🏆 High Scores</a>
-            <a href="#" class="nav-item" data-section="game">🎮 Game Settings</a>
+            <a href="gamesettings.html" class="nav-item">🎮 Game Settings</a>
             <a href="#" class="nav-item" data-section="sounds">🔊 Sound Effects</a>
             <a href="#" class="nav-item" data-section="about">ℹ️ About</a>
         </div>
@@ -760,9 +760,9 @@
             <div class="settings-section" id="scores-section">
                 <h2 class="section-title">High Scores & Statistics <button id="share-scores-button" class="share-button" title="Share High Scores">📤</button></h2>
                 <div style="margin-bottom: 1.5rem; text-align: center;">
-                    <a href="lastgame.html" class="nav-item" style="display: inline-block; text-decoration: none; padding: 0.75rem 1.5rem; margin: 0;">
+                    <button id="view-last-game-btn" class="nav-item" style="display: inline-block; text-decoration: none; padding: 0.75rem 1.5rem; margin: 0; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem;">
                         📊 View Last Game
-                    </a>
+                    </button>
                 </div>
                 <div id="high-scores-list"></div>
                 <div class="statistics">
@@ -771,230 +771,19 @@
                 </div>
             </div>
             
-            <!-- Game Settings Section -->
+            <!-- Game Settings Link Section -->
             <div class="settings-section" id="game-section">
                 <h2 class="section-title">Game Settings</h2>
+                <p class="setting-description" style="margin-bottom: 2rem;">Configure gameplay mechanics, animations, and advanced features</p>
                 
-                <!-- Combo Display Settings -->
-                <div class="combo-display-settings">
-                    <h3>Combo Display</h3>
-                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Choose how combo points are displayed during gameplay</p>
-                    <div class="combo-options">
-                        <label class="combo-option">
-                            <input type="radio" name="combo-display-mode" value="streak" id="combo-streak" />
-                            <span class="combo-label">Streak</span>
-                            <span class="combo-description">Show current streak count</span>
-                        </label>
-                        <label class="combo-option">
-                            <input type="radio" name="combo-display-mode" value="cumulative" id="combo-cumulative" checked />
-                            <span class="combo-label">Cumulative</span>
-                            <span class="combo-description">Show total combo points earned</span>
-                        </label>
-                    </div>
+                <div style="text-align: center; margin: 2rem 0;">
+                    <a href="gamesettings.html" class="nav-item" style="display: inline-block; text-decoration: none; padding: 1rem 2rem; margin: 0; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: 600;">
+                        🎮 Open Game Settings
+                    </a>
                 </div>
                 
-                <!-- Game Modes Section -->
-                <div class="game-modes-settings">
-                    <h3>Game Modes</h3>
-                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Enable special game modes that add unique challenges and mechanics. Multiple modes can be active simultaneously!</p>
-                    
-                    <!-- Petrification Mode -->
-                    <div class="setting-item game-mode-item">
-                        <label>
-                            <input type="checkbox" id="enable-petrification" />
-                            Enable petrification
-                        </label>
-                        <p class="setting-description">Grid cells petrify after 10s and blocks after 30s in place. Petrified cells can't be cleared until a clear event happens. Adds strategic time pressure!</p>
-                    </div>
-                    
-                    <!-- Dead Pixels Mode -->
-                    <div class="setting-item game-mode-item">
-                        <label>
-                            <input type="checkbox" id="enable-dead-pixels" />
-                            Enable dead pixels
-                        </label>
-                        <p class="setting-description">Add "dead" pixels to the board that cannot be used for block placement, like a broken screen. Toggle on/off anytime!</p>
-                    </div>
-                    <div class="setting-item" id="dead-pixels-intensity-container" style="margin-left: 2rem; display: none;">
-                        <label for="dead-pixels-intensity">Dead Pixels Intensity: <span id="dead-pixels-intensity-value">0</span></label>
-                        <input type="range" id="dead-pixels-intensity" min="0" max="5" value="0" step="1" style="width: 100%; max-width: 300px; margin-top: 0.5rem;" />
-                        <p class="setting-description" style="font-size: 0.85rem; margin-top: 0.5rem;">0 = Off, 5 = Maximum dead pixels (~15-20)</p>
-                    </div>
-                    
-                    <!-- Speed Mode Settings -->
-                    <div class="speed-mode-settings">
-                        <h4>Speed Tracking Mode</h4>
-                        <p class="setting-description" style="margin-bottom: 0.5rem; margin-left: 0;">Choose how placement speed affects your score</p>
-                        <div class="speed-mode-options">
-                            <label class="speed-mode-option">
-                                <input type="radio" name="speed-mode" value="bonus" id="speed-mode-bonus" checked />
-                                <span class="speed-mode-label">
-                                    <strong>Bonus</strong>
-                                    <small>Faster = more points</small>
-                                </span>
-                            </label>
-                            <label class="speed-mode-option">
-                                <input type="radio" name="speed-mode" value="punishment" id="speed-mode-punishment" />
-                                <span class="speed-mode-label">
-                                    <strong>Punishment</strong>
-                                    <small>Faster = less points (scales with level)</small>
-                                </span>
-                            </label>
-                            <label class="speed-mode-option">
-                                <input type="radio" name="speed-mode" value="ignored" id="speed-mode-ignored" />
-                                <span class="speed-mode-label">
-                                    <strong>Ignored</strong>
-                                    <small>Speed doesn't affect score</small>
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Basic Game Settings -->
-                <div class="basic-game-settings">
-                    <h3>Basic Settings</h3>
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="enable-hints" />
-                            Enable hints
-                        </label>
-                        <p class="setting-description">Show placement suggestions for blocks when you're stuck</p>
-                    </div>
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="enable-timer" />
-                            Enable timer
-                        </label>
-                        <p class="setting-description">Add time pressure to increase difficulty and excitement</p>
-                    </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="show-high-score" />
-                        Show current high score in header
-                    </label>
-                    <p class="setting-description">Display your best score in the game header for motivation</p>
-                </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="sound-enabled" />
-                        Sound effects
-                    </label>
-                    <p class="setting-description">Play audio feedback for game actions and events</p>
-                </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="animations-enabled" />
-                        Master animations
-                    </label>
-                    <p class="setting-description">Enable smooth transitions and visual effects during gameplay</p>
-                </div>
-                
-                <!-- Enhanced Animation Settings -->
-                <div class="animation-settings" id="animation-settings">
-                    <h3 style="margin: 1.5rem 0 1rem 0; color: var(--text-color); font-size: 1.1rem;">Enhanced Animation Controls</h3>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="block-hover-effects" />
-                            Block hover effects
-                        </label>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="block-selection-glow" />
-                            Block selection glow
-                        </label>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="block-entrance-animations" />
-                            Block entrance animations
-                        </label>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="particle-effects" />
-                            Particle effects
-                        </label>
-                        <p class="setting-description">Show particle effects when clearing lines and achieving combos</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label for="animation-speed">Animation speed:</label>
-                        <select id="animation-speed" style="margin-left: 0.5rem; padding: 0.25rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color);">
-                            <option value="slow">Slow</option>
-                            <option value="normal" selected>Normal</option>
-                            <option value="fast">Fast</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="haptic-enabled" />
-                        Haptic feedback
-                    </label>
-                    <p class="setting-description">Vibrate device for tactile feedback on supported devices</p>
-                </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="auto-save" />
-                        Auto-save game
-                    </label>
-                    <p class="setting-description">Automatically save your progress so you can resume later</p>
-                </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="show-points" />
-                        Show block points
-                    </label>
-                    <p class="setting-description">Display point values on each block to help with scoring strategy</p>
-                </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="show-placement-points" />
-                        Show placement points
-                    </label>
-                    <p class="setting-description">Show floating point notifications when placing blocks (can be noisy if enabled)</p>
-                </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="enable-prize-recognition" checked />
-                        Enable prize recognition
-                    </label>
-                    <p class="setting-description">Automatically detect and highlight special prize patterns for bonus points</p>
-                </div>
-                
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="success-mode-enabled" />
-                            Enable success mode
-                        </label>
-                        <p class="setting-description">Show enhanced success animations and effects when achieving combos</p>
-                    </div>
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="show-speed-bonus" />
-                            Show speed tracker in utility bar
-                        </label>
-                        <p class="setting-description">Display speed bonus/punishment tracker in the utility bar when speed mode is active</p>
-                    </div>
-                <!-- PWA Install Button -->
-                <div class="setting-item pwa-install-item">
-                    <button id="pwa-install-button" class="pwa-install-button">
-                        <span class="install-text">Install as PWA</span>
-                        <span class="install-status" id="install-status"></span>
-                    </button>
-                </div>
-                
-                <!-- Reset Statistics Button -->
-                <div class="setting-item reset-stats-item">
-                    <button id="reset-stats" class="reset-stats-button">
-                        <span class="reset-text">Reset Statistics</span>
-                    </button>
+                <div class="setting-description" style="text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+                    Access combo display, game modes, animations, utility bar settings, and more
                 </div>
             </div>
             
