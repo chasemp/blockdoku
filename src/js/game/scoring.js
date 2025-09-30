@@ -37,8 +37,13 @@ export class ScoringSystem {
             squarePoints: 0,     // Points from 3x3 square clears (base)
             comboBonusPoints: 0, // Points from combo bonuses added in the moment of clear (base)
             placementPoints: 0,  // Points from block placements (base)
-            streakBonusPoints: 0 // Points from streak bonuses (base)
+            streakBonusPoints: 0, // Points from streak bonuses (base)
+            emptyGridBonusPoints: 0 // Points from empty grid bonuses (base)
         };
+        
+        // Empty grid bonus tracking
+        this.lastEmptyGridBonusLevel = 0; // Track the last level we gave empty grid bonus for
+        this.emptyGridBonusThreshold = 5; // Every 5 levels
         
         // Scoring multipliers
         this.basePoints = {
@@ -576,7 +581,10 @@ export class ScoringSystem {
         this.columnsClearedCount = 0;
         this.squaresClearedCount = 0;
         this.comboActivations = 0;
-        this.pointsBreakdown = { linePoints: 0, squarePoints: 0, comboBonusPoints: 0, placementPoints: 0, streakBonusPoints: 0 };
+        this.pointsBreakdown = { linePoints: 0, squarePoints: 0, comboBonusPoints: 0, placementPoints: 0, streakBonusPoints: 0, emptyGridBonusPoints: 0 };
+        
+        // Reset empty grid bonus tracking
+        this.lastEmptyGridBonusLevel = 0;
     }
 
     // ---------- Level Progression Helpers ----------
@@ -626,6 +634,57 @@ export class ScoringSystem {
         if (newLevel > this.level) {
             this.level = newLevel;
         }
+    }
+    
+    // Count empty grid squares on the board
+    countEmptySquares(board) {
+        if (!board || !Array.isArray(board) || board.length === 0) {
+            return 0;
+        }
+        
+        let emptyCount = 0;
+        for (let row = 0; row < board.length; row++) {
+            for (let col = 0; col < board[row].length; col++) {
+                if (board[row][col] === 0) {
+                    emptyCount++;
+                }
+            }
+        }
+        return emptyCount;
+    }
+    
+    // Check if we should give empty grid bonus for current level
+    shouldGiveEmptyGridBonus() {
+        // Check if current level is a multiple of 5 and we haven't given bonus for this level yet
+        return this.level % this.emptyGridBonusThreshold === 0 && 
+               this.level > this.lastEmptyGridBonusLevel;
+    }
+    
+    // Calculate empty grid bonus (2 points per empty square)
+    calculateEmptyGridBonus(board) {
+        if (!this.shouldGiveEmptyGridBonus()) {
+            return 0;
+        }
+        
+        const emptySquares = this.countEmptySquares(board);
+        return emptySquares * 2; // 2 points per empty square
+    }
+    
+    // Apply empty grid bonus and update tracking
+    applyEmptyGridBonus(board) {
+        if (!this.shouldGiveEmptyGridBonus()) {
+            return 0;
+        }
+        
+        const bonus = this.calculateEmptyGridBonus(board);
+        if (bonus > 0) {
+            this.score += bonus;
+            this.lastScoreGained += bonus;
+            this.pointsBreakdown.emptyGridBonusPoints += bonus;
+            this.lastEmptyGridBonusLevel = this.level;
+        }
+        
+        return bonus;
     }
     
     // Get detailed statistics
@@ -707,7 +766,8 @@ export class ScoringSystem {
                 squarePoints: this.pointsBreakdown.squarePoints,
                 comboBonusPoints: this.pointsBreakdown.comboBonusPoints,
                 placementPoints: this.pointsBreakdown.placementPoints,
-                streakBonusPoints: this.pointsBreakdown.streakBonusPoints
+                streakBonusPoints: this.pointsBreakdown.streakBonusPoints,
+                emptyGridBonusPoints: this.pointsBreakdown.emptyGridBonusPoints
             },
             speedStats: this.getSpeedStats()
         };

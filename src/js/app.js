@@ -1603,6 +1603,12 @@ class BlockdokuGame {
         // Check for level change
         if (this.level > this.previousLevel) {
             this.animateLevelUp(levelElement);
+            
+            // Check for empty grid bonus every 5 levels
+            const emptyGridBonus = this.scoringSystem.applyEmptyGridBonus(this.board);
+            if (emptyGridBonus > 0) {
+                this.showEmptyGridBonus(emptyGridBonus);
+            }
         }
         
         // Check for combo hit based on the active display mode
@@ -1787,6 +1793,64 @@ class BlockdokuGame {
                 floatingScore.parentElement.removeChild(floatingScore);
             }
         }, 1600);
+    }
+    
+    // Show empty grid bonus notification with unique styling
+    showEmptyGridBonus(bonus) {
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+        
+        // Create floating text element for empty grid bonus
+        const floatingBonus = document.createElement('div');
+        floatingBonus.className = 'floating-empty-grid-bonus';
+        floatingBonus.textContent = `Empty Grid Bonus: +${bonus}`;
+        floatingBonus.style.position = 'absolute';
+        floatingBonus.style.left = `${centerX}px`;
+        floatingBonus.style.top = `${centerY}px`;
+        floatingBonus.style.color = '#00ff88'; // Bright green color
+        floatingBonus.style.fontSize = '1.8rem';
+        floatingBonus.style.fontWeight = '900';
+        floatingBonus.style.textShadow = '0 0 15px #00ff88, 0 0 30px #00ff88';
+        floatingBonus.style.pointerEvents = 'none';
+        floatingBonus.style.zIndex = '1001';
+        floatingBonus.style.transition = 'all 2.5s ease-out';
+        floatingBonus.style.transform = 'translate(-50%, -50%) scale(0.8)';
+        floatingBonus.style.opacity = '0';
+        floatingBonus.style.textAlign = 'center';
+        floatingBonus.style.whiteSpace = 'nowrap';
+        
+        // Add to canvas container
+        this.canvas.parentElement.appendChild(floatingBonus);
+        
+        // Animate the floating bonus
+        setTimeout(() => {
+            floatingBonus.style.transform = 'translate(-50%, -50%) scale(1.3)';
+            floatingBonus.style.opacity = '1';
+        }, 100);
+        
+        // Move up and fade out
+        setTimeout(() => {
+            floatingBonus.style.transform = 'translate(-50%, -120px) scale(1.1)';
+            floatingBonus.style.opacity = '0';
+        }, 1500);
+        
+        // Remove after animation
+        setTimeout(() => {
+            if (floatingBonus.parentElement) {
+                floatingBonus.parentElement.removeChild(floatingBonus);
+            }
+        }, 2600);
+        
+        // Create particle effects for celebration
+        this.effectsManager.particles.createEmptyGridBonusEffect(centerX, centerY);
+        
+        // Play sound and haptic feedback
+        if (this.effectsManager.sound) {
+            this.effectsManager.sound.play('emptyGridBonus');
+        }
+        if (this.effectsManager.haptic) {
+            this.effectsManager.haptic.onEmptyGridBonus();
+        }
     }
     
     updateHintControls() {
