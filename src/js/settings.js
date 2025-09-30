@@ -118,6 +118,12 @@ class SettingsManager {
             showSpeedBonus.checked = this.settings.showSpeedBonus === true; // Default to false
         }
 
+        // Prize recognition
+        const enablePrizeRecognition = document.getElementById('enable-prize-recognition');
+        if (enablePrizeRecognition) {
+            enablePrizeRecognition.checked = this.settings.enablePrizeRecognition !== false; // Default to true
+        }
+
         // Combo display mode - handle radio buttons
         const comboStreak = document.getElementById('combo-streak');
         const comboCumulative = document.getElementById('combo-cumulative');
@@ -346,6 +352,14 @@ class SettingsManager {
         if (showSpeedBonus) {
             showSpeedBonus.addEventListener('change', (e) => {
                 this.updateSetting('showSpeedBonus', e.target.checked);
+            });
+        }
+
+        // Prize recognition toggle
+        const enablePrizeRecognition = document.getElementById('enable-prize-recognition');
+        if (enablePrizeRecognition) {
+            enablePrizeRecognition.addEventListener('change', (e) => {
+                this.updateSetting('enablePrizeRecognition', e.target.checked);
             });
         }
 
