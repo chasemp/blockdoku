@@ -1573,9 +1573,12 @@ class BlockdokuGame {
         const levelElement = document.getElementById('level');
         const comboElement = document.getElementById('combo');
         const comboLabelElement = document.getElementById('combo-label');
+        const speedBonusElement = document.getElementById('speed-bonus');
+        const speedBonusValueElement = document.getElementById('speed-bonus-value');
         
         const currentCombo = this.scoringSystem.getCombo();
         const totalCombos = this.scoringSystem.getTotalCombos();
+        const speedStats = this.scoringSystem.getSpeedStats();
         
         // Determine which value to show based on settings
         const settings = this.storage.loadSettings();
@@ -1617,6 +1620,31 @@ class BlockdokuGame {
             comboElement.textContent = totalCombos;
         } else {
             comboElement.textContent = currentCombo;
+        }
+        
+        // Update speed bonus display in utility bar
+        if (speedBonusElement && speedBonusValueElement) {
+            const settings = this.storage.loadSettings();
+            const showSpeedBonus = settings.showSpeedBonus === true;
+            
+            if (showSpeedBonus && speedStats.totalSpeedBonus > 0) {
+                speedBonusElement.style.display = 'flex';
+                speedBonusValueElement.textContent = speedStats.totalSpeedBonus;
+                
+                // Add pulse animation for recent speed bonuses
+                if (speedStats.speedBonuses.length > 0) {
+                    const lastBonus = speedStats.speedBonuses[speedStats.speedBonuses.length - 1];
+                    const timeSinceLastBonus = Date.now() - lastBonus.timestamp;
+                    if (timeSinceLastBonus < 2000) { // Within last 2 seconds
+                        speedBonusElement.classList.add('speed-pulse');
+                        setTimeout(() => {
+                            speedBonusElement.classList.remove('speed-pulse');
+                        }, 600);
+                    }
+                }
+            } else {
+                speedBonusElement.style.display = 'none';
+            }
         }
         
         // Update previous values
@@ -2148,6 +2176,10 @@ class BlockdokuGame {
         this.applyTheme(settings.theme);
         // Load combo display mode from settings
         this.comboModeActive = settings.comboDisplayMode || 'cumulative';
+        
+        // Load speed bonus setting
+        const enableSpeedBonus = settings.enableSpeedBonus !== false; // Default to true
+        this.scoringSystem.setSpeedBonusEnabled(enableSpeedBonus);
     }
 
     loadGameState() {
@@ -2921,12 +2953,21 @@ class BlockdokuGame {
     placeBlock(row, col) {
         if (!this.canPlaceBlock(row, col)) return;
         
+        // Record placement time for speed bonus calculation
+        const previousSpeedBonus = this.scoringSystem.totalSpeedBonus;
+        this.scoringSystem.recordPlacementTime();
+        const speedBonusGained = this.scoringSystem.totalSpeedBonus - previousSpeedBonus;
         
         // Place the block on the board
         this.board = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);
         
         // Award 1 point for block placement (as documented in scoring.md)
         this.scoringSystem.addPlacementPoints(this.scoringSystem.basePoints.single, this.difficultyManager.getScoreMultiplier());
+        
+        // Show speed bonus feedback if earned
+        if (speedBonusGained > 0) {
+            this.showSpeedBonusFeedback(speedBonusGained, row, col);
+        }
         
         // Add placement effects
         const centerX = this.canvas.width / 2;
@@ -2966,6 +3007,48 @@ class BlockdokuGame {
         
         // Auto-select the first available block
         this.autoSelectNextBlock();
+    }
+    
+    // Show visual feedback for speed bonus
+    showSpeedBonusFeedback(bonus, row, col) {
+        // Calculate position on canvas
+        const cellSize = this.cellSize;
+        const x = col * cellSize + cellSize / 2;
+        const y = row * cellSize + cellSize / 2;
+        
+        // Create speed bonus text element
+        const speedText = document.createElement('div');
+        speedText.className = 'speed-bonus-text';
+        speedText.textContent = `+${bonus} Speed!`;
+        speedText.style.cssText = `
+            position: absolute;
+            left: ${x}px;
+            top: ${y}px;
+            transform: translate(-50%, -50%);
+            color: #ff6b35;
+            font-weight: 900;
+            font-size: 1.2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+            z-index: 1000;
+            animation: speedBonusFloat 1.5s ease-out forwards;
+        `;
+        
+        // Add to board overlay
+        const boardOverlay = document.getElementById('board-overlay');
+        if (boardOverlay) {
+            boardOverlay.appendChild(speedText);
+            
+            // Remove after animation
+            setTimeout(() => {
+                if (speedText.parentNode) {
+                    speedText.parentNode.removeChild(speedText);
+                }
+            }, 1500);
+        }
+        
+        // Add particle effects
+        this.effectsManager.onSpeedBonus(x, y, bonus);
     }
 
     // Enhanced game over detection with difficulty considerations
