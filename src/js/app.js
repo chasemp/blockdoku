@@ -22,6 +22,7 @@ import { TimerSystem } from './difficulty/timer-system.js';
 import { DifficultySelector } from './ui/difficulty-selector.js';
 import { EffectsManager } from './effects/effects-manager.js';
 import { ConfirmationDialog } from './ui/confirmation-dialog.js';
+import { PetrificationManager } from './game/petrification-manager.js';
 
 
 class BlockdokuGame {
@@ -60,8 +61,12 @@ class BlockdokuGame {
         
         // Re-enable features incrementally
         this.blockManager = new BlockManager();
-        this.blockPalette = new BlockPalette('block-palette', this.blockManager);
-        this.scoringSystem = new ScoringSystem();
+        
+        // Petrification system
+        this.petrificationManager = new PetrificationManager();
+        
+        this.blockPalette = new BlockPalette('block-palette', this.blockManager, this.petrificationManager);
+        this.scoringSystem = new ScoringSystem(this.petrificationManager);
         this.storage = new GameStorage();
         // this.effectsSystem = new EffectsSystem(this.canvas, this.ctx);
         this.pwaInstallManager = new PWAInstallManager();
@@ -1023,12 +1028,54 @@ class BlockdokuGame {
                     const y = Math.round(row * drawCellSize) + 1;
                     const size = Math.round(drawCellSize) - 2;
                     
+                    // Check petrification state
+                    const petrificationState = this.petrificationManager.getGridCellState(row, col);
+                    
+                    // Apply different color for petrified cells
+                    if (petrificationState.petrified) {
+                        // Petrified cells appear frozen/hardened (darker, desaturated)
+                        ctx.fillStyle = '#404040'; // Dark gray for frozen/hardened look
+                    } else if (petrificationState.warning === '3s') {
+                        // 3 second warning - flashing/pulsing
+                        const flashIntensity = Math.sin(Date.now() / 150) * 0.5 + 0.5;
+                        ctx.fillStyle = `rgba(255, 100, 100, ${0.5 + flashIntensity * 0.5})`;
+                    } else if (petrificationState.warning === '7s') {
+                        // 7 second warning - subtle flash
+                        const flashIntensity = Math.sin(Date.now() / 1000) * 0.3 + 0.7;
+                        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--block-color');
+                        ctx.globalAlpha = flashIntensity;
+                    } else {
+                        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--block-color');
+                        ctx.globalAlpha = 1.0;
+                    }
+                    
                     ctx.fillRect(x, y, size, size);
+                    ctx.globalAlpha = 1.0; // Reset alpha
                     
                     // Add border to filled cells
-                    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--block-border');
-                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = petrificationState.petrified ? '#202020' : 
+                                      getComputedStyle(document.documentElement).getPropertyValue('--block-border');
+                    ctx.lineWidth = petrificationState.petrified ? 2 : 1;
                     ctx.strokeRect(x, y, size, size);
+                    
+                    // Add ice/frost effect overlay for petrified cells
+                    if (petrificationState.petrified) {
+                        ctx.save();
+                        ctx.strokeStyle = 'rgba(150, 200, 255, 0.3)';
+                        ctx.lineWidth = 1;
+                        // Draw diagonal lines for frost effect
+                        for (let i = 0; i < 3; i++) {
+                            ctx.beginPath();
+                            ctx.moveTo(x + i * (size / 3), y);
+                            ctx.lineTo(x, y + i * (size / 3));
+                            ctx.stroke();
+                            ctx.beginPath();
+                            ctx.moveTo(x + size, y + i * (size / 3));
+                            ctx.lineTo(x + i * (size / 3), y + size);
+                            ctx.stroke();
+                        }
+                        ctx.restore();
+                    }
                 }
             }
         }
@@ -1464,6 +1511,10 @@ class BlockdokuGame {
             console.log('Lines cleared from board, result:', result);
             this.board = result.board;
             
+            // Thaw all petrified cells and blocks after a clear event
+            this.petrificationManager.thawAll();
+            this.petrificationManager.updateBoardTracking(this.board);
+            
             // Retrieve the score info that was already calculated and applied
             const storedResult = this.pendingClearResult;
             if (!storedResult) {
@@ -1535,6 +1586,8 @@ class BlockdokuGame {
         
         this.board = this.initializeBoard();
         this.scoringSystem.reset();
+        this.petrificationManager.resetAll();
+        this.petrificationManager.resetStats();
         this.score = 0;
         this.level = 1;
         this.selectedBlock = null;
@@ -2351,6 +2404,11 @@ class BlockdokuGame {
                 this.selectedBlock = savedState.selectedBlock;
             }
             
+            // Restore petrification state
+            if (savedState.petrificationState && this.petrificationManager) {
+                this.petrificationManager.deserialize(savedState.petrificationState);
+            }
+            
             // Update placeability indicators after loading game state
             this.updatePlaceabilityIndicators();
             
@@ -2390,7 +2448,8 @@ class BlockdokuGame {
                 squaresClearedCount: this.scoringSystem.squaresClearedCount,
                 comboActivations: this.scoringSystem.comboActivations,
                 pointsBreakdown: this.scoringSystem.pointsBreakdown
-            }
+            },
+            petrificationState: this.petrificationManager ? this.petrificationManager.serialize() : null
         };
         console.log('Saving game state:', gameState);
         this.storage.saveGameState(gameState);
@@ -2407,10 +2466,16 @@ class BlockdokuGame {
             this.autoSave = settings.autoSave !== false;
             this.enableHints = settings.enableHints || false;
             this.enableTimer = settings.enableTimer || false;
+            this.enablePetrification = settings.enablePetrification || false;
             this.showPoints = settings.showPoints || false;
             this.particlesEnabled = settings.particlesEnabled !== false;
             this.hapticEnabled = settings.hapticEnabled !== false;
             this.enablePrizeRecognition = settings.enablePrizeRecognition !== false; // Default to true
+            
+            // Apply petrification setting
+            if (this.petrificationManager) {
+                this.petrificationManager.setEnabled(this.enablePetrification);
+            }
             
             // Check for pending difficulty changes from settings page
             const pendingDifficulty = localStorage.getItem('blockdoku_pending_difficulty');
@@ -2767,6 +2832,15 @@ class BlockdokuGame {
 						<p style=\"margin: 8px 0 4px 0; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.2); font-weight: bold; color: var(--primary-color, #3498db);">Total: <strong>${(breakdown.linePoints + breakdown.squarePoints + breakdown.placementPoints + breakdown.comboBonusPoints + (breakdown.streakBonusPoints || 0)).toLocaleString()}</strong></p>
 					</div>
 				</div>
+				${stats.petrificationStats && this.enablePetrification ? `
+				<div style="margin-top: 12px; padding: 10px; background: rgba(150, 200, 255, 0.08); border: 1px solid rgba(150, 200, 255, 0.2); border-radius: 8px;">
+					<h3 style="margin: 0 0 6px 0; color: #96c8ff; font-size: 1em;">❄ Petrification Stats</h3>
+					<p style="margin: 4px 0;">Grid Cells Petrified: <strong>${stats.petrificationStats.gridCellsPetrified || 0}</strong></p>
+					<p style="margin: 4px 0;">Blocks Petrified: <strong>${stats.petrificationStats.blocksPetrified || 0}</strong></p>
+					<p style="margin: 4px 0;">Grid Cells Thawed: <strong>${stats.petrificationStats.gridCellsThawed || 0}</strong></p>
+					<p style="margin: 4px 0;">Blocks Thawed: <strong>${stats.petrificationStats.blocksThawed || 0}</strong></p>
+				</div>
+				` : ''}
 			</div>
 			<div style="margin-top: 18px; display: flex; justify-content: center; flex-wrap: wrap;">
 				<button id="new-game-btn" style="margin: 5px; padding: 12px 24px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold;">
@@ -2853,6 +2927,8 @@ class BlockdokuGame {
     getStats() {
 		const s = this.scoringSystem.getStats();
 		const difficultyMultiplier = this.difficultyManager?.getScoreMultiplier?.() || 1;
+		const petrificationStats = this.petrificationManager ? this.petrificationManager.getStats() : null;
+		
 		return {
 			score: this.score,
 			level: this.level,
@@ -2860,6 +2936,7 @@ class BlockdokuGame {
 			combo: s.combo,
 			maxCombo: s.maxCombo,
 			totalCombos: s.totalCombos,
+			maxStreakCount: s.maxStreakCount,
 			rowClears: s.rowClears,
 			columnClears: s.columnClears,
 			squareClears: s.squareClears,
@@ -2867,7 +2944,8 @@ class BlockdokuGame {
 			comboModesUsed: Array.from(this.comboModesUsed || []),
 			breakdown: s.breakdownBase,
 			difficulty: this.difficulty,
-			difficultyMultiplier
+			difficultyMultiplier,
+			petrificationStats: petrificationStats
 		};
     }
 
@@ -3178,6 +3256,10 @@ class BlockdokuGame {
         
         const newBlocks = this.blockManager.generateRandomBlocks(blockCount, blockTypes, this.difficultyManager);
         this.blockPalette.updateBlocks(newBlocks);
+        
+        // Update petrification tracking for new blocks
+        this.petrificationManager.updateBlockTracking(newBlocks);
+        
         // Update placeability indicators for new blocks
         this.updatePlaceabilityIndicators();
         this.updateBlockPointsDisplay();
@@ -3196,6 +3278,9 @@ class BlockdokuGame {
         // Place the block on the board
         this.board = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);
         
+        // Update petrification tracking for newly placed cells
+        this.petrificationManager.updateBoardTracking(this.board);
+        
         // Award 1 point for block placement (as documented in scoring.md)
         this.scoringSystem.addPlacementPoints(this.scoringSystem.basePoints.single, this.difficultyManager.getScoreMultiplier());
         
@@ -3209,7 +3294,8 @@ class BlockdokuGame {
         const centerY = this.canvas.height / 2;
         this.effectsManager.onBlockPlace(centerX, centerY);
         
-        // Remove the used block
+        // Remove the used block and untrack it from petrification
+        this.petrificationManager.untrackBlock(this.selectedBlock.id);
         this.blockManager.removeBlock(this.selectedBlock.id);
         this.selectedBlock = null;
         this.previewPosition = null;
