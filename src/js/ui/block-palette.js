@@ -161,6 +161,14 @@ export class BlockPalette {
         
         document.addEventListener('touchmove', (e) => {
             if (this.touchStart && this.touchStartBlockId) {
+                // Verify the block still exists before processing drag
+                const blockExists = this.blockManager.getBlockById(this.touchStartBlockId);
+                if (!blockExists) {
+                    // Block was removed (likely placed), reset drag state
+                    this.resetDragState();
+                    return;
+                }
+                
                 const touch = e.touches[0];
                 const deltaX = Math.abs(touch.clientX - this.touchStart.clientX);
                 const deltaY = Math.abs(touch.clientY - this.touchStart.clientY);
@@ -187,14 +195,16 @@ export class BlockPalette {
         
         document.addEventListener('touchend', (e) => {
             if (this.touchStart) {
-                const blockItem = document.querySelector(`[data-block-id="${this.touchStartBlockId}"]`);
+                // Verify the block still exists before processing
+                const blockExists = this.blockManager.getBlockById(this.touchStartBlockId);
+                
                 const touch = e.changedTouches[0];
                 const deltaTime = Date.now() - this.touchStartTime;
                 const deltaX = Math.abs(touch.clientX - this.touchStart.clientX);
                 const deltaY = Math.abs(touch.clientY - this.touchStart.clientY);
                 
-                // Check if this was a tap (not a drag)
-                if (deltaX < 5 && deltaY < 5 && deltaTime < 200) {
+                // Only handle tap events (not drags) and only if block still exists
+                if (blockExists && deltaX < 5 && deltaY < 5 && deltaTime < 200) {
                     // Handle double-tap detection for rotation
                     if (this.lastTapTime && (Date.now() - this.lastTapTime) < 300) {
                         // Double tap detected - rotate the block
@@ -208,43 +218,50 @@ export class BlockPalette {
                     }
                 }
                 
-                // Reset visual feedback
-                if (blockItem) {
-                    blockItem.classList.remove('dragging');
-                    blockItem.style.transform = '';
-                    blockItem.style.transition = '';
-                }
-                
-                this.touchStart = null;
-                this.touchStartTime = null;
-                this.touchStartBlockId = null;
-                this.isDragging = false;
+                // Reset drag state completely
+                this.resetDragState();
             }
         }, { passive: false });
         
         document.addEventListener('touchcancel', (e) => {
             if (this.touchStart) {
-                // Reset visual feedback
-                const blockItem = document.querySelector(`[data-block-id="${this.touchStartBlockId}"]`);
-                if (blockItem) {
-                    blockItem.classList.remove('dragging');
-                    blockItem.style.transform = '';
-                    blockItem.style.transition = '';
-                }
-                
-                this.touchStart = null;
-                this.touchStartTime = null;
-                this.touchStartBlockId = null;
-                this.isDragging = false;
+                this.resetDragState();
                 this.lastTapTime = null; // Reset double-tap detection
             }
         }, { passive: true });
     }
     
+    /**
+     * Reset all drag-related state and visual feedback
+     * This is called internally by event handlers and can also be called
+     * externally (e.g., by app.js when a block is placed)
+     */
+    resetDragState() {
+        // Clean up visual feedback for the dragged block (if it still exists in DOM)
+        if (this.touchStartBlockId) {
+            const blockItem = document.querySelector(`[data-block-id="${this.touchStartBlockId}"]`);
+            if (blockItem) {
+                blockItem.classList.remove('dragging');
+                blockItem.style.transform = '';
+                blockItem.style.transition = '';
+            }
+        }
+        
+        // Reset all drag state variables
+        this.touchStart = null;
+        this.touchStartTime = null;
+        this.touchStartBlockId = null;
+        this.isDragging = false;
+    }
+    
     startDragFromPalette(touch) {
         // Get the block that's actually being dragged
         const draggedBlock = this.blockManager.getBlockById(this.touchStartBlockId);
-        if (!draggedBlock) return;
+        if (!draggedBlock) {
+            // Block doesn't exist, reset drag state
+            this.resetDragState();
+            return;
+        }
         
         // Auto-select the block being dragged
         this.selectBlock(this.touchStartBlockId);
