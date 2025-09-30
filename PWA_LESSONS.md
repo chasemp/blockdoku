@@ -492,4 +492,229 @@ const savedSettings = localStorage.getItem('blockdoku_settings')
 
 ---
 
+### 🔄 **Break/Fix Cycle Prevention & Architectural Lessons**
+
+Based on recent intensive development cycles (Dec 2024 - Jan 2025), here are critical lessons for preventing break/fix spirals:
+
+#### **🐛 Settings Synchronization Anti-Pattern**
+
+**The Problem:**
+```javascript
+// ❌ DANGEROUS: Hardcoded defaults before loading from storage
+class SettingsManager {
+    constructor() {
+        this.currentDifficulty = 'normal'; // Hardcoded!
+        this.settings = this.storage.loadSettings(); // Loaded after default
+    }
+}
+```
+
+**The Bug:** Theme changes reset difficulty because `saveSettings()` saved the hardcoded default instead of the user's actual setting.
+
+**The Fix:**
+```javascript
+// ✅ CORRECT: Load from storage FIRST, then set defaults
+class SettingsManager {
+    constructor() {
+        this.settings = this.storage.loadSettings();
+        this.currentDifficulty = this.settings.difficulty || 'normal'; // Default only if not found
+    }
+}
+```
+
+**Lesson:** **Never hardcode defaults before loading user data.** Always load first, then apply defaults for missing values.
+
+#### **🏗️ Monolithic Architecture Warning Signs**
+
+**Red Flags We Hit:**
+- 3,700+ line single class (`BlockdokuGame`)
+- 15+ manager dependencies in one constructor
+- Circular dependencies between components
+- Settings sync issues across multiple pages
+
+**What Happens:**
+1. **Constructor Dependency Hell** - 15+ `new Manager()` calls
+2. **Merge Conflict Explosion** - Every feature touches the same files
+3. **Debug Complexity** - Hard to isolate issues
+4. **Testing Difficulty** - Can't test components in isolation
+
+**Solution Pattern:**
+```javascript
+// ❌ Monolithic
+class BlockdokuGame {
+    constructor() {
+        this.blockManager = new BlockManager();
+        this.petrificationManager = new PetrificationManager();
+        this.deadPixelsManager = new DeadPixelsManager();
+        this.blockPalette = new BlockPalette(/*...*/);
+        // ... 15+ more managers
+    }
+}
+
+// ✅ Modular with Dependency Injection
+class GameEngine {
+    constructor(dependencies) {
+        this.managers = dependencies; // Injected, testable
+    }
+}
+```
+
+#### **🎯 Behavioral Testing for Rapid Development**
+
+**The Problem:** Break/fix cycles happen because small changes break unrelated features.
+
+**The Solution:** High-level behavioral tests that run in 5 seconds:
+```javascript
+// Test user workflows, not implementation details
+test('Theme change preserves difficulty (REGRESSION)', () => {
+    storage.saveSettings({ difficulty: 'easy', theme: 'wood' });
+    settingsManager.selectTheme('light'); // This used to reset difficulty
+    const settings = storage.loadSettings();
+    assert.equal(settings.difficulty, 'easy'); // Should still be easy
+});
+```
+
+**Key Insight:** Test **user workflows** and **known regressions**, not internal methods. This catches 80% of issues with 20% of the testing effort.
+
+#### **📦 Build Asset Proliferation**
+
+**What We Discovered:** 79+ build asset files accumulating in `/assets/`
+- Multiple versions of same components
+- Vite generating excessive artifacts
+- No cleanup strategy
+
+**Impact:**
+- Repository bloat
+- Confusion about which assets are current
+- Deployment complexity
+
+**Prevention:**
+```javascript
+// vite.config.js - Control asset generation
+export default {
+    build: {
+        rollupOptions: {
+            output: {
+                // Cleaner asset naming
+                assetFileNames: '[name].[hash][extname]',
+                chunkFileNames: '[name].[hash].js',
+            }
+        }
+    }
+}
+```
+
+**Lesson:** Monitor build outputs regularly. Set up asset cleanup as part of the build process.
+
+#### **🔀 Merge Conflict Architecture Patterns**
+
+**What Causes Frequent Conflicts:**
+1. **Monolithic files** (app.js) - every feature touches it
+2. **Inconsistent constructor patterns** - different branches use different approaches
+3. **Shared CSS classes** - multiple features modify same styles
+
+**Conflict-Resistant Patterns:**
+```javascript
+// ✅ Consistent constructor patterns across team
+class ComponentBase {
+    constructor(containerId, dependencies = {}) {
+        this.container = document.getElementById(containerId);
+        this.dependencies = dependencies;
+    }
+}
+
+// ✅ Feature-specific CSS classes
+.petrification-warning { /* Petrification feature */ }
+.piece-timeout-warning { /* Timeout feature */ }
+// Instead of generic .warning that multiple features fight over
+```
+
+#### **🎮 Game State Management Lessons**
+
+**Multi-Page State Sync Issues:**
+- Main game page and settings page both modify same localStorage
+- Window focus events used for sync (fragile)
+- Race conditions during rapid navigation
+
+**Better Pattern:**
+```javascript
+// Centralized state management
+class GameStateManager {
+    static instance = null;
+    
+    static getInstance() {
+        if (!GameStateManager.instance) {
+            GameStateManager.instance = new GameStateManager();
+        }
+        return GameStateManager.instance;
+    }
+    
+    // Single source of truth for all pages
+    updateDifficulty(difficulty) {
+        this.state.difficulty = difficulty;
+        this.persistToStorage();
+        this.notifyAllPages('difficultyChanged', difficulty);
+    }
+}
+```
+
+#### **🚨 Debug Code Pollution**
+
+**What Happened:** Extensive `console.log` statements added during debugging never removed:
+```javascript
+console.log('SettingsManager constructor - initial settings:', this.settings);
+console.log('Loaded theme:', this.currentTheme);
+console.log('Loaded difficulty:', this.currentDifficulty);
+```
+
+**Impact:**
+- Performance degradation
+- Console noise in production
+- Sensitive data potentially logged
+
+**Prevention:**
+```javascript
+// Use debug utility
+const debug = process.env.NODE_ENV === 'development' ? console.log : () => {};
+debug('Debug info only in development');
+
+// Or conditional compilation
+if (__DEV__) {
+    console.log('Debug information');
+}
+```
+
+#### **📋 Break/Fix Prevention Checklist**
+
+**Before Adding Features:**
+- [ ] Will this touch the monolithic main class?
+- [ ] Are constructor patterns consistent with existing code?
+- [ ] Does this create new localStorage keys or modify existing ones?
+- [ ] Will this require CSS classes that might conflict?
+
+**During Development:**
+- [ ] Run behavioral tests after each major change
+- [ ] Check for console.log statements before committing
+- [ ] Test settings sync between pages
+- [ ] Verify no hardcoded defaults override user data
+
+**Before Merging:**
+- [ ] Check for merge conflicts in main files
+- [ ] Verify build asset count hasn't exploded
+- [ ] Test the specific bug scenarios that have occurred before
+- [ ] Run full test suite including regression tests
+
+#### **🎯 Key Architectural Insights**
+
+1. **Settings Management:** Load from storage FIRST, never hardcode defaults that override user data
+2. **Component Architecture:** Dependency injection > constructor hell
+3. **Testing Strategy:** Behavioral tests > unit tests for rapid development
+4. **Build Management:** Monitor and clean assets regularly
+5. **State Sync:** Centralized state management > window focus events
+6. **Debug Hygiene:** Remove debug code before production
+
+**The Meta-Lesson:** *"Break/fix cycles are usually architectural problems, not implementation bugs. Fix the architecture to prevent the cycles."*
+
+---
+
 *This document was created during the development of Blockdoku PWA and should be updated with new lessons learned from future projects.*
