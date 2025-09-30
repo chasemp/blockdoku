@@ -236,12 +236,13 @@ export class SoundManager {
     
     // Create block placement sound
     createBlockPlaceSound() {
-        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.1, this.audioContext.sampleRate);
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.08, this.audioContext.sampleRate);
         const data = buffer.getChannelData(0);
         
         for (let i = 0; i < data.length; i++) {
             const t = i / this.audioContext.sampleRate;
-            data[i] = Math.sin(2 * Math.PI * 800 * t) * Math.exp(-t * 10) * 0.3;
+            const freq = 300 - t * 200;
+            data[i] = Math.sin(2 * Math.PI * freq * t) * Math.exp(-t * 20) * 0.4;
         }
         
         return { buffer, volume: 0.7 };
