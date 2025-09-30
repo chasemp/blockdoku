@@ -1185,6 +1185,8 @@ class BlockdokuGame {
             if (scoreInfo.isComboEvent) {
                 this.scoringSystem.combo++;
                 this.scoringSystem.maxCombo = Math.max(this.scoringSystem.maxCombo, this.scoringSystem.combo);
+                this.scoringSystem.totalCombos++;
+                this.scoringSystem.maxTotalCombos = Math.max(this.scoringSystem.maxTotalCombos, this.scoringSystem.totalCombos);
                 this.scoringSystem.comboActivations++;
             } else {
                 this.scoringSystem.combo = 0;
