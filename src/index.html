@@ -50,21 +50,36 @@
         
         <!-- Utility Bar (between score bar and game board) -->
         <div class="utility-bar" id="utility-bar">
-            <div class="utility-left" id="utility-left"></div>
-            <div class="utility-center">
-                <div id="personal-bests" class="personal-bests" style="display: none;"></div>
+            <!-- Static slots for utility items -->
+            <div class="utility-slot utility-slot-left">
+                <div class="utility-item" id="hint-slot">
+                    <div class="utility-item-content" id="hint-controls" style="display: none;">
+                        <button id="hint-btn" class="btn btn-hint">💡 Hint</button>
+                    </div>
+                </div>
             </div>
-            <div class="utility-right" id="utility-right">
-                <div class="timer" id="timer-display" style="display: none;">
-                    <span>TIME</span>
-                    <span id="timer">5:00</span>
+            
+            <div class="utility-slot utility-slot-center">
+                <div class="utility-item" id="timer-slot">
+                    <div class="utility-item-content timer" id="timer-display" style="display: none;">
+                        <span class="timer-label">TIME</span>
+                        <span id="timer" class="timer-value">5:00</span>
+                    </div>
                 </div>
-                <div class="speed-bonus" id="speed-bonus" style="display: none;">
-                    <span>SPEED</span>
-                    <span id="speed-bonus-value">0</span>
+            </div>
+            
+            <div class="utility-slot utility-slot-center-right">
+                <div class="utility-item" id="personal-best-slot">
+                    <div class="utility-item-content personal-bests" id="personal-bests" style="display: none;"></div>
                 </div>
-                <div class="hint-controls" id="hint-controls" style="display: none;">
-                    <button id="hint-btn" class="btn btn-hint">💡 Hint</button>
+            </div>
+            
+            <div class="utility-slot utility-slot-right">
+                <div class="utility-item" id="speed-bonus-slot">
+                    <div class="utility-item-content speed-bonus" id="speed-bonus" style="display: none;">
+                        <span class="speed-label">SPEED</span>
+                        <span id="speed-bonus-value" class="speed-value">0</span>
+                    </div>
                 </div>
             </div>
         </div>
