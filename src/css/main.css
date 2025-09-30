@@ -464,9 +464,8 @@ body {
 /* Hint controls styling - LED-style consistency */
 .hint-controls {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 0.3rem;
+    justify-content: center;
     font-weight: 600;
     color: var(--text-color);
     transition: all 0.3s ease;
@@ -475,14 +474,6 @@ body {
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 215, 0, 0.3);
     min-width: 80px;
-}
-
-.hint-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #ffd700;
-    text-shadow: 0 0 3px #ffd700;
 }
 
 .btn-hint {
@@ -597,8 +588,6 @@ body {
 /* Wood Theme - Warm amber LED */
 .wood-theme .timer span:first-child,
 [data-theme="wood"] .timer span:first-child,
-.wood-theme .hint-label,
-[data-theme="wood"] .hint-label,
 .wood-theme .speed-label,
 [data-theme="wood"] .speed-label,
 .wood-theme .pb-label,
@@ -636,8 +625,6 @@ body {
 /* Dark Theme - Blue-white LED */
 .dark-theme .timer span:first-child,
 [data-theme="dark"] .timer span:first-child,
-.dark-theme .hint-label,
-[data-theme="dark"] .hint-label,
 .dark-theme .speed-label,
 [data-theme="dark"] .speed-label,
 .dark-theme .pb-label,
@@ -675,8 +662,6 @@ body {
 /* Light Theme - Green LED for better contrast */
 .light-theme .timer span:first-child,
 [data-theme="light"] .timer span:first-child,
-.light-theme .hint-label,
-[data-theme="light"] .hint-label,
 .light-theme .speed-label,
 [data-theme="light"] .speed-label,
 .light-theme .pb-label,
