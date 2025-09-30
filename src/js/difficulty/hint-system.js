@@ -92,9 +92,9 @@ export class HintSystem {
         // Simulate placing the block and calculate potential score
         let score = 0;
         
-        // Check for potential line clears
+        // Check for potential line clears without expensive simulation
         const tempBoard = this.simulateBlockPlacement(row, col, block);
-        const clearedLines = this.game.scoringSystem.checkAndClearLines(tempBoard);
+        const clearedLines = this.checkForCompletedLines(tempBoard);
         
         score += (clearedLines.rows.length + clearedLines.columns.length + clearedLines.squares.length) * 100;
         
@@ -110,6 +110,52 @@ export class HintSystem {
         score += (this.game.boardSize - distanceFromCenter) * 10;
         
         return score;
+    }
+    
+    // Efficient line checking without expensive scoring system calls
+    checkForCompletedLines(board) {
+        const rows = [];
+        const columns = [];
+        const squares = [];
+        
+        // Check rows
+        for (let row = 0; row < board.length; row++) {
+            if (board[row].every(cell => cell === 1)) {
+                rows.push(row);
+            }
+        }
+        
+        // Check columns
+        for (let col = 0; col < board[0].length; col++) {
+            if (board.every(row => row[col] === 1)) {
+                columns.push(col);
+            }
+        }
+        
+        // Check 3x3 squares
+        for (let squareRow = 0; squareRow < 3; squareRow++) {
+            for (let squareCol = 0; squareCol < 3; squareCol++) {
+                const startRow = squareRow * 3;
+                const startCol = squareCol * 3;
+                let isComplete = true;
+                
+                for (let r = startRow; r < startRow + 3; r++) {
+                    for (let c = startCol; c < startCol + 3; c++) {
+                        if (board[r][c] !== 1) {
+                            isComplete = false;
+                            break;
+                        }
+                    }
+                    if (!isComplete) break;
+                }
+                
+                if (isComplete) {
+                    squares.push({ row: squareRow, col: squareCol });
+                }
+            }
+        }
+        
+        return { rows, columns, squares };
     }
     
     simulateBlockPlacement(row, col, block) {
