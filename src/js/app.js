@@ -1716,7 +1716,9 @@ class BlockdokuGame {
         
         // Check for first score gain
         if (this.previousScore === 0 && this.score > 0) {
-            this.animateFirstScore(scoreElement);
+            if (this.successModeEnabled) {
+                this.animateFirstScore(scoreElement);
+            }
         } else if (this.score > this.previousScore) {
             this.animateScoreIncrease(scoreElement);
         }
@@ -1962,8 +1964,10 @@ class BlockdokuGame {
             }
         }, 2600);
         
-        // Create particle effects for celebration
-        this.effectsManager.particles.createEmptyGridBonusEffect(centerX, centerY);
+        // Create particle effects for celebration (if success mode enabled)
+        if (this.successModeEnabled) {
+            this.effectsManager.particles.createEmptyGridBonusEffect(centerX, centerY);
+        }
         
         // Play sound and haptic feedback
         if (this.effectsManager.sound) {
@@ -2222,6 +2226,11 @@ class BlockdokuGame {
     }
     
     createComboEffect(combo, x, y) {
+        // Only show enhanced effects if success mode is enabled
+        if (!this.successModeEnabled) {
+            return;
+        }
+        
         // Enhanced combo effect with animation
         this.ctx.save();
         
@@ -2567,6 +2576,8 @@ class BlockdokuGame {
             this.particlesEnabled = settings.particlesEnabled !== false;
             this.hapticEnabled = settings.hapticEnabled !== false;
             this.enablePrizeRecognition = settings.enablePrizeRecognition !== false; // Default to true
+            this.speedEnabled = settings.speedEnabled !== false; // Default to true
+            this.successModeEnabled = settings.successModeEnabled !== false; // Default to true
             
             // Apply petrification setting
             if (this.petrificationManager) {
@@ -3371,9 +3382,11 @@ class BlockdokuGame {
     placeBlock(row, col) {
         if (!this.canPlaceBlock(row, col)) return;
         
-        // Record placement time for speed bonus calculation
+        // Record placement time for speed bonus calculation (if enabled)
         const previousSpeedBonus = this.scoringSystem.totalSpeedBonus;
-        this.scoringSystem.recordPlacementTime();
+        if (this.speedEnabled) {
+            this.scoringSystem.recordPlacementTime();
+        }
         const speedBonusGained = this.scoringSystem.totalSpeedBonus - previousSpeedBonus;
         
         // Place the block on the board
