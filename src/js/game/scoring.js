@@ -31,7 +31,8 @@ export class ScoringSystem {
             linePoints: 0,       // Points from row/column clears (base, before difficulty multiplier)
             squarePoints: 0,     // Points from 3x3 square clears (base)
             comboBonusPoints: 0, // Points from combo bonuses added in the moment of clear (base)
-            placementPoints: 0   // Points from block placements (base)
+            placementPoints: 0,  // Points from block placements (base)
+            streakBonusPoints: 0 // Points from streak bonuses (base)
         };
         
         // Scoring multipliers
