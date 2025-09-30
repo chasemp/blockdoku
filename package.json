@@ -13,6 +13,8 @@
     "preview": "vite preview",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:behavioral": "node tests/behavioral/run-tests.js",
+    "test:behavioral:browser": "echo 'Open http://localhost:3456/tests/behavioral/test-runner.html in your browser'",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix"
   },
