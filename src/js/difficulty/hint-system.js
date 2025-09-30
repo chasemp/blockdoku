@@ -42,6 +42,7 @@ export class HintSystem {
     }
     
     showHint() {
+        console.log('showHint called, isHintAvailable:', this.isHintAvailable());
         if (!this.isHintAvailable()) return false;
         
         this.hintsActive = true;
@@ -50,6 +51,10 @@ export class HintSystem {
         
         // Find valid positions for the selected block
         this.findValidPositions();
+        console.log('Found valid positions:', this.validPositions.length);
+        
+        // Trigger immediate redraw to show hints
+        this.game.drawBoard();
         
         return true;
     }
@@ -121,9 +126,11 @@ export class HintSystem {
     }
     
     drawHints(ctx) {
+        console.log('drawHints called, hintsActive:', this.hintsActive, 'validPositions:', this.validPositions.length);
         if (!this.hintsActive || this.validPositions.length === 0) return;
         
         const drawCellSize = this.game.actualCellSize || this.game.cellSize;
+        console.log('Drawing hints with cellSize:', drawCellSize);
         
         ctx.save();
         ctx.globalAlpha = 0.8;

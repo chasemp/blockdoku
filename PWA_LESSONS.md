@@ -238,6 +238,92 @@ element.addEventListener('touchstart', (e) => {
 
 ---
 
+### 📱 **Modal vs. Page Navigation Lessons**
+
+#### **The Modal Problem on Mobile**
+During development, we discovered a critical issue with modal dialogs that highlights why separate pages are often better for mobile PWAs:
+
+**The Issue:**
+- Confirmation dialog overlay remained in DOM after "hiding"
+- Created invisible layer blocking all touch interactions
+- Users could see interface but couldn't interact with it
+- Difficult to debug because the overlay was visually hidden but functionally present
+
+**Root Cause:**
+```javascript
+// BAD: Only hides visually, DOM element remains
+hide() {
+    this.container.classList.remove('show'); // Visual only
+    // Overlay still blocks clicks!
+}
+
+// GOOD: Properly removes from DOM
+hide() {
+    this.container.classList.remove('show');
+    setTimeout(() => {
+        this.container.parentNode.removeChild(this.container);
+        this.container = null;
+    }, 300);
+}
+```
+
+#### **Why Separate Pages Are Better for Mobile PWAs**
+
+**✅ Advantages of Page Navigation:**
+1. **Clean State Management** - Each page starts fresh, no leftover DOM
+2. **Browser Back Button** - Users expect back button to work
+3. **URL-based Navigation** - Shareable, bookmarkable states  
+4. **Memory Management** - Browser handles cleanup automatically
+5. **Accessibility** - Screen readers handle page transitions better
+6. **Touch Gestures** - Native swipe-back gestures work
+7. **No Z-index Issues** - No overlay stacking problems
+
+**❌ Modal Problems on Mobile:**
+1. **DOM Pollution** - Hidden elements can block interactions
+2. **Memory Leaks** - Event listeners not properly cleaned up
+3. **Focus Traps** - Difficult to implement proper focus management
+4. **Gesture Conflicts** - Modals can interfere with native gestures
+5. **Back Button Confusion** - Back button doesn't close modal as expected
+6. **Viewport Issues** - Mobile keyboards can break modal positioning
+
+#### **When to Use Each Approach**
+
+**Use Separate Pages For:**
+- Settings/configuration screens
+- Complex forms or multi-step processes  
+- Any interaction that might take >30 seconds
+- Features users might want to bookmark/share
+- Critical confirmations (like difficulty changes)
+
+**Use Modals Only For:**
+- Quick confirmations (<5 seconds)
+- Simple alerts/notifications
+- Tooltips and help text
+- Image previews/lightboxes
+- **AND ALWAYS** ensure proper cleanup!
+
+#### **Best Practices for PWA Navigation**
+```javascript
+// Use History API for page-like navigation
+function navigateToSettings() {
+    history.pushState({page: 'settings'}, 'Settings', '/settings');
+    showSettingsPage();
+}
+
+// Handle back button
+window.addEventListener('popstate', (e) => {
+    if (e.state?.page === 'settings') {
+        showSettingsPage();
+    } else {
+        showMainGame();
+    }
+});
+```
+
+**Key Takeaway:** *"When in doubt, use a separate page. Mobile users expect page-based navigation, and it eliminates a whole class of interaction bugs."*
+
+---
+
 ### 🐛 **Common Debugging Issues**
 
 #### **Canvas Not Rendering**
@@ -302,7 +388,9 @@ element.addEventListener('touchstart', (e) => {
 - **Mobile-first isn't just about screen size** - it's about touch, space efficiency, and user expectations
 - **Touch events are NOT the same as click events** - always add both for cross-platform compatibility
 - **Static imports are powerful but fragile** - use dynamic imports for optional features
-- **Pages beat modals for complex content** - especially on mobile
+- **Pages beat modals for complex content** - especially on mobile where modals can create invisible interaction blockers
+- **Modal cleanup is critical** - always remove from DOM, not just hide visually
+- **When in doubt, use separate pages** - eliminates entire classes of mobile interaction bugs
 - **Space is precious on mobile** - remove obvious text, maximize gameplay area
 - **Test early and often** - mobile issues are harder to fix later
 - **PWA features should enhance, not complicate** - focus on core experience first

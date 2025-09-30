@@ -96,6 +96,19 @@ body {
     background: linear-gradient(135deg, var(--primary-hover) 0%, var(--accent-color) 100%);
 }
 
+/* Hint button override for readability on wood theme */
+.btn-hint {
+    background: linear-gradient(135deg, #ffd700, #ffed4e) !important;
+    color: #2c1810 !important; /* Dark wood color for better contrast */
+    border: 2px solid #ffc107 !important;
+    font-weight: 600 !important;
+}
+
+.btn-hint:hover:not(:disabled) {
+    background: linear-gradient(135deg, #ffed4e, #ffd700) !important;
+    color: #2c1810 !important;
+}
+
 .score-display, .level-display, .combo-display {
     background: var(--card-bg);
     border: 1px solid var(--border-color);

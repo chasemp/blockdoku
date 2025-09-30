@@ -945,6 +945,8 @@ body {
     align-items: center;
     touch-action: none;
     user-select: none;
+    transform-origin: center;
+    z-index: 1;
 }
 
 /* Palette placeability states */
@@ -986,9 +988,28 @@ body {
     100% { transform: scale(1.12); box-shadow: 0 0 18px rgba(0,123,255,0.6); }
 }
 
-/* Removed hover effects to make all blocks equally available - dragging is the primary selection mechanism */
+/* Subtle hover effects */
+.block-item:hover {
+    transform: scale(1.05) translateY(-1px);
+    border-color: var(--primary-color);
+    background: radial-gradient(circle at center, rgba(0, 123, 255, 0.05) 0%, transparent 70%);
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        0 0 8px rgba(0, 123, 255, 0.1);
+    z-index: 10;
+}
 
-/* Removed passive selection highlighting - dragging is the primary selection mechanism */
+/* Subtle selection with gentle glow */
+.block-item.selected {
+    border-color: var(--primary-color);
+    transform: scale(1.08) translateY(-1px);
+    background: radial-gradient(circle at center, rgba(0, 123, 255, 0.08) 0%, transparent 70%);
+    box-shadow: 
+        0 6px 20px rgba(0, 0, 0, 0.15),
+        0 0 15px rgba(0, 123, 255, 0.25);
+    animation: block-selected-pulse 3s infinite ease-in-out;
+    z-index: 15;
+}
 
 /* Dragging state: primary visual indication for block selection */
 .block-item.dragging {
@@ -1004,6 +1025,150 @@ body {
     filter: grayscale(40%);
 }
 
+/* Subtle particle effect overlay for selected blocks */
+.block-item.selected::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    background: linear-gradient(45deg, 
+        transparent 40%, 
+        rgba(0, 123, 255, 0.05) 50%, 
+        transparent 60%);
+    border-radius: 12px;
+    animation: particle-shimmer 4s infinite linear;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Smooth entrance animation for new blocks */
+.block-item.entering {
+    animation: block-enter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    transform: scale(0) translateY(20px);
+    opacity: 0;
+}
+
+/* Active/touch feedback */
+.block-item:active {
+    transform: scale(0.95) translateY(0px);
+    transition: transform 0.1s ease;
+}
+
+/* Subtle block animations */
+@keyframes block-selected-pulse {
+    0% { 
+        box-shadow: 
+            0 6px 20px rgba(0, 0, 0, 0.15),
+            0 0 15px rgba(0, 123, 255, 0.25);
+    }
+    50% { 
+        box-shadow: 
+            0 8px 25px rgba(0, 0, 0, 0.18),
+            0 0 20px rgba(0, 123, 255, 0.35);
+    }
+    100% { 
+        box-shadow: 
+            0 6px 20px rgba(0, 0, 0, 0.15),
+            0 0 15px rgba(0, 123, 255, 0.25);
+    }
+}
+
+@keyframes particle-shimmer {
+    0% { 
+        background-position: -100% 0;
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 0.8;
+    }
+    100% { 
+        background-position: 200% 0;
+        opacity: 0.5;
+    }
+}
+
+@keyframes block-enter {
+    0% {
+        transform: scale(0) translateY(20px) rotate(-10deg);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.1) translateY(-5px) rotate(2deg);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1) translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+/* Particle burst animation for selection effects */
+@keyframes particle-burst {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(
+            calc(cos(var(--particle-angle, 0deg)) * 30px),
+            calc(sin(var(--particle-angle, 0deg)) * 30px)
+        ) scale(0);
+        opacity: 0;
+    }
+}
+
+/* Animation speed control */
+:root {
+    --animation-speed-multiplier: 1.0;
+}
+
+/* Animation preference overrides */
+.no-hover-effects .block-item:hover {
+    transform: scale(1) translateY(0px) !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border-color: var(--primary-color) !important;
+}
+
+.no-selection-glow .block-item.selected {
+    animation: none !important;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3) !important;
+}
+
+.no-selection-glow .block-item.selected::before {
+    display: none !important;
+}
+
+.no-entrance-animations .block-item.entering {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+}
+
+.no-particle-effects .selection-particle {
+    display: none !important;
+}
+
+/* Apply animation speed multiplier to all block animations */
+.block-item {
+    transition-duration: calc(0.3s * var(--animation-speed-multiplier));
+}
+
+.block-item.selected {
+    animation-duration: calc(2s * var(--animation-speed-multiplier));
+}
+
+.block-item.entering {
+    animation-duration: calc(0.6s * var(--animation-speed-multiplier));
+}
+
+.block-item.selected::before {
+    animation-duration: calc(3s * var(--animation-speed-multiplier));
+}
+
+/* Legacy pulse animation for compatibility */
 @keyframes pulse {
     0% { box-shadow: 0 12px 35px rgba(0, 123, 255, 0.4); }
     50% { box-shadow: 0 12px 35px rgba(0, 123, 255, 0.6); }
