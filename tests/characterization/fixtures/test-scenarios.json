@@ -1,0 +1,152 @@
+{
+  "gameStates": {
+    "empty": {
+      "board": [
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0]
+      ],
+      "score": 0,
+      "level": 1
+    },
+    "nearRowClear": {
+      "board": [
+        [1,1,1,1,1,1,1,1,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0]
+      ],
+      "score": 100,
+      "level": 1
+    },
+    "nearSquareClear": {
+      "board": [
+        [1,1,0,0,0,0,0,0,0],
+        [1,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0]
+      ],
+      "score": 50,
+      "level": 1
+    }
+  },
+  "blocks": {
+    "single": {
+      "id": "single",
+      "shape": [[1]]
+    },
+    "line2": {
+      "id": "line2", 
+      "shape": [[1,1]]
+    },
+    "line3": {
+      "id": "line3",
+      "shape": [[1,1,1]]
+    },
+    "square2x2": {
+      "id": "square2x2",
+      "shape": [
+        [1,1],
+        [1,1]
+      ]
+    },
+    "lShape": {
+      "id": "lShape",
+      "shape": [
+        [1,0],
+        [1,0],
+        [1,1]
+      ]
+    }
+  },
+  "placements": [
+    {
+      "name": "single_block_placement",
+      "block": "single",
+      "position": {"row": 0, "col": 8},
+      "expectedResult": {
+        "success": true,
+        "scoreGained": 20,
+        "linesCleared": 1,
+        "newScore": 120
+      }
+    },
+    {
+      "name": "line2_placement",
+      "block": "line2", 
+      "position": {"row": 1, "col": 0},
+      "expectedResult": {
+        "success": true,
+        "scoreGained": 4,
+        "linesCleared": 0,
+        "newScore": 104
+      }
+    },
+    {
+      "name": "square_completion",
+      "block": "line2",
+      "position": {"row": 1, "col": 1},
+      "expectedResult": {
+        "success": true,
+        "scoreGained": 39,
+        "linesCleared": 1,
+        "newScore": 89
+      }
+    }
+  ],
+  "validationTests": [
+    {
+      "name": "valid_placement",
+      "block": "single",
+      "position": {"row": 4, "col": 4},
+      "expected": {"valid": true}
+    },
+    {
+      "name": "out_of_bounds",
+      "block": "line3", 
+      "position": {"row": 0, "col": 7},
+      "expected": {"valid": false, "reason": "Out of bounds"}
+    },
+    {
+      "name": "collision",
+      "block": "single",
+      "position": {"row": 0, "col": 0},
+      "expected": {"valid": false, "reason": "Collision detected"}
+    }
+  ],
+  "gameOverScenarios": [
+    {
+      "name": "no_valid_placements",
+      "boardState": [
+        [1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,0],
+        [1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1]
+      ],
+      "availableBlocks": ["square2x2"],
+      "expected": {"gameOver": true}
+    }
+  ]
+}
+
