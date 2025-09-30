@@ -150,11 +150,6 @@ class SettingsManager {
             }
         }
         
-        // Speed tracking
-        const speedEnabled = document.getElementById('speed-enabled');
-        if (speedEnabled) {
-            speedEnabled.checked = this.settings.speedEnabled !== false; // Default to true
-        }
 
         // Success mode
         const successModeEnabled = document.getElementById('success-mode-enabled');
@@ -489,13 +484,6 @@ class SettingsManager {
             });
         }
         
-        // Speed tracking toggle
-        const speedEnabled = document.getElementById('speed-enabled');
-        if (speedEnabled) {
-            speedEnabled.addEventListener('change', (e) => {
-                this.updateSetting('speedEnabled', e.target.checked);
-            });
-        }
 
         // Success mode toggle
         const successModeEnabled = document.getElementById('success-mode-enabled');
