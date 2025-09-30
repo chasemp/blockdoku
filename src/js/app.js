@@ -1934,6 +1934,58 @@ class BlockdokuGame {
         }, 1600);
     }
     
+    // Show placement points feedback if enabled
+    showPlacementPointsFeedback(points, row, col) {
+        const settings = this.storage.loadSettings();
+        const showPlacementPoints = settings.showPlacementPoints === true;
+        
+        if (!showPlacementPoints) return;
+        
+        // Calculate position on canvas for the feedback
+        const drawCellSize = this.actualCellSize || this.cellSize;
+        const x = col * drawCellSize + drawCellSize / 2;
+        const y = row * drawCellSize + drawCellSize / 2;
+        
+        // Create floating placement points element
+        const floatingPoints = document.createElement('div');
+        floatingPoints.className = 'floating-placement-points';
+        floatingPoints.textContent = `+${points}`;
+        floatingPoints.style.position = 'absolute';
+        floatingPoints.style.left = `${x}px`;
+        floatingPoints.style.top = `${y}px`;
+        floatingPoints.style.color = '#00ff88'; // Bright green for placement points
+        floatingPoints.style.fontSize = '1.2rem';
+        floatingPoints.style.fontWeight = '700';
+        floatingPoints.style.textShadow = '0 0 8px #00ff88';
+        floatingPoints.style.pointerEvents = 'none';
+        floatingPoints.style.zIndex = '1000';
+        floatingPoints.style.transition = 'all 1.2s ease-out';
+        floatingPoints.style.transform = 'translate(-50%, -50%) scale(0.8)';
+        floatingPoints.style.opacity = '0';
+        
+        // Add to canvas container
+        this.canvas.parentElement.appendChild(floatingPoints);
+        
+        // Animate the floating points
+        setTimeout(() => {
+            floatingPoints.style.transform = 'translate(-50%, -50%) scale(1.1)';
+            floatingPoints.style.opacity = '1';
+        }, 50);
+        
+        // Move up and fade out
+        setTimeout(() => {
+            floatingPoints.style.transform = 'translate(-50%, -80px) scale(0.9)';
+            floatingPoints.style.opacity = '0';
+        }, 800);
+        
+        // Remove after animation
+        setTimeout(() => {
+            if (floatingPoints.parentElement) {
+                floatingPoints.parentElement.removeChild(floatingPoints);
+            }
+        }, 1300);
+    }
+    
     // Show empty grid bonus notification with unique styling
     showEmptyGridBonus(bonus) {
         const centerX = this.canvas.width / 2;
@@ -2589,6 +2641,7 @@ class BlockdokuGame {
             this.enableTimer = settings.enableTimer || false;
             this.enablePetrification = settings.enablePetrification || false;
             this.showPoints = settings.showPoints || false;
+            this.showPlacementPoints = settings.showPlacementPoints || false;
             this.particlesEnabled = settings.particlesEnabled !== false;
             this.hapticEnabled = settings.hapticEnabled !== false;
             this.enablePrizeRecognition = settings.enablePrizeRecognition !== false; // Default to true
@@ -2631,6 +2684,7 @@ class BlockdokuGame {
             enableHints: this.enableHints,
             enableTimer: this.enableTimer,
             showPoints: this.showPoints,
+            showPlacementPoints: this.showPlacementPoints,
             particlesEnabled: this.particlesEnabled,
             hapticEnabled: this.hapticEnabled
         };
@@ -3398,11 +3452,6 @@ class BlockdokuGame {
     placeBlock(row, col) {
         if (!this.canPlaceBlock(row, col)) return;
         
-        // Record placement time for speed bonus calculation
-        const previousSpeedBonus = this.scoringSystem.totalSpeedBonus;
-        this.scoringSystem.recordPlacementTime();
-        const speedBonusGained = this.scoringSystem.totalSpeedBonus - previousSpeedBonus;
-        
         // Place the block on the board
         this.board = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);
         
@@ -3411,6 +3460,17 @@ class BlockdokuGame {
         
         // Award 1 point for block placement (as documented in scoring.md)
         this.scoringSystem.addPlacementPoints(this.scoringSystem.basePoints.single, this.difficultyManager.getScoreMultiplier());
+        
+        // Record placement time for speed bonus calculation
+        const previousSpeedBonus = this.scoringSystem.totalSpeedBonus;
+        this.scoringSystem.recordPlacementTime();
+        const speedBonusGained = this.scoringSystem.totalSpeedBonus - previousSpeedBonus;
+        
+        // Sync app score with scoring system score after all calculations
+        this.score = this.scoringSystem.getScore();
+        
+        // Show placement points feedback if enabled
+        this.showPlacementPointsFeedback(this.scoringSystem.basePoints.single, row, col);
         
         // Show speed bonus feedback if earned
         if (speedBonusGained > 0) {
@@ -3463,6 +3523,11 @@ class BlockdokuGame {
     
     // Show visual feedback for speed bonus
     showSpeedBonusFeedback(bonus, row, col) {
+        const settings = this.storage.loadSettings();
+        const showSpeedBonus = settings.showSpeedBonus === true;
+        
+        if (!showSpeedBonus) return;
+        
         // Calculate position on canvas
         const cellSize = this.cellSize;
         const x = col * cellSize + cellSize / 2;
