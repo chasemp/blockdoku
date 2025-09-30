@@ -20,6 +20,7 @@ export class HapticFeedback {
             lineClear: [30, 10, 30],
             levelUp: [50, 20, 50],
             combo: [25, 10, 25, 10, 25],
+            speedBonus: [20, 5, 20],
             buttonClick: [5]
         };
         
@@ -99,6 +100,11 @@ export class HapticFeedback {
         if (combo >= 1) {
             this.vibrate('combo');
         }
+    }
+    
+    // Speed bonus feedback
+    onSpeedBonus() {
+        this.vibrate('speedBonus');
     }
     
     // Error feedback

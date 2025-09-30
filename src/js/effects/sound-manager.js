@@ -120,6 +120,7 @@ export class SoundManager {
             lineClear: getSound('lineClear', this.createLineClearSound),
             levelUp: getSound('levelUp', this.createLevelUpSound),
             combo: getSound('combo', this.createComboSound),
+            speedBonus: getSound('speedBonus', this.createSpeedBonusSound),
             error: getSound('error', this.createErrorSound),
             buttonClick: getSound('buttonClick', this.createButtonClickSound),
             blockRotate: getSound('blockRotate', this.createBlockRotateSound),
@@ -142,6 +143,7 @@ export class SoundManager {
             lineClear: { name: 'Line Clear', description: 'When clearing lines' },
             levelUp: { name: 'Level Up', description: 'When advancing to next level' },
             combo: { name: 'Combo', description: 'When achieving a combo' },
+            speedBonus: { name: 'Speed Bonus', description: 'When earning speed bonus points' },
             error: { name: 'Error', description: 'When an invalid action occurs' },
             buttonClick: { name: 'Button Click', description: 'Button press feedback' },
             blockRotate: { name: 'Block Rotate', description: 'When rotating a block' },
@@ -168,7 +170,7 @@ export class SoundManager {
             success: {
                 name: 'Success', 
                 description: 'Achievements, rewards, and successful actions',
-                sounds: ['lineClear', 'levelUp', 'combo', 'scoreGain', 'perfect', 'chain', 'timeBonus']
+                sounds: ['lineClear', 'levelUp', 'combo', 'speedBonus', 'scoreGain', 'perfect', 'chain', 'timeBonus']
             },
             warning: {
                 name: 'Warning',
@@ -283,6 +285,22 @@ export class SoundManager {
         }
         
         return { buffer, volume: 0.6 };
+    }
+    
+    // Create speed bonus sound
+    createSpeedBonusSound() {
+        const buffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.12, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < data.length; i++) {
+            const t = i / this.audioContext.sampleRate;
+            // Quick ascending chirp for speed
+            const frequency = 500 + t * 800;
+            const envelope = Math.exp(-t * 8);
+            data[i] = Math.sin(2 * Math.PI * frequency * t) * envelope * 0.4;
+        }
+        
+        return { buffer, volume: 0.7 };
     }
     
     // Create error sound
