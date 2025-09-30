@@ -513,6 +513,7 @@ export class ScoringSystem {
     
     // Reset streak count (called when a non-clearing block is placed)
     resetStreak() {
+        this.combo = 0;
         this.streakCount = 0;
     }
     
