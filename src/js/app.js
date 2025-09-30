@@ -2432,7 +2432,7 @@ class BlockdokuGame {
         this.comboModeActive = settings.comboDisplayMode || 'cumulative';
         
         // Load speed mode setting (3-way: 'bonus', 'punishment', or 'ignored')
-        const speedMode = settings.speedMode || 'bonus'; // Default to 'bonus'
+        const speedMode = settings.speedMode || 'ignored'; // Default to 'ignored'
         this.scoringSystem.setSpeedMode(speedMode);
         
         // Load dead pixels settings
