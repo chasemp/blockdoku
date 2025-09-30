@@ -117,16 +117,12 @@ class BlockdokuGame {
         
         // Listen for focus events to reload settings when returning from settings page
         window.addEventListener('focus', () => {
-            console.log('Window focus event - reloading settings');
-            console.log('Current difficulty before loadSettings:', this.difficulty);
             this.loadSettings();
-            console.log('Current difficulty after loadSettings:', this.difficulty);
             this.updateDifficultyButton();
             this.renderPersonalBests();
             
             // Always reload game state when returning from settings (if not game over)
             if (!this.isGameOver) {
-                console.log('Focus event: reloading game state from settings');
                 this.loadGameState();
                 this.render();
             }
@@ -141,7 +137,6 @@ class BlockdokuGame {
                 
                 // Always reload game state when settings change (if not game over)
                 if (!this.isGameOver) {
-                    console.log('Storage change: reloading game state after settings change');
                     this.loadGameState();
                     this.render();
                 }
@@ -2746,12 +2741,10 @@ class BlockdokuGame {
     loadSettings() {
         if (this.storage) {
             const settings = this.storage.loadSettings();
-            console.log('loadSettings: loaded settings from storage:', settings);
             this.currentTheme = settings.theme || 'light';
             this.soundEnabled = settings.soundEnabled === true;
             this.animationsEnabled = settings.animationsEnabled !== false;
             this.difficulty = settings.difficulty || 'normal';
-            console.log('loadSettings: set difficulty to:', this.difficulty);
             this.autoSave = settings.autoSave !== false;
             this.enableHints = settings.enableHints || false;
             this.enableTimer = settings.enableTimer || false;
