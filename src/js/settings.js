@@ -132,44 +132,155 @@ class SettingsManager {
     }
     
     setupEventListeners() {
-        // Navigation
+        // Navigation with press duration requirement
         document.querySelectorAll('.nav-item').forEach(item => {
-            const handleNavClick = (e) => {
+            let pressStartTime = null;
+            let pressTimeout = null;
+            let isPressed = false;
+            
+            const handleNavActivation = (e) => {
                 e.preventDefault();
                 this.showSection(item.dataset.section);
             };
             
-            item.addEventListener('click', handleNavClick);
-            item.addEventListener('touchstart', (e) => {
+            const startPress = (e) => {
                 e.preventDefault();
-                handleNavClick(e);
-            }, { passive: false });
+                if (isPressed) return; // Already pressing
+                
+                isPressed = true;
+                pressStartTime = Date.now();
+                
+                // Add visual feedback
+                item.classList.add('pressing');
+                
+                // Set timeout for 1.5 seconds
+                pressTimeout = setTimeout(() => {
+                    if (isPressed) {
+                        handleNavActivation(e);
+                        this.resetPressState(item, pressTimeout, isPressed);
+                    }
+                }, 1500);
+            };
+            
+            const cancelPress = (e) => {
+                if (!isPressed) return;
+                
+                e.preventDefault();
+                this.resetPressState(item, pressTimeout, isPressed);
+            };
+            
+            // Mouse events
+            item.addEventListener('mousedown', startPress);
+            item.addEventListener('mouseup', cancelPress);
+            item.addEventListener('mouseleave', cancelPress);
+            
+            // Touch events
+            item.addEventListener('touchstart', startPress, { passive: false });
+            item.addEventListener('touchend', cancelPress, { passive: false });
+            item.addEventListener('touchcancel', cancelPress, { passive: false });
+            
+            // Fallback click handler for accessibility
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Only allow click if it's a quick press (accessibility)
+                if (!isPressed && (!pressStartTime || (Date.now() - pressStartTime) < 200)) {
+                    handleNavActivation(e);
+                }
+            });
         });
         
-        // Theme selection
+        // Theme selection with press duration requirement
         document.querySelectorAll('.theme-option').forEach(option => {
-            const handleThemeClick = (e) => {
+            let pressStartTime = null;
+            let pressTimeout = null;
+            let isPressed = false;
+            
+            const handleThemeActivation = (e) => {
                 this.selectTheme(e.currentTarget.dataset.theme);
             };
             
-            option.addEventListener('click', handleThemeClick);
-            option.addEventListener('touchstart', (e) => {
+            const startPress = (e) => {
                 e.preventDefault();
-                handleThemeClick(e);
-            }, { passive: false });
+                if (isPressed) return;
+                
+                isPressed = true;
+                pressStartTime = Date.now();
+                option.classList.add('pressing');
+                
+                pressTimeout = setTimeout(() => {
+                    if (isPressed) {
+                        handleThemeActivation(e);
+                        this.resetPressState(option, pressTimeout, isPressed);
+                    }
+                }, 1500);
+            };
+            
+            const cancelPress = (e) => {
+                if (!isPressed) return;
+                e.preventDefault();
+                this.resetPressState(option, pressTimeout, isPressed);
+            };
+            
+            option.addEventListener('mousedown', startPress);
+            option.addEventListener('mouseup', cancelPress);
+            option.addEventListener('mouseleave', cancelPress);
+            option.addEventListener('touchstart', startPress, { passive: false });
+            option.addEventListener('touchend', cancelPress, { passive: false });
+            option.addEventListener('touchcancel', cancelPress, { passive: false });
+            
+            option.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (!isPressed && (!pressStartTime || (Date.now() - pressStartTime) < 200)) {
+                    handleThemeActivation(e);
+                }
+            });
         });
         
-        // Difficulty selection
+        // Difficulty selection with press duration requirement
         document.querySelectorAll('.difficulty-option').forEach(option => {
-            const handleDifficultyClick = async (e) => {
+            let pressStartTime = null;
+            let pressTimeout = null;
+            let isPressed = false;
+            
+            const handleDifficultyActivation = async (e) => {
                 await this.selectDifficulty(e.currentTarget.dataset.difficulty);
             };
             
-            option.addEventListener('click', handleDifficultyClick);
-            option.addEventListener('touchstart', async (e) => {
+            const startPress = (e) => {
                 e.preventDefault();
-                await handleDifficultyClick(e);
-            }, { passive: false });
+                if (isPressed) return;
+                
+                isPressed = true;
+                pressStartTime = Date.now();
+                option.classList.add('pressing');
+                
+                pressTimeout = setTimeout(async () => {
+                    if (isPressed) {
+                        await handleDifficultyActivation(e);
+                        this.resetPressState(option, pressTimeout, isPressed);
+                    }
+                }, 1500);
+            };
+            
+            const cancelPress = (e) => {
+                if (!isPressed) return;
+                e.preventDefault();
+                this.resetPressState(option, pressTimeout, isPressed);
+            };
+            
+            option.addEventListener('mousedown', startPress);
+            option.addEventListener('mouseup', cancelPress);
+            option.addEventListener('mouseleave', cancelPress);
+            option.addEventListener('touchstart', startPress, { passive: false });
+            option.addEventListener('touchend', cancelPress, { passive: false });
+            option.addEventListener('touchcancel', cancelPress, { passive: false });
+            
+            option.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if (!isPressed && (!pressStartTime || (Date.now() - pressStartTime) < 200)) {
+                    await handleDifficultyActivation(e);
+                }
+            });
         });
         
         // Game settings
@@ -295,6 +406,16 @@ class SettingsManager {
                 this.showNotification('Statistics reset');
             });
         }
+    }
+    
+    resetPressState(item, pressTimeout, isPressed) {
+        // Clear timeout
+        if (pressTimeout) {
+            clearTimeout(pressTimeout);
+        }
+        
+        // Remove visual feedback
+        item.classList.remove('pressing');
     }
     
     showSection(sectionName) {
