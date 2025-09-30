@@ -21,7 +21,8 @@ export class HapticFeedback {
             levelUp: [50, 20, 50],
             combo: [25, 10, 25, 10, 25],
             speedBonus: [20, 5, 20],
-            buttonClick: [5]
+            buttonClick: [5],
+            emptyGridBonus: [40, 15, 40, 15, 40]
         };
         
         // Listen for user interaction to enable haptic feedback
@@ -105,6 +106,11 @@ export class HapticFeedback {
     // Speed bonus feedback
     onSpeedBonus() {
         this.vibrate('speedBonus');
+    }
+    
+    // Empty grid bonus feedback
+    onEmptyGridBonus() {
+        this.vibrate('emptyGridBonus');
     }
     
     // Error feedback
