@@ -4,10 +4,11 @@
  */
 
 export class BlockPalette {
-    constructor(containerId, blockManager, petrificationManager = null) {
+    constructor(containerId, blockManager, game = null) {
         this.container = document.getElementById(containerId);
         this.blockManager = blockManager;
-        this.petrificationManager = petrificationManager;
+        this.game = game;
+        this.petrificationManager = game?.petrificationManager || null;
         this.selectedBlock = null;
         this.blockElements = new Map();
         this._placeabilityTimeout = null;
@@ -22,12 +23,59 @@ export class BlockPalette {
         this.onPieceTimeout = null; // Callback for when a piece times out
         this.timeoutPaused = false; // Pause timeout when game is over or not active
         
+        // Animation settings
+        this.animationSettings = {
+            blockHoverEffects: true,
+            blockSelectionGlow: true,
+            blockEntranceAnimations: true,
+            particleEffects: true,
+            animationSpeed: 'normal'
+        };
+        
+        // Load settings if available
+        this.loadAnimationSettings();
+        
         this.init();
     }
     
     init() {
         this.render();
         this.setupEventListeners();
+        this.setupAnimationControls();
+    }
+    
+    loadAnimationSettings() {
+        if (this.game && this.game.settings) {
+            const settings = this.game.settings;
+            this.animationSettings = {
+                blockHoverEffects: settings.blockHoverEffects !== false,
+                blockSelectionGlow: settings.blockSelectionGlow !== false,
+                blockEntranceAnimations: settings.blockEntranceAnimations !== false,
+                particleEffects: settings.particleEffects !== false,
+                animationSpeed: settings.animationSpeed || 'normal'
+            };
+        }
+    }
+    
+    setupAnimationControls() {
+        // Apply animation speed CSS custom property
+        const speedMultiplier = this.getSpeedMultiplier();
+        document.documentElement.style.setProperty('--animation-speed-multiplier', speedMultiplier);
+        
+        // Apply animation preferences as CSS classes
+        const body = document.body;
+        body.classList.toggle('no-hover-effects', !this.animationSettings.blockHoverEffects);
+        body.classList.toggle('no-selection-glow', !this.animationSettings.blockSelectionGlow);
+        body.classList.toggle('no-entrance-animations', !this.animationSettings.blockEntranceAnimations);
+        body.classList.toggle('no-particle-effects', !this.animationSettings.particleEffects);
+    }
+    
+    getSpeedMultiplier() {
+        switch (this.animationSettings.animationSpeed) {
+            case 'slow': return '1.5';
+            case 'fast': return '0.5';
+            default: return '1.0';
+        }
     }
     
     render() {
@@ -53,8 +101,18 @@ export class BlockPalette {
         container.innerHTML = '';
         this.blockElements.clear();
         
-        blocks.forEach(block => {
+        blocks.forEach((block, index) => {
             const blockElement = this.createBlockElement(block);
+            
+            // Add entrance animation if enabled
+            if (this.animationSettings.blockEntranceAnimations) {
+                blockElement.classList.add('entering');
+                // Stagger the entrance animations
+                setTimeout(() => {
+                    blockElement.classList.remove('entering');
+                }, index * 100 + 50);
+            }
+            
             container.appendChild(blockElement);
             this.blockElements.set(block.id, blockElement);
         });
@@ -282,9 +340,16 @@ export class BlockPalette {
         
         // Select new block
         this.selectedBlock = this.blockManager.getBlockById(blockId);
+        
         if (this.selectedBlock) {
-            // Don't add visual selection highlighting - dragging is the primary selection mechanism
-            // Visual feedback will be provided through dragging state only
+            const blockElement = this.blockElements.get(blockId);
+            
+            if (blockElement) {
+                blockElement.classList.add('selected');
+                
+                // Add selection effects
+                this.addSelectionEffects(blockElement);
+            }
         }
         
         // Update rotate button state
@@ -292,6 +357,64 @@ export class BlockPalette {
         
         // Dispatch selection event
         this.dispatchSelectionEvent();
+    }
+    
+    addSelectionEffects(blockElement) {
+        // Play selection sound if available
+        if (this.game && this.game.soundManager) {
+            this.game.soundManager.playBlockSelect();
+        }
+        
+        // Add particle effects if enabled
+        if (this.animationSettings.particleEffects) {
+            this.createSelectionParticles(blockElement);
+        }
+        
+        // Add haptic feedback on mobile
+        if (this.game && this.game.hapticFeedback) {
+            this.game.hapticFeedback.light();
+        }
+    }
+    
+    createSelectionParticles(blockElement) {
+        if (!this.animationSettings.particleEffects) return;
+        
+        const rect = blockElement.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        // Create subtle sparkle particles
+        for (let i = 0; i < 3; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'selection-particle';
+            particle.style.cssText = `
+                position: fixed;
+                left: ${centerX}px;
+                top: ${centerY}px;
+                width: 4px;
+                height: 4px;
+                background: var(--primary-color);
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 1000;
+                animation: particle-burst ${0.6 * this.getSpeedMultiplier()}s ease-out forwards;
+                animation-delay: ${i * 0.05}s;
+                transform-origin: center;
+            `;
+            
+            // Random direction for each particle
+            const angle = (360 / 3) * i;
+            particle.style.setProperty('--particle-angle', `${angle}deg`);
+            
+            document.body.appendChild(particle);
+            
+            // Remove particle after animation
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, 800);
+        }
     }
     
     selectBlockById(blockId) {

@@ -69,7 +69,7 @@ class BlockdokuGame {
         // Dead pixels system
         this.deadPixelsManager = new DeadPixelsManager();
         
-        this.blockPalette = new BlockPalette('block-palette', this.blockManager, this.petrificationManager);
+        this.blockPalette = new BlockPalette('block-palette', this.blockManager, this);
         this.scoringSystem = new ScoringSystem(this.petrificationManager);
         this.storage = new GameStorage();
         // this.effectsSystem = new EffectsSystem(this.canvas, this.ctx);
@@ -117,7 +117,10 @@ class BlockdokuGame {
         
         // Listen for focus events to reload settings when returning from settings page
         window.addEventListener('focus', () => {
+            console.log('Window focus event - reloading settings');
+            console.log('Current difficulty before loadSettings:', this.difficulty);
             this.loadSettings();
+            console.log('Current difficulty after loadSettings:', this.difficulty);
             this.updateDifficultyButton();
             this.renderPersonalBests();
             
@@ -437,8 +440,19 @@ class BlockdokuGame {
         
         // Hint button
         const hintBtn = document.getElementById('hint-btn');
+        console.log('Looking for hint button:', hintBtn);
         if (hintBtn) {
+            console.log('Hint button found, setting up event listeners');
             const handleHintClick = () => {
+                console.log('Hint button clicked!');
+                console.log('Current difficulty:', this.difficultyManager.getCurrentDifficulty());
+                console.log('Hints enabled:', this.difficultyManager.isHintsEnabled());
+                
+                if (!this.difficultyManager.isHintsEnabled()) {
+                    console.warn('Hints not enabled for current difficulty');
+                    return;
+                }
+                
                 this.effectsManager.onButtonClick();
                 this.hintSystem.toggleHints();
             };
@@ -959,6 +973,8 @@ class BlockdokuGame {
             const firstBlock = this.blockManager.currentBlocks[0];
             this.selectedBlock = firstBlock;
             this.blockPalette.selectBlockById(firstBlock.id);
+        } else {
+            this.selectedBlock = null;
         }
     }
     
@@ -1784,7 +1800,8 @@ class BlockdokuGame {
     restartWithDifficulty(difficulty) {
         console.log(`Restarting game with difficulty: ${difficulty}`);
         
-        // Set difficulty
+        // Set difficulty in both places to keep them in sync
+        this.difficulty = difficulty;
         this.difficultyManager.setDifficulty(difficulty);
         
         // Update difficulty button
@@ -2137,9 +2154,16 @@ class BlockdokuGame {
         const hintControls = document.getElementById('hint-controls');
         const hintBtn = document.getElementById('hint-btn');
         
+        console.log('updateHintControls called');
+        console.log('hintControls element:', hintControls);
+        console.log('hintBtn element:', hintBtn);
+        console.log('isHintsEnabled:', this.difficultyManager.isHintsEnabled());
+        console.log('current difficulty:', this.difficultyManager.getCurrentDifficulty());
+        
         if (hintControls && hintBtn) {
             const hintsEnabled = this.difficultyManager.isHintsEnabled();
             hintControls.style.display = hintsEnabled ? 'block' : 'none';
+            console.log('Setting hint controls display to:', hintsEnabled ? 'block' : 'none');
             
             if (hintsEnabled) {
                 const hintStatus = this.hintSystem.getHintStatus();
@@ -2152,7 +2176,10 @@ class BlockdokuGame {
                 } else {
                     hintBtn.textContent = `💡 Hint (${Math.ceil(hintStatus.cooldownRemaining / 1000)}s)`;
                 }
+                console.log('Hint button status:', hintStatus);
             }
+        } else {
+            console.error('Hint controls or button not found in updateHintControls');
         }
         
         // Update utility bar collapsible state
@@ -2719,10 +2746,12 @@ class BlockdokuGame {
     loadSettings() {
         if (this.storage) {
             const settings = this.storage.loadSettings();
+            console.log('loadSettings: loaded settings from storage:', settings);
             this.currentTheme = settings.theme || 'light';
             this.soundEnabled = settings.soundEnabled === true;
             this.animationsEnabled = settings.animationsEnabled !== false;
             this.difficulty = settings.difficulty || 'normal';
+            console.log('loadSettings: set difficulty to:', this.difficulty);
             this.autoSave = settings.autoSave !== false;
             this.enableHints = settings.enableHints || false;
             this.enableTimer = settings.enableTimer || false;
@@ -2738,6 +2767,16 @@ class BlockdokuGame {
             if (this.petrificationManager) {
                 this.petrificationManager.setEnabled(this.enablePetrification);
             }
+            
+            // Enhanced animation settings
+            this.blockHoverEffects = settings.blockHoverEffects !== false;
+            this.blockSelectionGlow = settings.blockSelectionGlow !== false;
+            this.blockEntranceAnimations = settings.blockEntranceAnimations !== false;
+            this.particleEffects = settings.particleEffects !== false;
+            this.animationSpeed = settings.animationSpeed || 'normal';
+            
+            // Store all settings for easy access by components
+            this.settings = settings;
             
             // Check for pending difficulty changes from settings page
             const pendingDifficulty = localStorage.getItem('blockdoku_pending_difficulty');
@@ -3345,8 +3384,11 @@ class BlockdokuGame {
         let blockCount = 3;
         let blockTypes = 'all';
         
+        // Get current difficulty from difficulty manager (source of truth)
+        const currentDifficulty = this.difficultyManager.getCurrentDifficulty();
+        
         // Adjust block generation based on difficulty
-        switch (this.difficulty) {
+        switch (currentDifficulty) {
             case 'easy':
                 blockCount = 3;
                 blockTypes = 'large'; // Prefer larger, simpler blocks
@@ -3364,6 +3406,7 @@ class BlockdokuGame {
                 blockTypes = 'complex'; // Complex irregular shapes
                 break;
         }
+        
         
         const newBlocks = this.blockManager.generateRandomBlocks(blockCount, blockTypes, this.difficultyManager);
         this.blockPalette.updateBlocks(newBlocks);

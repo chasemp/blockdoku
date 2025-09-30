@@ -143,6 +143,12 @@ export class GameStorage {
             soundEnabled: false,
             animationsEnabled: true,
             difficulty: 'normal',
+            // Enhanced animation preferences
+            blockHoverEffects: true,
+            blockSelectionGlow: true,
+            blockEntranceAnimations: true,
+            particleEffects: true,
+            animationSpeed: 'normal', // 'slow', 'normal', 'fast'
             autoSave: true,
             enableHints: false,
             enableTimer: false,

@@ -238,6 +238,15 @@ export class ConfirmationDialog {
         this.container.classList.remove('show');
         document.body.style.overflow = '';
         
+        // Remove from DOM after animation
+        setTimeout(() => {
+            if (this.container && this.container.parentNode) {
+                this.container.parentNode.removeChild(this.container);
+                this.container = null;
+                this.initialized = false;
+            }
+        }, 300);
+        
         // Resolve promise
         if (this.resolve) {
             this.resolve(confirmed);

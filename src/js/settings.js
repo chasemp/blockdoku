@@ -16,6 +16,8 @@ class SettingsManager {
         this.confirmationDialog = new ConfirmationDialog();
         this.soundManager = new SoundManager();
         
+        console.log('SettingsManager constructor - initial settings:', this.settings);
+        
         this.init();
     }
     
@@ -39,6 +41,11 @@ class SettingsManager {
     loadSettings() {
         this.currentTheme = this.settings.theme || 'wood';
         this.currentDifficulty = this.settings.difficulty || 'normal';
+        
+        console.log('SettingsManager loadSettings:');
+        console.log('Loaded theme:', this.currentTheme);
+        console.log('Loaded difficulty:', this.currentDifficulty);
+        console.log('Full settings:', this.settings);
         
         // Apply the loaded theme immediately
         this.applyTheme(this.currentTheme);
@@ -69,10 +76,30 @@ class SettingsManager {
             animationsEnabled.checked = this.settings.animationsEnabled !== false; // Default to true
         }
         
-        // Particle effects
-        const particlesEnabled = document.getElementById('particles-enabled');
-        if (particlesEnabled) {
-            particlesEnabled.checked = this.settings.particlesEnabled !== false; // Default to true
+        // Enhanced animation settings
+        const blockHoverEffects = document.getElementById('block-hover-effects');
+        if (blockHoverEffects) {
+            blockHoverEffects.checked = this.settings.blockHoverEffects !== false;
+        }
+        
+        const blockSelectionGlow = document.getElementById('block-selection-glow');
+        if (blockSelectionGlow) {
+            blockSelectionGlow.checked = this.settings.blockSelectionGlow !== false;
+        }
+        
+        const blockEntranceAnimations = document.getElementById('block-entrance-animations');
+        if (blockEntranceAnimations) {
+            blockEntranceAnimations.checked = this.settings.blockEntranceAnimations !== false;
+        }
+        
+        const particleEffects = document.getElementById('particle-effects');
+        if (particleEffects) {
+            particleEffects.checked = this.settings.particleEffects !== false;
+        }
+        
+        const animationSpeed = document.getElementById('animation-speed');
+        if (animationSpeed) {
+            animationSpeed.value = this.settings.animationSpeed || 'normal';
         }
         
         // Haptic feedback
@@ -180,6 +207,24 @@ class SettingsManager {
                 comboCumulative.checked = true;
             } else {
                 comboStreak.checked = true;
+            }
+        }
+        
+        // Show/hide enhanced animation settings based on master setting
+        this.updateAnimationSettingsVisibility();
+    }
+    
+    updateAnimationSettingsVisibility() {
+        const animationsEnabled = document.getElementById('animations-enabled');
+        const animationSettings = document.getElementById('animation-settings');
+        
+        if (animationsEnabled && animationSettings) {
+            if (animationsEnabled.checked) {
+                animationSettings.style.display = 'block';
+                animationSettings.style.opacity = '1';
+            } else {
+                animationSettings.style.display = 'none';
+                animationSettings.style.opacity = '0.5';
             }
         }
     }
@@ -446,6 +491,28 @@ class SettingsManager {
         
         document.getElementById('animations-enabled').addEventListener('change', (e) => {
             this.updateSetting('animationsEnabled', e.target.checked);
+            this.updateAnimationSettingsVisibility();
+        });
+        
+        // Enhanced animation settings
+        document.getElementById('block-hover-effects').addEventListener('change', (e) => {
+            this.updateSetting('blockHoverEffects', e.target.checked);
+        });
+        
+        document.getElementById('block-selection-glow').addEventListener('change', (e) => {
+            this.updateSetting('blockSelectionGlow', e.target.checked);
+        });
+        
+        document.getElementById('block-entrance-animations').addEventListener('change', (e) => {
+            this.updateSetting('blockEntranceAnimations', e.target.checked);
+        });
+        
+        document.getElementById('particle-effects').addEventListener('change', (e) => {
+            this.updateSetting('particleEffects', e.target.checked);
+        });
+        
+        document.getElementById('animation-speed').addEventListener('change', (e) => {
+            this.updateSetting('animationSpeed', e.target.value);
         });
         
         document.getElementById('auto-save').addEventListener('change', (e) => {
@@ -521,9 +588,6 @@ class SettingsManager {
         }
         
         // Effects settings
-        document.getElementById('particles-enabled').addEventListener('change', (e) => {
-            this.updateSetting('particlesEnabled', e.target.checked);
-        });
         
         document.getElementById('haptic-enabled').addEventListener('change', (e) => {
             this.updateSetting('hapticEnabled', e.target.checked);
@@ -1242,6 +1306,9 @@ class SettingsManager {
             theme: this.currentTheme,
             difficulty: this.currentDifficulty
         };
+        console.log('saveSettings called with:', settings);
+        console.log('Current theme:', this.currentTheme);
+        console.log('Current difficulty:', this.currentDifficulty);
         this.storage.saveSettings(settings);
     }
     
