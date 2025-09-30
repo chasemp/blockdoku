@@ -14,6 +14,14 @@ export class BlockPalette {
         this.lastTapTime = null; // For double-tap detection on mobile
         this._petrificationUpdateInterval = null;
         
+        // Piece timeout tracking
+        this.pieceTimeouts = new Map(); // blockId -> { startTime, warningShown, timedOut }
+        this.timeoutCheckInterval = null;
+        this.WARNING_TIME = 15000; // 15 seconds
+        this.TIMEOUT_TIME = 30000; // 30 seconds
+        this.onPieceTimeout = null; // Callback for when a piece times out
+        this.timeoutPaused = false; // Pause timeout when game is over or not active
+        
         this.init();
     }
     
@@ -57,6 +65,9 @@ export class BlockPalette {
         } else {
             this.stopPetrificationUpdates();
         }
+        
+        // Reset piece timeouts for new blocks
+        this.resetPieceTimeouts(blocks);
     }
     
     createBlockElement(block) {
@@ -472,5 +483,201 @@ export class BlockPalette {
                 el.classList.add('warning-7s');
             }
         });
+    }
+
+    // --- Piece Timeout System ---
+    
+    /**
+     * Reset piece timeout tracking for new blocks
+     */
+    resetPieceTimeouts(blocks) {
+        // Clear old timeouts
+        this.pieceTimeouts.clear();
+        
+        // Start tracking new blocks
+        const now = Date.now();
+        blocks.forEach(block => {
+            this.pieceTimeouts.set(block.id, {
+                startTime: now,
+                warningShown: false,
+                timedOut: false
+            });
+        });
+        
+        // Start timeout checking if not already running
+        if (!this.timeoutCheckInterval) {
+            this.startTimeoutChecking();
+        }
+    }
+    
+    /**
+     * Reset timeout for a specific piece (when it's placed)
+     */
+    resetPieceTimeout(blockId) {
+        if (this.pieceTimeouts.has(blockId)) {
+            this.pieceTimeouts.delete(blockId);
+            
+            // Remove any visual states
+            const el = this.blockElements.get(blockId);
+            if (el) {
+                el.classList.remove('piece-struggling', 'piece-timed-out');
+            }
+        }
+    }
+    
+    /**
+     * Start the timeout checking interval
+     */
+    startTimeoutChecking() {
+        // Clear existing interval
+        if (this.timeoutCheckInterval) {
+            clearInterval(this.timeoutCheckInterval);
+        }
+        
+        // Check every 500ms for smooth animations
+        this.timeoutCheckInterval = setInterval(() => {
+            this.checkPieceTimeouts();
+        }, 500);
+    }
+    
+    /**
+     * Stop timeout checking
+     */
+    stopTimeoutChecking() {
+        if (this.timeoutCheckInterval) {
+            clearInterval(this.timeoutCheckInterval);
+            this.timeoutCheckInterval = null;
+        }
+        
+        // Clear all visual states
+        this.blockElements.forEach((el) => {
+            el.classList.remove('piece-struggling', 'piece-timed-out');
+        });
+        
+        // Clear timeout data
+        this.pieceTimeouts.clear();
+    }
+    
+    /**
+     * Pause timeout checking (e.g., when game is paused or over)
+     */
+    pauseTimeoutChecking() {
+        this.timeoutPaused = true;
+        // Store pause time for each piece
+        const now = Date.now();
+        this.pieceTimeouts.forEach((timeoutData) => {
+            if (!timeoutData.pauseTime) {
+                timeoutData.pauseTime = now;
+            }
+        });
+    }
+    
+    /**
+     * Resume timeout checking
+     */
+    resumeTimeoutChecking() {
+        this.timeoutPaused = false;
+        // Adjust start times based on pause duration
+        const now = Date.now();
+        this.pieceTimeouts.forEach((timeoutData) => {
+            if (timeoutData.pauseTime) {
+                const pauseDuration = now - timeoutData.pauseTime;
+                timeoutData.startTime += pauseDuration;
+                delete timeoutData.pauseTime;
+            }
+        });
+    }
+    
+    /**
+     * Check all pieces for timeouts
+     */
+    checkPieceTimeouts() {
+        // Don't check if paused
+        if (this.timeoutPaused) return;
+        
+        const now = Date.now();
+        let anyTimedOut = false;
+        
+        this.pieceTimeouts.forEach((timeoutData, blockId) => {
+            const elapsed = now - timeoutData.startTime;
+            const el = this.blockElements.get(blockId);
+            
+            if (!el) return;
+            
+            // Check for timeout (30 seconds)
+            if (elapsed >= this.TIMEOUT_TIME && !timeoutData.timedOut) {
+                timeoutData.timedOut = true;
+                el.classList.remove('piece-struggling');
+                el.classList.add('piece-timed-out');
+                anyTimedOut = true;
+                
+                // Show floating notification
+                this.showPieceTimeoutNotification();
+                
+                // Notify game of timeout
+                if (this.onPieceTimeout) {
+                    this.onPieceTimeout(blockId);
+                }
+            }
+            // Check for warning (15 seconds)
+            else if (elapsed >= this.WARNING_TIME && !timeoutData.warningShown) {
+                timeoutData.warningShown = true;
+                el.classList.add('piece-struggling');
+            }
+        });
+    }
+    
+    /**
+     * Show floating notification when a piece times out
+     */
+    showPieceTimeoutNotification() {
+        // Get the blocks container position
+        const blocksContainer = document.getElementById('blocks-container');
+        if (!blocksContainer) return;
+        
+        const rect = blocksContainer.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        // Create floating notification element
+        const notification = document.createElement('div');
+        notification.className = 'floating-piece-timeout';
+        notification.textContent = 'Piece Lodged in Place!';
+        notification.style.position = 'fixed';
+        notification.style.left = `${centerX}px`;
+        notification.style.top = `${centerY}px`;
+        
+        // Add to body
+        document.body.appendChild(notification);
+        
+        // Remove after animation completes
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.parentElement.removeChild(notification);
+            }
+        }, 3000);
+    }
+    
+    /**
+     * Set the callback for when a piece times out
+     */
+    setPieceTimeoutCallback(callback) {
+        this.onPieceTimeout = callback;
+    }
+    
+    /**
+     * Check if all available pieces have timed out
+     */
+    areAllPiecesTimedOut() {
+        if (this.pieceTimeouts.size === 0) return false;
+        
+        let allTimedOut = true;
+        this.pieceTimeouts.forEach((timeoutData) => {
+            if (!timeoutData.timedOut) {
+                allTimedOut = false;
+            }
+        });
+        
+        return allTimedOut;
     }
 }
