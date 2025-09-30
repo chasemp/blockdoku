@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Stuck UI - Blockdoku</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .button.danger {
+            background-color: #dc3545;
+        }
+        .button.danger:hover {
+            background-color: #c82333;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+            color: #856404;
+        }
+        .code {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Blockdoku - Debug Stuck UI</h1>
+        
+        <div class="status" id="status">
+            Ready to debug stuck UI state. Click the buttons below to test the fix.
+        </div>
+        
+        <h2>Debug Actions</h2>
+        <button class="button" onclick="checkGameState()">Check Game State</button>
+        <button class="button" onclick="resetStuckUI()">Reset Stuck UI</button>
+        <button class="button danger" onclick="simulateStuckState()">Simulate Stuck State</button>
+        <button class="button" onclick="refreshGame()">Refresh Game</button>
+        
+        <h2>Game State Information</h2>
+        <div id="gameState" class="code">
+            Click "Check Game State" to see current state
+        </div>
+        
+        <h2>Instructions</h2>
+        <ol>
+            <li>If the game is stuck with red-highlighted blocks, click "Reset Stuck UI"</li>
+            <li>If blocks aren't refreshing, click "Refresh Game"</li>
+            <li>Use "Check Game State" to see what's happening</li>
+            <li>Use "Simulate Stuck State" to test the fix</li>
+        </ol>
+        
+        <h2>Console Commands</h2>
+        <div class="code">
+            // Reset stuck UI state
+            resetStuckUI()
+            
+            // Check game state
+            console.log(window.game)
+            
+            // Check pending clears
+            console.log('Pending clears:', window.game.pendingClears)
+            
+            // Check current blocks
+            console.log('Current blocks:', window.game.blockManager.currentBlocks)
+        </div>
+    </div>
+
+    <script>
+        function updateStatus(message, type = 'status') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        function checkGameState() {
+            if (!window.game) {
+                updateStatus('Game not initialized', 'error');
+                return;
+            }
+
+            const state = {
+                pendingClears: window.game.pendingClears,
+                pendingClearsTimestamp: window.game.pendingClearsTimestamp,
+                currentBlocks: window.game.blockManager?.currentBlocks?.length || 0,
+                isGameOver: window.game.isGameOver,
+                isInitialized: window.game.isInitialized,
+                score: window.game.score,
+                level: window.game.level
+            };
+
+            document.getElementById('gameState').textContent = JSON.stringify(state, null, 2);
+            
+            if (state.pendingClears) {
+                const timeSincePending = state.pendingClearsTimestamp ? 
+                    Date.now() - state.pendingClearsTimestamp : 'unknown';
+                updateStatus(`Game has pending clears (${timeSincePending}ms ago)`, 'warning');
+            } else {
+                updateStatus('Game state looks normal', 'status');
+            }
+        }
+
+        function resetStuckUI() {
+            if (!window.game) {
+                updateStatus('Game not initialized', 'error');
+                return;
+            }
+
+            if (window.game.resetStuckUIState) {
+                window.game.resetStuckUIState();
+                updateStatus('Stuck UI state has been reset', 'status');
+                checkGameState();
+            } else {
+                updateStatus('resetStuckUIState method not available', 'error');
+            }
+        }
+
+        function simulateStuckState() {
+            if (!window.game) {
+                updateStatus('Game not initialized', 'error');
+                return;
+            }
+
+            // Simulate a stuck state by setting pendingClears without timestamp
+            window.game.pendingClears = {
+                rows: [0, 1],
+                columns: [0],
+                squares: []
+            };
+            window.game.pendingClearsTimestamp = null;
+            
+            updateStatus('Simulated stuck state - try resetting now', 'warning');
+            checkGameState();
+        }
+
+        function refreshGame() {
+            if (!window.game) {
+                updateStatus('Game not initialized', 'error');
+                return;
+            }
+
+            // Force refresh the game
+            window.game.drawBoard();
+            if (window.game.blockPalette && window.game.blockManager) {
+                window.game.blockPalette.updateBlocks(window.game.blockManager.currentBlocks);
+            }
+            window.game.updateUI();
+            
+            updateStatus('Game refreshed', 'status');
+            checkGameState();
+        }
+
+        // Check if game is available
+        if (window.game) {
+            updateStatus('Game is available', 'status');
+            checkGameState();
+        } else {
+            updateStatus('Game not yet initialized - wait a moment and try again', 'warning');
+        }
+    </script>
+</body>
+</html>
