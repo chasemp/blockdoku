@@ -129,6 +129,11 @@ class SettingsManager {
             showPoints.checked = this.settings.showPoints === true; // Default to false
         }
 
+        const showPlacementPoints = document.getElementById('show-placement-points');
+        if (showPlacementPoints) {
+            showPlacementPoints.checked = this.settings.showPlacementPoints === true; // Default to false
+        }
+
         const showHighScore = document.getElementById('show-high-score');
         if (showHighScore) {
             showHighScore.checked = this.settings.showHighScore === true; // Default to false
@@ -451,6 +456,13 @@ class SettingsManager {
             this.updateSetting('showPoints', e.target.checked);
             this.updateBlockPointsDisplay();
         });
+
+        const showPlacementPoints = document.getElementById('show-placement-points');
+        if (showPlacementPoints) {
+            showPlacementPoints.addEventListener('change', (e) => {
+                this.updateSetting('showPlacementPoints', e.target.checked);
+            });
+        }
 
         const showHighScore = document.getElementById('show-high-score');
         if (showHighScore) {
