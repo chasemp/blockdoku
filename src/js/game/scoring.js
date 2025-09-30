@@ -322,6 +322,8 @@ export class ScoringSystem {
             }
         } else {
             this.combo = 0;
+            // Reset streak when no clears occur
+            this.streakCount = 0;
         }
         
         return {
@@ -504,6 +506,11 @@ export class ScoringSystem {
         return this.speedBonusConfig.enabled;
     }
     
+    // Reset streak count (called when a non-clearing block is placed)
+    resetStreak() {
+        this.streakCount = 0;
+    }
+    
     getLastScoreGained() {
         return this.lastScoreGained || 0;
     }
@@ -552,6 +559,11 @@ export class ScoringSystem {
         this.totalCombos = 0;
         this.maxTotalCombos = 0;
         
+        // Reset streak tracking
+        this.streakCount = 0;
+        this.maxStreakCount = 0;
+        this.totalStreakBonus = 0;
+        
         // Reset speed tracking
         this.placementTimes = [];
         this.speedBonuses = [];
@@ -564,7 +576,7 @@ export class ScoringSystem {
         this.columnsClearedCount = 0;
         this.squaresClearedCount = 0;
         this.comboActivations = 0;
-        this.pointsBreakdown = { linePoints: 0, squarePoints: 0, comboBonusPoints: 0, placementPoints: 0 };
+        this.pointsBreakdown = { linePoints: 0, squarePoints: 0, comboBonusPoints: 0, placementPoints: 0, streakBonusPoints: 0 };
     }
 
     // ---------- Level Progression Helpers ----------
@@ -683,6 +695,9 @@ export class ScoringSystem {
             maxCombo: this.maxCombo,
             totalCombos: this.totalCombos,
             maxTotalCombos: this.maxTotalCombos,
+            streakCount: this.streakCount,
+            maxStreakCount: this.maxStreakCount,
+            totalStreakBonus: this.totalStreakBonus,
             rowClears: this.rowsClearedCount,
             columnClears: this.columnsClearedCount,
             squareClears: this.squaresClearedCount,
@@ -691,7 +706,8 @@ export class ScoringSystem {
                 linePoints: this.pointsBreakdown.linePoints,
                 squarePoints: this.pointsBreakdown.squarePoints,
                 comboBonusPoints: this.pointsBreakdown.comboBonusPoints,
-                placementPoints: this.pointsBreakdown.placementPoints
+                placementPoints: this.pointsBreakdown.placementPoints,
+                streakBonusPoints: this.pointsBreakdown.streakBonusPoints
             },
             speedStats: this.getSpeedStats()
         };
