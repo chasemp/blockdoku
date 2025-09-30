@@ -43,7 +43,8 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'src/index.html'),
         splash: resolve(__dirname, 'src/splash.html'),
-        settings: resolve(__dirname, 'src/settings.html')
+        settings: resolve(__dirname, 'src/settings.html'),
+        lastgame: resolve(__dirname, 'src/lastgame.html')
       }
     }
   },

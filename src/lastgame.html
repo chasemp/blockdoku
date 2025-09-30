@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Last Game - Blockdoku</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta name="theme-color" content="#8d6e63">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/themes/wood.css" id="theme-css">
+    <link rel="stylesheet" href="css/themes/light.css" id="theme-css-light" media="not all">
+    <link rel="stylesheet" href="css/themes/dark.css" id="theme-css-dark" media="not all">
+    <script>
+        // Function to update theme
+        function updateTheme() {
+            const savedSettings = localStorage.getItem('blockdoku_settings') || localStorage.getItem('blockdoku-settings');
+            if (savedSettings) {
+                try {
+                    const settings = JSON.parse(savedSettings);
+                    if (settings.theme) {
+                        let themeLink = document.getElementById('theme-css');
+                        if (!themeLink) {
+                            themeLink = document.createElement('link');
+                            themeLink.rel = 'stylesheet';
+                            themeLink.id = 'theme-css';
+                            document.head.appendChild(themeLink);
+                        }
+                        themeLink.href = `css/themes/${settings.theme}.css`;
+
+                        // If Vite injected a wood stylesheet into built HTML, disable it when switching away
+                        try {
+                            const builtWoodLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+                                .filter(l => (l.getAttribute('href') || '').includes('/assets/wood-') || (l.href || '').includes('/assets/wood-'));
+                            builtWoodLinks.forEach(l => {
+                                l.disabled = settings.theme !== 'wood';
+                            });
+                        } catch (e) {}
+                    }
+                } catch (e) {
+                    console.log('Error parsing settings:', e);
+                }
+            }
+        }
+        
+        // Load current theme from localStorage on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(updateTheme, 100);
+        });
+        
+        // Listen for theme changes from other pages
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'blockdoku-settings' || e.key === 'blockdoku_settings') {
+                updateTheme();
+            }
+        });
+        
+        // Also listen for focus events (when returning from main page)
+        window.addEventListener('focus', function() {
+            updateTheme();
+        });
+    </script>
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .lastgame-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 1rem;
+            flex: 1;
+            width: 100%;
+        }
+        
+        .lastgame-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .lastgame-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+        
+        .lastgame-header p {
+            color: var(--text-muted);
+            margin: 0;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .nav-btn-primary:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+        
+        .nav-btn-secondary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .nav-btn-secondary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .nav-btn-tertiary {
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        .nav-btn-tertiary:hover {
+            background: var(--secondary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .game-over-content {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .prize-section {
+            margin: 1rem 0;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,165,0,0.1));
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .prize-emoji {
+            font-size: 4em;
+            margin-bottom: 0.5rem;
+            animation: bounce 1s ease-in-out;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        .prize-name {
+            margin: 0 0 0.5rem 0;
+            color: #ffd700;
+            font-size: 1.4em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .prize-message {
+            margin: 0 0 1rem 0;
+            color: var(--text-color);
+            font-style: italic;
+            font-size: 1.1em;
+        }
+        
+        .next-prize-section {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+        
+        .next-prize-label {
+            margin: 0 0 0.5rem 0;
+            color: #ffd700;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .progress-bar {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            height: 8px;
+            margin: 0.5rem 0;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #ffd700, #ffed4e);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .points-needed {
+            margin: 0.5rem 0 0 0;
+            color: var(--text-color);
+            font-size: 0.8em;
+        }
+        
+        .highest-tier {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+        
+        .highest-tier p {
+            margin: 0;
+            color: #ffd700;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .main-stats {
+            margin: 1rem 0;
+            text-align: center;
+        }
+        
+        .main-stats p {
+            margin: 0.5rem 0;
+            font-size: 1.1em;
+        }
+        
+        .main-stats .final-score {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .high-score-badge {
+            color: #ffd700;
+            font-weight: bold;
+            margin: 0.75rem 0;
+            font-size: 1.1em;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+            background: rgba(255,255,255,0.03);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .stats-column h3 {
+            margin: 0 0 0.75rem 0;
+            color: var(--primary-color);
+            font-size: 1em;
+        }
+        
+        .stats-column p {
+            margin: 0.5rem 0;
+            font-size: 0.95em;
+        }
+        
+        .stats-column strong {
+            color: var(--text-color);
+        }
+        
+        .total-score {
+            margin: 0.75rem 0 0 0;
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .petrification-stats {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: rgba(150, 200, 255, 0.08);
+            border: 1px solid rgba(150, 200, 255, 0.2);
+            border-radius: 8px;
+        }
+        
+        .petrification-stats h3 {
+            margin: 0 0 0.5rem 0;
+            color: #96c8ff;
+            font-size: 1em;
+        }
+        
+        .petrification-stats p {
+            margin: 0.5rem 0;
+            font-size: 0.95em;
+        }
+        
+        .no-stats-message {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+        }
+        
+        .no-stats-message h2 {
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+        
+        .no-stats-message p {
+            font-size: 1.1em;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .lastgame-container {
+                padding: 0.75rem;
+            }
+            
+            .lastgame-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .game-over-content {
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 0.75rem;
+            }
+            
+            .prize-section {
+                padding: 1rem;
+            }
+            
+            .prize-emoji {
+                font-size: 3em;
+            }
+            
+            .prize-name {
+                font-size: 1.2em;
+            }
+            
+            .prize-message {
+                font-size: 1em;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .nav-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        
+        /* Settings page copyright override */
+        .copyright-notice p {
+            background: none;
+            color: var(--text-muted);
+            text-shadow: none;
+        }
+        .copyright-notice a {
+            color: var(--text-muted);
+        }
+        .copyright-notice a:hover {
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="lastgame-container">
+        <div class="lastgame-header">
+            <h1>Last Game</h1>
+            <p>Your most recent game summary</p>
+        </div>
+        
+        <div class="nav-buttons">
+            <a href="index.html" class="nav-btn nav-btn-primary" id="new-game-btn">
+                🎮 New Game
+            </a>
+            <button class="nav-btn nav-btn-secondary" id="share-score-btn">
+                📤 Share
+            </button>
+            <a href="settings.html" class="nav-btn nav-btn-tertiary">
+                ⚙️ Settings
+            </a>
+            <a href="index.html" class="nav-btn nav-btn-tertiary">
+                ← Back
+            </a>
+        </div>
+        
+        <div class="game-over-content" id="game-stats-content">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+    </div>
+    
+    <!-- Copyright Notice -->
+    <div class="copyright-notice">
+        <p>&copy; Chase Pettet, <a href="http://523.life" target="_blank" rel="noopener noreferrer">523.life</a></p>
+    </div>
+    
+    <script type="module">
+        // Load and display last game stats
+        function loadLastGameStats() {
+            const lastGameData = localStorage.getItem('blockdoku_lastgame');
+            const content = document.getElementById('game-stats-content');
+            
+            if (!lastGameData) {
+                content.innerHTML = `
+                    <div class="no-stats-message">
+                        <h2>No Game Data</h2>
+                        <p>You haven't completed a game yet.</p>
+                        <p>Play a game to see your stats here!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            try {
+                const stats = JSON.parse(lastGameData);
+                const prizeRecognitionEnabled = stats.prizeRecognitionEnabled !== false;
+                
+                let html = '';
+                
+                // Prize section (if enabled)
+                if (prizeRecognitionEnabled && stats.prize) {
+                    html += `
+                        <div class="prize-section">
+                            <div class="prize-emoji">${stats.prize.emoji}</div>
+                            <h3 class="prize-name">${stats.prize.name}</h3>
+                            <p class="prize-message">${stats.prize.message}</p>
+                            ${stats.nextPrize ? `
+                                <div class="next-prize-section">
+                                    <p class="next-prize-label">Next Prize: ${stats.nextPrize.emoji} ${stats.nextPrize.name}</p>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${stats.nextPrizeProgress || 0}%"></div>
+                                    </div>
+                                    <p class="points-needed">${(stats.nextPrizePointsNeeded || 0).toLocaleString()} points to go!</p>
+                                </div>
+                            ` : `
+                                <div class="highest-tier">
+                                    <p>🏆 You've reached the highest tier! 🏆</p>
+                                </div>
+                            `}
+                        </div>
+                    `;
+                }
+                
+                // Main stats
+                html += `
+                    <div class="main-stats">
+                        <p class="final-score">Final Score: ${stats.score.toLocaleString()}</p>
+                        <p>Level: ${stats.level}</p>
+                        <p>Lines Cleared: ${stats.linesCleared}</p>
+                        <p>Max Streak: ${stats.maxCombo}</p>
+                        <p>Total Combos: ${stats.totalCombos || 0}</p>
+                        <p>Max Combo Streak: ${stats.maxStreakCount || 0}</p>
+                        <p>Difficulty: ${(stats.difficulty || 'NORMAL').toUpperCase()} (x${stats.difficultyMultiplier || 1})</p>
+                        ${stats.isHighScore ? '<p class="high-score-badge">🎉 New High Score! 🎉</p>' : ''}
+                    </div>
+                `;
+                
+                // Detailed breakdown
+                const breakdown = stats.breakdown || {};
+                const clears = {
+                    rows: stats.rowClears || 0,
+                    columns: stats.columnClears || 0,
+                    squares: stats.squareClears || 0
+                };
+                
+                html += `
+                    <div class="stats-grid">
+                        <div class="stats-column">
+                            <h3>Clears</h3>
+                            <p>Rows: <strong>${clears.rows}</strong></p>
+                            <p>Columns: <strong>${clears.columns}</strong></p>
+                            <p>3x3 Squares: <strong>${clears.squares}</strong></p>
+                        </div>
+                        <div class="stats-column">
+                            <h3>Score Breakdown</h3>
+                            <p>Lines: <strong>${(breakdown.linePoints || 0).toLocaleString()}</strong></p>
+                            <p>Squares: <strong>${(breakdown.squarePoints || 0).toLocaleString()}</strong></p>
+                            <p>Placements: <strong>${(breakdown.placementPoints || 0).toLocaleString()}</strong></p>
+                            <p>Combo Bonus: <strong>${(breakdown.comboBonusPoints || 0).toLocaleString()}</strong></p>
+                            <p>Streak Bonus: <strong>${(breakdown.streakBonusPoints || 0).toLocaleString()}</strong></p>
+                            <p class="total-score">Total: <strong>${(
+                                (breakdown.linePoints || 0) + 
+                                (breakdown.squarePoints || 0) + 
+                                (breakdown.placementPoints || 0) + 
+                                (breakdown.comboBonusPoints || 0) + 
+                                (breakdown.streakBonusPoints || 0)
+                            ).toLocaleString()}</strong></p>
+                        </div>
+                    </div>
+                `;
+                
+                // Petrification stats (if enabled)
+                if (stats.petrificationStats && stats.enablePetrification) {
+                    html += `
+                        <div class="petrification-stats">
+                            <h3>❄ Petrification Stats</h3>
+                            <p>Grid Cells Petrified: <strong>${stats.petrificationStats.gridCellsPetrified || 0}</strong></p>
+                            <p>Blocks Petrified: <strong>${stats.petrificationStats.blocksPetrified || 0}</strong></p>
+                            <p>Grid Cells Thawed: <strong>${stats.petrificationStats.gridCellsThawed || 0}</strong></p>
+                            <p>Blocks Thawed: <strong>${stats.petrificationStats.blocksThawed || 0}</strong></p>
+                        </div>
+                    `;
+                }
+                
+                content.innerHTML = html;
+                
+                // Set up share button
+                const shareBtn = document.getElementById('share-score-btn');
+                if (shareBtn) {
+                    shareBtn.addEventListener('click', async () => {
+                        try {
+                            const difficultyText = (stats.difficulty || 'NORMAL').toUpperCase();
+                            const shareUrl = window.location.origin + window.location.pathname.replace('lastgame.html', 'index.html');
+                            const shareComboText = `Max Streak ${stats.maxCombo}, Total Combos ${stats.totalCombos || 0}`;
+                            const text = `I scored ${stats.score.toLocaleString()} in Blockdoku (${difficultyText}) — Level ${stats.level}, ${stats.linesCleared} lines, ${shareComboText}!`;
+                            
+                            if (navigator.share) {
+                                await navigator.share({ 
+                                    title: 'My Blockdoku Score', 
+                                    text, 
+                                    url: shareUrl 
+                                });
+                            } else if (navigator.clipboard && navigator.clipboard.writeText) {
+                                await navigator.clipboard.writeText(`${text} ${shareUrl}`);
+                                alert('Share link copied to clipboard!');
+                            } else {
+                                window.prompt('Copy this to share:', `${text} ${shareUrl}`);
+                            }
+                        } catch (err) {
+                            console.error('Share failed:', err);
+                        }
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error loading last game stats:', error);
+                content.innerHTML = `
+                    <div class="no-stats-message">
+                        <h2>Error Loading Stats</h2>
+                        <p>There was a problem loading your last game data.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Handle New Game button
+        document.getElementById('new-game-btn').addEventListener('click', (e) => {
+            // Set a flag to start a new game when returning to index
+            localStorage.setItem('blockdoku_start_new_game', 'true');
+        });
+        
+        // Load stats on page load
+        document.addEventListener('DOMContentLoaded', loadLastGameStats);
+    </script>
+</body>
+</html>
