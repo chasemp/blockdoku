@@ -1838,6 +1838,25 @@ class BlockdokuGame {
         } else {
             utilityBar.classList.remove('has-content');
         }
+        
+        // Update individual slot active states
+        this.updateSlotActiveState('hint-slot', hintControls);
+        this.updateSlotActiveState('timer-slot', timerDisplay);
+        this.updateSlotActiveState('personal-best-slot', personalBests);
+        this.updateSlotActiveState('speed-bonus-slot', speedBonus);
+    }
+    
+    updateSlotActiveState(slotId, contentElement) {
+        const slot = document.getElementById(slotId);
+        if (!slot) return;
+        
+        const isActive = contentElement && contentElement.style.display !== 'none';
+        
+        if (isActive) {
+            slot.classList.add('active');
+        } else {
+            slot.classList.remove('active');
+        }
     }
     
     updateTimerDisplay() {
