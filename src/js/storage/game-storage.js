@@ -146,6 +146,7 @@ export class GameStorage {
             autoSave: true,
             enableHints: false,
             enableTimer: false,
+            enablePetrification: false,
             enableUndo: false,
             showPoints: false,
             showHighScore: false,

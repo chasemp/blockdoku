@@ -92,6 +92,10 @@ class SettingsManager {
             enableTimer.checked = this.settings.enableTimer === true; // Default to false
         }
         
+        const enablePetrification = document.getElementById('enable-petrification');
+        if (enablePetrification) {
+            enablePetrification.checked = this.settings.enablePetrification === true; // Default to false
+        }
         
         const autoSave = document.getElementById('auto-save');
         if (autoSave) {
@@ -309,6 +313,12 @@ class SettingsManager {
             this.updateSetting('enableTimer', e.target.checked);
         });
         
+        const enablePetrification = document.getElementById('enable-petrification');
+        if (enablePetrification) {
+            enablePetrification.addEventListener('change', (e) => {
+                this.updateSetting('enablePetrification', e.target.checked);
+            });
+        }
         
         document.getElementById('sound-enabled').addEventListener('change', (e) => {
             this.updateSetting('soundEnabled', e.target.checked);
