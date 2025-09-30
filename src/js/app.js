@@ -239,6 +239,9 @@ class BlockdokuGame {
         // Initialize difficulty button
         this.updateDifficultyButton();
         this.renderPersonalBests();
+        
+        // Initialize utility bar state
+        this.updateUtilityBarState();
     }
     
     async registerServiceWorker() {
@@ -1684,6 +1687,9 @@ class BlockdokuGame {
         } catch (e) {
             console.warn('renderPersonalBests failed:', e);
         }
+        
+        // Update utility bar collapsible state
+        this.updateUtilityBarState();
     }
     
     // Show detailed point breakdown for immediate feedback
@@ -1804,6 +1810,34 @@ class BlockdokuGame {
                 }
             }
         }
+        
+        // Update utility bar collapsible state
+        this.updateUtilityBarState();
+    }
+    
+    updateUtilityBarState() {
+        const utilityBar = document.getElementById('utility-bar');
+        if (!utilityBar) return;
+        
+        // Check if any utility bar content is visible
+        const timerDisplay = document.getElementById('timer-display');
+        const speedBonus = document.getElementById('speed-bonus');
+        const hintControls = document.getElementById('hint-controls');
+        const personalBests = document.getElementById('personal-bests');
+        
+        const hasContent = (
+            (timerDisplay && timerDisplay.style.display !== 'none') ||
+            (speedBonus && speedBonus.style.display !== 'none') ||
+            (hintControls && hintControls.style.display !== 'none') ||
+            (personalBests && personalBests.style.display !== 'none')
+        );
+        
+        // Add or remove has-content class based on visibility
+        if (hasContent) {
+            utilityBar.classList.add('has-content');
+        } else {
+            utilityBar.classList.remove('has-content');
+        }
     }
     
     updateTimerDisplay() {
@@ -1840,6 +1874,9 @@ class BlockdokuGame {
                 timerElement.style.animation = '';
             }
         }
+        
+        // Update utility bar collapsible state
+        this.updateUtilityBarState();
     }
     
     handleTimeUp() {
