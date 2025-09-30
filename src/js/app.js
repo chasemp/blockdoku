@@ -1226,6 +1226,17 @@ class BlockdokuGame {
             return;
         }
         
+        // Safety check: if pendingClears has been stuck for too long, reset it
+        if (this.pendingClears && this.pendingClearsTimestamp) {
+            const timeSincePending = Date.now() - this.pendingClearsTimestamp;
+            if (timeSincePending > 5000) { // 5 seconds timeout
+                console.warn('Pending clears stuck for too long, resetting...');
+                this.pendingClears = null;
+                this.pendingClearResult = null;
+                this.pendingClearsTimestamp = null;
+            }
+        }
+        
         // Ensure board is valid before checking
         if (!this.board || !Array.isArray(this.board)) {
             console.error('Invalid board state in checkLineClears, reinitializing...');
@@ -1326,6 +1337,8 @@ class BlockdokuGame {
     
     startLineClearAnimation(clearedLines) {
         console.log('Starting line clear animation for:', clearedLines);
+        // Set timestamp for safety timeout
+        this.pendingClearsTimestamp = Date.now();
         // Start glow effect immediately
         this.highlightClearingBlocks(clearedLines);
         
@@ -1339,6 +1352,7 @@ class BlockdokuGame {
     showImmediateClearFeedback(clearedLines) {
         // Set pending clears for persistent glow effect
         this.pendingClears = clearedLines;
+        this.pendingClearsTimestamp = Date.now();
         
         // Create immediate visual feedback - very subtle flash
         this.ctx.save();
@@ -1553,8 +1567,9 @@ class BlockdokuGame {
         let combo;
         
         try {
-            // Clear pending clears state
+            // Clear pending clears state FIRST to prevent stuck UI
             this.pendingClears = null;
+            this.pendingClearsTimestamp = null;
             
             // Actually clear the lines from the board (without updating score)
             console.log('Clearing lines from board...');
@@ -1585,6 +1600,7 @@ class BlockdokuGame {
             // Reset pending clears state even if there was an error
             this.pendingClears = null;
             this.pendingClearResult = null;
+            this.pendingClearsTimestamp = null;
             return;
         }
         
@@ -2683,6 +2699,7 @@ class BlockdokuGame {
         if (this.pendingClears) {
             console.log('Clearing pending clears due to theme switch');
             this.pendingClears = null;
+            this.pendingClearsTimestamp = null;
         }
         
         // Redraw the board with new theme colors after a small delay to ensure CSS is loaded
@@ -3496,6 +3513,35 @@ class BlockdokuGame {
         this.effectsManager.onSpeedBonus(x, y, bonus);
     }
 
+    // Reset stuck UI state - clears any pending clears and refreshes blocks
+    resetStuckUIState() {
+        console.log('Resetting stuck UI state...');
+        
+        // Clear any pending clears that might be causing red highlighting
+        this.pendingClears = null;
+        this.pendingClearResult = null;
+        
+        // Force refresh the board display
+        this.drawBoard();
+        
+        // Ensure we have blocks available
+        if (!this.blockManager.currentBlocks || this.blockManager.currentBlocks.length === 0) {
+            console.log('No blocks available, generating new blocks...');
+            this.generateNewBlocks();
+        } else {
+            console.log('Refreshing existing blocks...');
+            this.blockPalette.updateBlocks(this.blockManager.currentBlocks);
+        }
+        
+        // Update placeability indicators
+        this.updatePlaceabilityIndicators();
+        
+        // Update UI
+        this.updateUI();
+        
+        console.log('UI state reset complete');
+    }
+
     // Enhanced game over detection with difficulty considerations
     checkGameOver() {
         // EMERGENCY: If board is undefined, reinitialize it immediately
@@ -3615,6 +3661,18 @@ class BlockdokuGame {
 // Initialize game when DOM is loaded
 function initializeGame() {
     window.game = new BlockdokuGame();
+    
+    // Add global function to reset stuck UI state
+    window.resetStuckUI = function() {
+        if (window.game && window.game.resetStuckUIState) {
+            window.game.resetStuckUIState();
+            console.log('Stuck UI state has been reset');
+        } else {
+            console.error('Game not initialized or resetStuckUIState method not available');
+        }
+    };
+    
+    console.log('Global resetStuckUI() function available for debugging');
 }
 
 if (document.readyState === 'loading') {
