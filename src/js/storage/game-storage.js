@@ -151,6 +151,7 @@ export class GameStorage {
             deadPixelsIntensity: 0,
             enableUndo: false,
             showPoints: false,
+            showPlacementPoints: false,
             showHighScore: false,
             comboDisplayMode: 'cumulative' // 'streak' or 'cumulative'
         };
