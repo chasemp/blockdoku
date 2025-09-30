@@ -23,6 +23,7 @@ import { DifficultySelector } from './ui/difficulty-selector.js';
 import { EffectsManager } from './effects/effects-manager.js';
 import { ConfirmationDialog } from './ui/confirmation-dialog.js';
 import { PetrificationManager } from './game/petrification-manager.js';
+import { DeadPixelsManager } from './game/dead-pixels-manager.js';
 
 
 class BlockdokuGame {
@@ -64,6 +65,9 @@ class BlockdokuGame {
         
         // Petrification system
         this.petrificationManager = new PetrificationManager();
+        
+        // Dead pixels system
+        this.deadPixelsManager = new DeadPixelsManager();
         
         this.blockPalette = new BlockPalette('block-palette', this.blockManager, this.petrificationManager);
         this.scoringSystem = new ScoringSystem(this.petrificationManager);
@@ -919,7 +923,18 @@ class BlockdokuGame {
             this.updatePlaceabilityIndicators();
         }
         
-        return this.blockManager.canPlaceBlock(this.selectedBlock, row, col, this.board);
+        // First check basic placement validity
+        const canPlace = this.blockManager.canPlaceBlock(this.selectedBlock, row, col, this.board);
+        if (!canPlace) {
+            return false;
+        }
+        
+        // Then check if placement would overlap with dead pixels
+        if (this.deadPixelsManager && this.deadPixelsManager.isEnabled()) {
+            return this.deadPixelsManager.canPlaceBlockWithDeadPixels(this.selectedBlock, row, col, this.board);
+        }
+        
+        return true;
     }
     
     generateNewBlocks() {
@@ -1016,6 +1031,34 @@ class BlockdokuGame {
             this.updatePlaceabilityIndicators();
         }
         
+        // Draw dead pixels first (before filled cells)
+        if (this.deadPixelsManager && this.deadPixelsManager.isEnabled()) {
+            const deadPixels = this.deadPixelsManager.getDeadPixels();
+            const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--board-bg').trim();
+            
+            deadPixels.forEach(({ row, col }) => {
+                const x = Math.round(col * drawCellSize) + 1;
+                const y = Math.round(row * drawCellSize) + 1;
+                const size = Math.round(drawCellSize) - 2;
+                
+                // Draw dead pixel with background color and subtle pattern
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(x, y, size, size);
+                
+                // Add a subtle X pattern to indicate dead pixel
+                ctx.save();
+                ctx.strokeStyle = 'rgba(128, 128, 128, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + size, y + size);
+                ctx.moveTo(x + size, y);
+                ctx.lineTo(x, y + size);
+                ctx.stroke();
+                ctx.restore();
+            });
+        }
+        
         ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--block-color');
         for (let row = 0; row < this.boardSize; row++) {
             if (!this.board[row] || !Array.isArray(this.board[row])) {
@@ -1023,7 +1066,10 @@ class BlockdokuGame {
                 continue;
             }
             for (let col = 0; col < this.boardSize; col++) {
-                if (this.board[row][col] === 1) {
+                // Skip drawing if this is a dead pixel (they're already drawn)
+                const isDeadPixel = this.deadPixelsManager && this.deadPixelsManager.isDeadPixel(row, col);
+                
+                if (this.board[row][col] === 1 && !isDeadPixel) {
                     const x = Math.round(col * drawCellSize) + 1;
                     const y = Math.round(row * drawCellSize) + 1;
                     const size = Math.round(drawCellSize) - 2;
@@ -1588,6 +1634,12 @@ class BlockdokuGame {
         this.scoringSystem.reset();
         this.petrificationManager.resetAll();
         this.petrificationManager.resetStats();
+        
+        // Generate new dead pixels if enabled
+        if (this.deadPixelsManager && this.deadPixelsManager.isEnabled()) {
+            this.deadPixelsManager.generateDeadPixels(this.boardSize);
+        }
+        
         this.score = 0;
         this.level = 1;
         this.selectedBlock = null;
@@ -2363,6 +2415,34 @@ class BlockdokuGame {
         // Load speed mode setting (3-way: 'bonus', 'punishment', or 'ignored')
         const speedMode = settings.speedMode || 'bonus'; // Default to 'bonus'
         this.scoringSystem.setSpeedMode(speedMode);
+        
+        // Load dead pixels settings
+        this.enableDeadPixels = settings.enableDeadPixels || false;
+        this.deadPixelsIntensity = settings.deadPixelsIntensity || 0;
+        
+        // Apply dead pixels settings
+        if (this.deadPixelsManager) {
+            const wasEnabled = this.deadPixelsManager.isEnabled();
+            const prevIntensity = this.deadPixelsManager.getIntensity();
+            
+            this.deadPixelsManager.setEnabled(this.enableDeadPixels);
+            this.deadPixelsManager.setIntensity(this.deadPixelsIntensity);
+            
+            // If dead pixels was just enabled or intensity changed, regenerate for current game
+            // But only if we're not loading a saved game (which would have its own dead pixels state)
+            const intensityChanged = this.deadPixelsIntensity !== prevIntensity;
+            if (this.enableDeadPixels && (!wasEnabled || intensityChanged)) {
+                // Only regenerate if we don't have a saved state with dead pixels
+                const hasCurrentDeadPixels = this.deadPixelsManager.getDeadPixels().length > 0;
+                if (!hasCurrentDeadPixels || intensityChanged) {
+                    this.deadPixelsManager.generateDeadPixels(this.boardSize);
+                }
+            }
+            // If disabled, clear dead pixels
+            if (!this.enableDeadPixels && wasEnabled) {
+                this.deadPixelsManager.clearDeadPixels();
+            }
+        }
     }
 
     loadGameState() {
@@ -2409,6 +2489,11 @@ class BlockdokuGame {
                 this.petrificationManager.deserialize(savedState.petrificationState);
             }
             
+            // Restore dead pixels state
+            if (savedState.deadPixelsState && this.deadPixelsManager) {
+                this.deadPixelsManager.deserialize(savedState.deadPixelsState);
+            }
+            
             // Update placeability indicators after loading game state
             this.updatePlaceabilityIndicators();
             
@@ -2449,7 +2534,8 @@ class BlockdokuGame {
                 comboActivations: this.scoringSystem.comboActivations,
                 pointsBreakdown: this.scoringSystem.pointsBreakdown
             },
-            petrificationState: this.petrificationManager ? this.petrificationManager.serialize() : null
+            petrificationState: this.petrificationManager ? this.petrificationManager.serialize() : null,
+            deadPixelsState: this.deadPixelsManager ? this.deadPixelsManager.serialize() : null
         };
         console.log('Saving game state:', gameState);
         this.storage.saveGameState(gameState);
