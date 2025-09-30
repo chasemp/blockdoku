@@ -1345,11 +1345,19 @@ class BlockdokuGame {
         // Start glow effect immediately
         this.highlightClearingBlocks(clearedLines);
         
-        // After 0.75 seconds, actually clear the lines and show effects
-        setTimeout(() => {
+        // Store the timeout ID so we can cancel it if needed
+        this.clearTimeoutId = setTimeout(() => {
             console.log('Timeout reached, calling completeLineClear');
             this.completeLineClear(clearedLines);
         }, 750);
+        
+        // Add a safety timeout to prevent permanent stuck state
+        this.safetyTimeoutId = setTimeout(() => {
+            if (this.pendingClears) {
+                console.warn('Safety timeout reached - forcing line clear completion');
+                this.forceCompleteLineClear(clearedLines);
+            }
+        }, 2000); // 2 seconds safety timeout
     }
     
     showImmediateClearFeedback(clearedLines) {
@@ -1570,15 +1578,30 @@ class BlockdokuGame {
         let combo;
         
         try {
-            // Clear pending clears state FIRST to prevent stuck UI
-            this.pendingClears = null;
-            this.pendingClearsTimestamp = null;
-            
-            // Actually clear the lines from the board (without updating score)
+            // Actually clear the lines from the board FIRST (without updating score)
             console.log('Clearing lines from board...');
             result = this.scoringSystem.clearLinesFromBoard(this.board, clearedLines);
             console.log('Lines cleared from board, result:', result);
-            this.board = result.board;
+            
+            // Only clear pending state AFTER successful clearing
+            if (result && result.board) {
+                this.board = result.board;
+                // Clear pending clears state AFTER successful board update
+                this.pendingClears = null;
+                this.pendingClearsTimestamp = null;
+                // Clear timeouts since we completed successfully
+                if (this.clearTimeoutId) {
+                    clearTimeout(this.clearTimeoutId);
+                    this.clearTimeoutId = null;
+                }
+                if (this.safetyTimeoutId) {
+                    clearTimeout(this.safetyTimeoutId);
+                    this.safetyTimeoutId = null;
+                }
+            } else {
+                console.error('Failed to clear lines from board, keeping pending state');
+                return; // Exit early if clearing failed
+            }
             
             // Thaw all petrified cells and blocks after a clear event
             this.petrificationManager.thawAll();
@@ -1600,10 +1623,27 @@ class BlockdokuGame {
             console.log('Line clear completed. Score was already updated. Current score:', this.score, 'Current level:', this.level);
         } catch (error) {
             console.error('Error during line clear completion:', error);
-            // Reset pending clears state even if there was an error
-            this.pendingClears = null;
-            this.pendingClearResult = null;
-            this.pendingClearsTimestamp = null;
+            // Don't reset pending state on error - this causes the stuck state
+            // Instead, try to recover by attempting the clear again
+            console.log('Attempting recovery from line clear error...');
+            
+            // Try to clear the lines again as a recovery attempt
+            try {
+                const recoveryResult = this.scoringSystem.clearLinesFromBoard(this.board, clearedLines);
+                if (recoveryResult && recoveryResult.board) {
+                    this.board = recoveryResult.board;
+                    this.pendingClears = null;
+                    this.pendingClearsTimestamp = null;
+                    this.pendingClearResult = null;
+                    console.log('Recovery successful, lines cleared');
+                } else {
+                    console.error('Recovery failed, keeping pending state for manual intervention');
+                    // Keep pending state so user can use resetStuckUIState() if needed
+                }
+            } catch (recoveryError) {
+                console.error('Recovery attempt also failed:', recoveryError);
+                // Keep pending state for manual intervention
+            }
             return;
         }
         
@@ -1646,6 +1686,48 @@ class BlockdokuGame {
         setTimeout(() => {
             this.checkLineClears();
         }, 200);
+    }
+    
+    // Force complete line clear when stuck (safety mechanism)
+    forceCompleteLineClear(clearedLines) {
+        console.log('Force completing line clear for:', clearedLines);
+        
+        try {
+            // Clear timeouts first
+            if (this.clearTimeoutId) {
+                clearTimeout(this.clearTimeoutId);
+                this.clearTimeoutId = null;
+            }
+            if (this.safetyTimeoutId) {
+                clearTimeout(this.safetyTimeoutId);
+                this.safetyTimeoutId = null;
+            }
+            
+            // Force clear the lines
+            const result = this.scoringSystem.clearLinesFromBoard(this.board, clearedLines);
+            if (result && result.board) {
+                this.board = result.board;
+                this.pendingClears = null;
+                this.pendingClearsTimestamp = null;
+                this.pendingClearResult = null;
+                
+                // Thaw petrified cells
+                this.petrificationManager.thawAll();
+                this.petrificationManager.updateBoardTracking(this.board);
+                
+                // Update UI
+                this.updateUI();
+                this.updatePlaceabilityIndicators();
+                
+                console.log('Force clear completed successfully');
+            } else {
+                console.error('Force clear failed - using emergency reset');
+                this.resetStuckUIState();
+            }
+        } catch (error) {
+            console.error('Force clear error:', error);
+            this.resetStuckUIState();
+        }
     }
     
     newGame() {
@@ -3585,6 +3667,17 @@ class BlockdokuGame {
         // Clear any pending clears that might be causing red highlighting
         this.pendingClears = null;
         this.pendingClearResult = null;
+        this.pendingClearsTimestamp = null;
+        
+        // Clear any active timeouts
+        if (this.clearTimeoutId) {
+            clearTimeout(this.clearTimeoutId);
+            this.clearTimeoutId = null;
+        }
+        if (this.safetyTimeoutId) {
+            clearTimeout(this.safetyTimeoutId);
+            this.safetyTimeoutId = null;
+        }
         
         // Force refresh the board display
         this.drawBoard();
