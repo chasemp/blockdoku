@@ -108,6 +108,11 @@ class SettingsManager {
             showHighScore.checked = this.settings.showHighScore === true; // Default to false
         }
         
+        const enableSpeedBonus = document.getElementById('enable-speed-bonus');
+        if (enableSpeedBonus) {
+            enableSpeedBonus.checked = this.settings.enableSpeedBonus !== false; // Default to true
+        }
+        
         const showSpeedBonus = document.getElementById('show-speed-bonus');
         if (showSpeedBonus) {
             showSpeedBonus.checked = this.settings.showSpeedBonus === true; // Default to false
@@ -216,6 +221,13 @@ class SettingsManager {
         if (showHighScore) {
             showHighScore.addEventListener('change', (e) => {
                 this.updateSetting('showHighScore', e.target.checked);
+            });
+        }
+        
+        const enableSpeedBonus = document.getElementById('enable-speed-bonus');
+        if (enableSpeedBonus) {
+            enableSpeedBonus.addEventListener('change', (e) => {
+                this.updateSetting('enableSpeedBonus', e.target.checked);
             });
         }
         

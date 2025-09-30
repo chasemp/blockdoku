@@ -386,6 +386,11 @@ export class ScoringSystem {
         const currentTime = Date.now();
         this.placementTimes.push(currentTime);
         
+        // Only calculate speed bonus if enabled
+        if (!this.speedBonusConfig.enabled) {
+            return;
+        }
+        
         // Calculate speed bonus if we have at least 2 placements
         if (this.placementTimes.length >= 2) {
             const timeSinceLastPlacement = currentTime - this.placementTimes[this.placementTimes.length - 2];
@@ -470,6 +475,16 @@ export class ScoringSystem {
             recentFastPlacements: this.getRecentFastPlacements(),
             totalPlacements: this.placementTimes.length
         };
+    }
+    
+    // Enable or disable speed bonus system
+    setSpeedBonusEnabled(enabled) {
+        this.speedBonusConfig.enabled = enabled;
+    }
+    
+    // Check if speed bonus is enabled
+    isSpeedBonusEnabled() {
+        return this.speedBonusConfig.enabled;
     }
     
     getLastScoreGained() {
