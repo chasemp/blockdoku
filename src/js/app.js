@@ -247,6 +247,11 @@ class BlockdokuGame {
         
         // Initialize utility bar state
         this.updateUtilityBarState();
+        
+        // Set up piece timeout callback
+        this.blockPalette.setPieceTimeoutCallback((blockId) => {
+            this.handlePieceTimeout(blockId);
+        });
     }
     
     async registerServiceWorker() {
@@ -1599,6 +1604,11 @@ class BlockdokuGame {
         this.comboModeActive = settings.comboDisplayMode || 'cumulative';
         this.comboModesUsed = new Set();
         
+        // Reset piece timeouts for new game
+        if (this.blockPalette && this.blockPalette.stopTimeoutChecking) {
+            this.blockPalette.stopTimeoutChecking();
+        }
+        
         // Update placeability indicators for new game
         this.updatePlaceabilityIndicators();
         
@@ -2618,6 +2628,11 @@ class BlockdokuGame {
         
         console.log('Game Over! Final Score:', this.score);
         
+        // Pause piece timeout checking (so the visual state remains)
+        if (this.blockPalette && this.blockPalette.pauseTimeoutChecking) {
+            this.blockPalette.pauseTimeoutChecking();
+        }
+        
         // Stop the game loop
         this.stopGameLoop();
         
@@ -3294,6 +3309,9 @@ class BlockdokuGame {
         const centerY = this.canvas.height / 2;
         this.effectsManager.onBlockPlace(centerX, centerY);
         
+        // Reset timeout for the placed block before removing it
+        this.blockPalette.resetPieceTimeout(this.selectedBlock.id);
+        
         // Remove the used block and untrack it from petrification
         this.petrificationManager.untrackBlock(this.selectedBlock.id);
         this.blockManager.removeBlock(this.selectedBlock.id);
@@ -3401,6 +3419,13 @@ class BlockdokuGame {
             return; // No blocks to check
         }
         
+        // First check if all pieces have timed out
+        if (this.blockPalette.areAllPiecesTimedOut()) {
+            console.log('Game Over: All pieces timed out');
+            this.gameOver();
+            return;
+        }
+        
         // Check if any block can be placed anywhere on the board
         const placeableMap = this.computePlaceabilityMap();
         const hasAnyPlaceable = Object.values(placeableMap).some(v => v);
@@ -3426,6 +3451,24 @@ class BlockdokuGame {
                     }
                 }
             }, 1250);
+        }
+    }
+    
+    /**
+     * Handle when a piece times out (30 seconds without being placed)
+     */
+    handlePieceTimeout(blockId) {
+        console.log('Piece timed out:', blockId);
+        
+        // Check if all pieces have now timed out
+        if (this.blockPalette.areAllPiecesTimedOut()) {
+            // Trigger game over after a brief delay to show the notification
+            setTimeout(() => {
+                if (!this.isGameOver) {
+                    console.log('All pieces timed out - Game Over');
+                    this.gameOver();
+                }
+            }, 1000);
         }
     }
 
