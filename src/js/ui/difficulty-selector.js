@@ -140,16 +140,60 @@ export class DifficultySelector {
         option.appendChild(icon);
         option.appendChild(content);
         
-        // Add click and touch handlers
-        const handleDifficultyClick = async () => {
+        // Add press-and-hold handlers (1.5 second hold time)
+        let pressStartTime = null;
+        let pressTimeout = null;
+        let isPressed = false;
+        
+        const handleDifficultyActivation = async (e) => {
+            e.preventDefault();
             await this.selectDifficulty(difficulty.key);
         };
         
-        option.addEventListener('click', handleDifficultyClick);
-        option.addEventListener('touchstart', async (e) => {
+        const startPress = (e) => {
             e.preventDefault();
-            await handleDifficultyClick();
-        }, { passive: false });
+            if (isPressed) return; // Already pressing
+            
+            isPressed = true;
+            pressStartTime = Date.now();
+            
+            // Add visual feedback
+            option.classList.add('pressing');
+            
+            // Set timeout for 1.5 seconds
+            pressTimeout = setTimeout(() => {
+                if (isPressed) {
+                    handleDifficultyActivation(e);
+                    this.resetPressState(option, pressTimeout, isPressed);
+                }
+            }, 1500);
+        };
+        
+        const cancelPress = (e) => {
+            if (!isPressed) return;
+            
+            e.preventDefault();
+            this.resetPressState(option, pressTimeout, isPressed);
+        };
+        
+        // Mouse events
+        option.addEventListener('mousedown', startPress);
+        option.addEventListener('mouseup', cancelPress);
+        option.addEventListener('mouseleave', cancelPress);
+        
+        // Touch events
+        option.addEventListener('touchstart', startPress, { passive: false });
+        option.addEventListener('touchend', cancelPress, { passive: false });
+        option.addEventListener('touchcancel', cancelPress, { passive: false });
+        
+        // Fallback click handler for accessibility
+        option.addEventListener('click', async (e) => {
+            e.preventDefault();
+            // Only allow click if it's a quick press (accessibility)
+            if (!isPressed && (!pressStartTime || (Date.now() - pressStartTime) < 200)) {
+                await handleDifficultyActivation(e);
+            }
+        });
         
         return option;
     }
@@ -201,6 +245,16 @@ export class DifficultySelector {
                 option.classList.remove('selected');
             }
         });
+    }
+    
+    resetPressState(item, pressTimeout, isPressed) {
+        // Clear timeout
+        if (pressTimeout) {
+            clearTimeout(pressTimeout);
+        }
+        
+        // Remove visual feedback
+        item.classList.remove('pressing');
     }
     
     show() {
@@ -327,6 +381,25 @@ export class DifficultySelector {
                 background: var(--primary-color, #007bff);
                 color: white !important;
                 text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
+            }
+            
+            .difficulty-option.pressing {
+                transform: scale(0.98);
+                opacity: 0.8;
+                border-color: var(--primary-color, #007bff);
+                background: var(--primary-color, #007bff);
+                color: white !important;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
+            }
+            
+            .difficulty-option.pressing .difficulty-content h3 {
+                color: white !important;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
+            }
+            
+            .difficulty-option.pressing .difficulty-content p {
+                color: rgba(255, 255, 255, 0.9);
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
             }
             
             .difficulty-icon {
