@@ -150,6 +150,18 @@ class SettingsManager {
             }
         }
         
+        // Speed tracking
+        const speedEnabled = document.getElementById('speed-enabled');
+        if (speedEnabled) {
+            speedEnabled.checked = this.settings.speedEnabled !== false; // Default to true
+        }
+
+        // Success mode
+        const successModeEnabled = document.getElementById('success-mode-enabled');
+        if (successModeEnabled) {
+            successModeEnabled.checked = this.settings.successModeEnabled !== false; // Default to true
+        }
+
         const showSpeedBonus = document.getElementById('show-speed-bonus');
         if (showSpeedBonus) {
             showSpeedBonus.checked = this.settings.showSpeedBonus === true; // Default to false
@@ -477,6 +489,22 @@ class SettingsManager {
             });
         }
         
+        // Speed tracking toggle
+        const speedEnabled = document.getElementById('speed-enabled');
+        if (speedEnabled) {
+            speedEnabled.addEventListener('change', (e) => {
+                this.updateSetting('speedEnabled', e.target.checked);
+            });
+        }
+
+        // Success mode toggle
+        const successModeEnabled = document.getElementById('success-mode-enabled');
+        if (successModeEnabled) {
+            successModeEnabled.addEventListener('change', (e) => {
+                this.updateSetting('successModeEnabled', e.target.checked);
+            });
+        }
+
         const showSpeedBonus = document.getElementById('show-speed-bonus');
         if (showSpeedBonus) {
             showSpeedBonus.addEventListener('change', (e) => {
