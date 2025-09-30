@@ -215,7 +215,7 @@ export class HintSystem {
     getHintStatus() {
         return {
             active: this.hintsActive,
-            available: this.isHintAvailable(),
+            available: this.isHintAvailable() || this.hintsActive, // Allow clicking when hints are active to turn them off
             cooldownRemaining: Math.max(0, this.hintCooldown),
             validPositions: this.validPositions.length
         };
