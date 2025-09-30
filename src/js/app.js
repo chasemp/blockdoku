@@ -1622,9 +1622,12 @@ class BlockdokuGame {
             comboElement.textContent = currentCombo;
         }
         
-        // Update speed bonus display
+        // Update speed bonus display in utility bar
         if (speedBonusElement && speedBonusValueElement) {
-            if (speedStats.totalSpeedBonus > 0) {
+            const settings = this.storage.loadSettings();
+            const showSpeedBonus = settings.showSpeedBonus === true;
+            
+            if (showSpeedBonus && speedStats.totalSpeedBonus > 0) {
                 speedBonusElement.style.display = 'flex';
                 speedBonusValueElement.textContent = speedStats.totalSpeedBonus;
                 
