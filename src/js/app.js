@@ -213,6 +213,11 @@ class BlockdokuGame {
         this.registerServiceWorker();
         // this.loadSettings();
         this.loadGameState();
+        
+        // Ensure BlockPalette is rendered before generating blocks
+        if (this.blockPalette) {
+            this.blockPalette.render();
+        }
         this.generateNewBlocks();
         
         // Initialize timer system for current difficulty
@@ -3402,6 +3407,8 @@ class BlockdokuGame {
         
         
         const newBlocks = this.blockManager.generateRandomBlocks(blockCount, blockTypes, this.difficultyManager);
+        console.log('Generated new blocks:', newBlocks);
+        console.log('BlockPalette exists:', !!this.blockPalette);
         this.blockPalette.updateBlocks(newBlocks);
         
         // Update petrification tracking for new blocks

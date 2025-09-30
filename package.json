@@ -16,6 +16,8 @@
     "test:watch": "jest --watch",
     "test:behavioral": "node tests/behavioral/run-tests.js",
     "test:behavioral:browser": "echo 'Open http://localhost:3456/tests/behavioral/test-runner.html in your browser'",
+    "test:characterization": "node --experimental-modules tests/characterization/run-characterization-tests.js",
+    "test:characterization:watch": "node --experimental-modules tests/characterization/run-characterization-tests.js --watch",
     "cleanup:assets": "node scripts/cleanup-assets.js",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix"

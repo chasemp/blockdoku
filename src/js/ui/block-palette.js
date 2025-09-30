@@ -95,8 +95,13 @@ export class BlockPalette {
     }
     
     updateBlocks(blocks) {
+        console.log('BlockPalette.updateBlocks called with blocks:', blocks);
         const container = document.getElementById('blocks-container');
-        if (!container) return;
+        console.log('blocks-container found:', !!container);
+        if (!container) {
+            console.error('blocks-container not found! BlockPalette may not be rendered yet.');
+            return;
+        }
         
         container.innerHTML = '';
         this.blockElements.clear();
