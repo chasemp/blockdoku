@@ -2307,9 +2307,9 @@ class BlockdokuGame {
         // Load combo display mode from settings
         this.comboModeActive = settings.comboDisplayMode || 'cumulative';
         
-        // Load speed bonus setting
-        const enableSpeedBonus = settings.enableSpeedBonus !== false; // Default to true
-        this.scoringSystem.setSpeedBonusEnabled(enableSpeedBonus);
+        // Load speed mode setting (3-way: 'bonus', 'punishment', or 'ignored')
+        const speedMode = settings.speedMode || 'bonus'; // Default to 'bonus'
+        this.scoringSystem.setSpeedMode(speedMode);
     }
 
     loadGameState() {
@@ -3251,16 +3251,26 @@ class BlockdokuGame {
         const x = col * cellSize + cellSize / 2;
         const y = row * cellSize + cellSize / 2;
         
+        // Determine the current speed mode
+        const speedMode = this.scoringSystem.getSpeedMode();
+        
         // Create speed bonus text element
         const speedText = document.createElement('div');
         speedText.className = 'speed-bonus-text';
-        speedText.textContent = `+${bonus} Speed!`;
+        
+        // Set text and color based on mode
+        if (speedMode === 'punishment') {
+            speedText.textContent = `-${bonus} Too Fast!`;
+        } else {
+            speedText.textContent = `+${bonus} Speed!`;
+        }
+        
         speedText.style.cssText = `
             position: absolute;
             left: ${x}px;
             top: ${y}px;
             transform: translate(-50%, -50%);
-            color: #ff6b35;
+            color: ${speedMode === 'punishment' ? '#ff3333' : '#ff6b35'};
             font-weight: 900;
             font-size: 1.2rem;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
