@@ -134,20 +134,18 @@ class SettingsManager {
             showHighScore.checked = this.settings.showHighScore === true; // Default to false
         }
         
-        // Speed mode - handle radio buttons
-        const speedModeBonus = document.getElementById('speed-mode-bonus');
-        const speedModePunishment = document.getElementById('speed-mode-punishment');
-        const speedModeIgnored = document.getElementById('speed-mode-ignored');
+        // Speed mode - handle cycling button
+        this.speedModeOrder = ['bonus', 'punishment', 'ignored'];
+        this.currentSpeedModeIndex = 0;
         
-        if (speedModeBonus && speedModePunishment && speedModeIgnored) {
+        const speedModeToggle = document.getElementById('speed-mode-toggle');
+        if (speedModeToggle) {
             const mode = this.settings.speedMode || 'bonus'; // Default to 'bonus'
-            if (mode === 'bonus') {
-                speedModeBonus.checked = true;
-            } else if (mode === 'punishment') {
-                speedModePunishment.checked = true;
-            } else if (mode === 'ignored') {
-                speedModeIgnored.checked = true;
+            this.currentSpeedModeIndex = this.speedModeOrder.indexOf(mode);
+            if (this.currentSpeedModeIndex === -1) {
+                this.currentSpeedModeIndex = 0; // Fallback to bonus
             }
+            this.updateSpeedModeDisplay();
         }
         
 
@@ -461,26 +459,12 @@ class SettingsManager {
             });
         }
         
-        // Speed mode radio buttons
-        const speedModeBonus = document.getElementById('speed-mode-bonus');
-        const speedModePunishment = document.getElementById('speed-mode-punishment');
-        const speedModeIgnored = document.getElementById('speed-mode-ignored');
-        
-        if (speedModeBonus && speedModePunishment && speedModeIgnored) {
-            speedModeBonus.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    this.updateSetting('speedMode', 'bonus');
-                }
-            });
-            speedModePunishment.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    this.updateSetting('speedMode', 'punishment');
-                }
-            });
-            speedModeIgnored.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    this.updateSetting('speedMode', 'ignored');
-                }
+        // Speed mode cycling button
+        const speedModeToggle = document.getElementById('speed-mode-toggle');
+        if (speedModeToggle) {
+            speedModeToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.cycleSpeedMode();
             });
         }
         
@@ -1110,6 +1094,47 @@ class SettingsManager {
                 info.classList.remove('show-points');
             }
         });
+    }
+    
+    cycleSpeedMode() {
+        // Cycle to next mode
+        this.currentSpeedModeIndex = (this.currentSpeedModeIndex + 1) % this.speedModeOrder.length;
+        const newMode = this.speedModeOrder[this.currentSpeedModeIndex];
+        
+        // Update setting
+        this.updateSetting('speedMode', newMode);
+        
+        // Update display
+        this.updateSpeedModeDisplay();
+    }
+    
+    updateSpeedModeDisplay() {
+        const speedModeToggle = document.getElementById('speed-mode-toggle');
+        const speedModeTitle = document.getElementById('speed-mode-title');
+        const speedModeDescription = document.getElementById('speed-mode-description');
+        
+        if (!speedModeToggle || !speedModeTitle || !speedModeDescription) return;
+        
+        const mode = this.speedModeOrder[this.currentSpeedModeIndex];
+        
+        const modeData = {
+            bonus: {
+                title: 'Bonus',
+                description: 'Faster = more points'
+            },
+            punishment: {
+                title: 'Punishment',
+                description: 'Faster = less points (scales with level)'
+            },
+            ignored: {
+                title: 'Ignored',
+                description: 'Speed doesn\'t affect score'
+            }
+        };
+        
+        const data = modeData[mode];
+        speedModeTitle.textContent = data.title;
+        speedModeDescription.textContent = data.description;
     }
     
     updateBuildInfo() {
