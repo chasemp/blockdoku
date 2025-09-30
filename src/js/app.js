@@ -2515,6 +2515,62 @@ class BlockdokuGame {
         }
     }
 
+    // Prize system based on score ranges
+    getPrizeForScore(score) {
+        const prizes = [
+            { minScore: 0, maxScore: 999, emoji: '🎯', name: 'First Steps', message: 'Every journey begins with a single step!' },
+            { minScore: 1000, maxScore: 2499, emoji: '🌟', name: 'Rising Star', message: 'You\'re getting the hang of it!' },
+            { minScore: 2500, maxScore: 4999, emoji: '🔥', name: 'Hot Streak', message: 'You\'re on fire! Keep it up!' },
+            { minScore: 5000, maxScore: 9999, emoji: '💎', name: 'Diamond Player', message: 'Shining bright like a diamond!' },
+            { minScore: 10000, maxScore: 19999, emoji: '🏆', name: 'Champion', message: 'You\'re a true champion!' },
+            { minScore: 20000, maxScore: 49999, emoji: '👑', name: 'Royal Master', message: 'Fit for a king or queen!' },
+            { minScore: 50000, maxScore: 99999, emoji: '🚀', name: 'Rocket Master', message: 'You\'re reaching for the stars!' },
+            { minScore: 100000, maxScore: 199999, emoji: '⭐', name: 'Superstar', message: 'You\'re absolutely stellar!' },
+            { minScore: 200000, maxScore: 499999, emoji: '🎪', name: 'Carnival Legend', message: 'The carnival has a new legend!' },
+            { minScore: 500000, maxScore: 999999, emoji: '🎭', name: 'Master Performer', message: 'A performance worthy of the grandest stage!' },
+            { minScore: 1000000, maxScore: Infinity, emoji: '🏅', name: 'Ultimate Grandmaster', message: 'You\'ve achieved the impossible!' }
+        ];
+        
+        for (const prize of prizes) {
+            if (score >= prize.minScore && score <= prize.maxScore) {
+                return prize;
+            }
+        }
+        
+        // Fallback (should never reach here)
+        return prizes[0];
+    }
+
+    // Get next prize tier information for progress display
+    getNextPrizeInfo(currentScore) {
+        const prizes = [
+            { minScore: 0, maxScore: 999, emoji: '🎯', name: 'First Steps' },
+            { minScore: 1000, maxScore: 2499, emoji: '🌟', name: 'Rising Star' },
+            { minScore: 2500, maxScore: 4999, emoji: '🔥', name: 'Hot Streak' },
+            { minScore: 5000, maxScore: 9999, emoji: '💎', name: 'Diamond Player' },
+            { minScore: 10000, maxScore: 19999, emoji: '🏆', name: 'Champion' },
+            { minScore: 20000, maxScore: 49999, emoji: '👑', name: 'Royal Master' },
+            { minScore: 50000, maxScore: 99999, emoji: '🚀', name: 'Rocket Master' },
+            { minScore: 100000, maxScore: 199999, emoji: '⭐', name: 'Superstar' },
+            { minScore: 200000, maxScore: 499999, emoji: '🎪', name: 'Carnival Legend' },
+            { minScore: 500000, maxScore: 999999, emoji: '🎭', name: 'Master Performer' },
+            { minScore: 1000000, maxScore: Infinity, emoji: '🏅', name: 'Ultimate Grandmaster' }
+        ];
+        
+        for (let i = 0; i < prizes.length; i++) {
+            if (currentScore < prizes[i].minScore) {
+                return {
+                    nextPrize: prizes[i],
+                    progress: Math.min(100, ((currentScore / prizes[i].minScore) * 100).toFixed(1)),
+                    pointsNeeded: prizes[i].minScore - currentScore
+                };
+            }
+        }
+        
+        // If they've reached the highest tier
+        return null;
+    }
+
     showGameOverModal(stats) {
         // Remove any existing game over modal
         const existingModal = document.getElementById('game-over-modal');
@@ -2539,6 +2595,23 @@ class BlockdokuGame {
             font-family: Arial, sans-serif;
         `;
         
+        // Add CSS animation for prize bounce effect
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes bounce {
+                0%, 20%, 50%, 80%, 100% {
+                    transform: translateY(0);
+                }
+                40% {
+                    transform: translateY(-10px);
+                }
+                60% {
+                    transform: translateY(-5px);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        
         const modalContent = document.createElement('div');
         modalContent.style.cssText = `
             background: var(--card-bg, #2c3e50);
@@ -2553,6 +2626,10 @@ class BlockdokuGame {
         `;
         
         const isHighScore = this.storage.isHighScore(stats.score);
+        
+        // Get prize for this score
+        const prize = this.getPrizeForScore(stats.score);
+        const nextPrizeInfo = this.getNextPrizeInfo(stats.score);
         
 		// Build detailed stats and breakdown
 		const difficultyLabel = (stats.difficulty?.toUpperCase?.() || this.difficulty.toUpperCase());
@@ -2569,6 +2646,27 @@ class BlockdokuGame {
 
         modalContent.innerHTML = `
 			<h2 style="margin: 0 0 20px 0; color: var(--primary-color, #3498db);">Game Over!</h2>
+			
+			<!-- Prize Section -->
+			<div style="margin: 15px 0; padding: 20px; background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,165,0,0.1)); border: 2px solid #ffd700; border-radius: 15px; text-align: center;">
+				<div style="font-size: 4em; margin-bottom: 10px; animation: bounce 1s ease-in-out;">${prize.emoji}</div>
+				<h3 style="margin: 0 0 8px 0; color: #ffd700; font-size: 1.4em; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">${prize.name}</h3>
+				<p style="margin: 0 0 15px 0; color: var(--text-color, white); font-style: italic; font-size: 1.1em;">${prize.message}</p>
+				${nextPrizeInfo ? `
+					<div style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,215,0,0.3);">
+						<p style="margin: 0 0 8px 0; color: #ffd700; font-size: 0.9em; font-weight: bold;">Next Prize: ${nextPrizeInfo.nextPrize.emoji} ${nextPrizeInfo.nextPrize.name}</p>
+						<div style="background: rgba(0,0,0,0.3); border-radius: 10px; height: 8px; margin: 5px 0;">
+							<div style="background: linear-gradient(90deg, #ffd700, #ffed4e); height: 100%; border-radius: 10px; width: ${nextPrizeInfo.progress}%; transition: width 0.5s ease;"></div>
+						</div>
+						<p style="margin: 5px 0 0 0; color: var(--text-color, white); font-size: 0.8em;">${nextPrizeInfo.pointsNeeded.toLocaleString()} points to go!</p>
+					</div>
+				` : `
+					<div style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,215,0,0.3);">
+						<p style="margin: 0; color: #ffd700; font-size: 0.9em; font-weight: bold;">🏆 You've reached the highest tier! 🏆</p>
+					</div>
+				`}
+			</div>
+			
 			<div style="margin: 15px 0;">
 				<p style=\"margin: 5px 0; font-size: 1.2em;\"><strong>Final Score: ${stats.score}</strong></p>
 				<p style=\"margin: 5px 0;\">Level: ${stats.level}</p>
