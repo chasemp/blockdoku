@@ -53,8 +53,9 @@
             <!-- Static slots for utility items -->
             <div class="utility-slot utility-slot-left">
                 <div class="utility-item" id="hint-slot">
-                    <div class="utility-item-content" id="hint-controls" style="display: none;">
-                        <button id="hint-btn" class="btn btn-hint">💡 Hint</button>
+                    <div class="utility-item-content hint-controls" id="hint-controls" style="display: none;">
+                        <span class="hint-label">HINT</span>
+                        <button id="hint-btn" class="btn-hint">💡</button>
                     </div>
                 </div>
             </div>
@@ -70,7 +71,10 @@
             
             <div class="utility-slot utility-slot-center-right">
                 <div class="utility-item" id="personal-best-slot">
-                    <div class="utility-item-content personal-bests" id="personal-bests" style="display: none;"></div>
+                    <div class="utility-item-content personal-bests" id="personal-bests" style="display: none;">
+                        <span class="pb-label">BEST</span>
+                        <span class="pb-value" id="personal-best-value">0</span>
+                    </div>
                 </div>
             </div>
             
