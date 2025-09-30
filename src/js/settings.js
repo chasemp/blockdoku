@@ -135,15 +135,15 @@ class SettingsManager {
         }
         
         // Speed mode - handle cycling button
-        this.speedModeOrder = ['bonus', 'punishment', 'ignored'];
+        this.speedModeOrder = ['ignored', 'bonus', 'punishment'];
         this.currentSpeedModeIndex = 0;
         
         const speedModeToggle = document.getElementById('speed-mode-toggle');
         if (speedModeToggle) {
-            const mode = this.settings.speedMode || 'bonus'; // Default to 'bonus'
+            const mode = this.settings.speedMode || 'ignored'; // Default to 'ignored'
             this.currentSpeedModeIndex = this.speedModeOrder.indexOf(mode);
             if (this.currentSpeedModeIndex === -1) {
-                this.currentSpeedModeIndex = 0; // Fallback to bonus
+                this.currentSpeedModeIndex = 0; // Fallback to ignored
             }
             this.updateSpeedModeDisplay();
         }
