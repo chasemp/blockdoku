@@ -25,7 +25,17 @@ A Progressive Web App for playing Blockudoku with multiple themes, local storage
 
 ## Development Status
 
-This project is currently in **Phase 1: Foundation**. See [PROJECT_PLAN.md](./PROJECT_PLAN.md) for detailed development milestones and progress.
+This project is currently in **Phase 1: Foundation**. See [PROJECT_PLAN.md](./docs/architecture/PROJECT_PLAN.md) for detailed development milestones and progress.
+
+## 📚 Documentation
+
+Comprehensive documentation is available in the [`docs/`](./docs/) directory:
+- 🏗️ **Architecture** - System design and technical decisions
+- 🎮 **Features** - Detailed feature implementations
+- 🔧 **Implementation** - Development notes and debugging guides
+- 👥 **User Guides** - End-user documentation
+
+See the [Documentation Index](./docs/README.md) for complete navigation.
 
 ### Current Milestones
 - [x] Project setup and repository initialization
