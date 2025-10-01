@@ -741,6 +741,7 @@
             <a href="#" class="nav-item" data-section="difficulty">⚡ Difficulty</a>
             <a href="#" class="nav-item" data-section="scores">🏆 High Scores</a>
             <a href="gamesettings.html" class="nav-item">🎮 Game Settings</a>
+            <a href="#" class="nav-item" data-section="app-management">📱 App Management</a>
             <a href="#" class="nav-item" data-section="sounds">🔊 Sound Effects</a>
             <a href="#" class="nav-item" data-section="about">ℹ️ About</a>
         </div>
@@ -835,12 +836,26 @@
                 </div>
             </div>
             
-            <!-- PWA Install Section -->
-            <div class="settings-section" id="install-section">
-                <h2 class="section-title">Install App</h2>
-                <p>Install Blockdoku as a Progressive Web App for a better experience:</p>
-                <div id="install-button-container">
-                    <!-- Install button will be dynamically added here -->
+            <!-- App Management Section -->
+            <div class="settings-section" id="app-management-section">
+                <h2 class="section-title">App Management</h2>
+                <p class="setting-description" style="margin-bottom: 1.5rem;">Manage your Blockdoku app installation and data.</p>
+                
+                <div class="app-management-buttons">
+                    <!-- PWA Install Button -->
+                    <div class="setting-item pwa-install-item">
+                        <button id="pwa-install-button" class="pwa-install-button">
+                            <span class="install-text">Install as PWA</span>
+                            <span class="install-status" id="install-status"></span>
+                        </button>
+                    </div>
+                    
+                    <!-- Reset Statistics Button -->
+                    <div class="setting-item reset-stats-item">
+                        <button id="reset-stats" class="reset-stats-button">
+                            <span class="reset-text">Reset Statistics</span>
+                        </button>
+                    </div>
                 </div>
             </div>
             
