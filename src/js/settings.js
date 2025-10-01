@@ -2,7 +2,6 @@ import { GameStorage } from './storage/game-storage.js';
 import { PWAInstallManager } from './pwa/install.js';
 import { ConfirmationDialog } from './ui/confirmation-dialog.js';
 import { SoundManager } from './effects/sound-manager.js';
-import { DifficultySettingsManager } from './difficulty/difficulty-settings-manager.js';
 // Build info is generated during build by scripts/generate-build-info.js.
 // If that generator is skipped, the About section will show fallback values.
 import { buildInfo } from './utils/build-info.js';
@@ -14,12 +13,9 @@ export class SettingsManager {
         
         // Load current values from storage FIRST, don't default them
         this.currentTheme = this.settings.theme || 'wood';
-        this.currentDifficulty = this.settings.difficulty || 'normal';
-        
         this.pwaInstallManager = null;
         this.confirmationDialog = new ConfirmationDialog();
         this.soundManager = new SoundManager();
-        this.difficultySettingsManager = new DifficultySettingsManager(this.storage);
         
         
         this.init();
@@ -45,7 +41,6 @@ export class SettingsManager {
     loadSettings() {
         console.log('Settings.js loading settings:', this.settings);
         this.currentTheme = this.settings.theme || 'wood';
-        this.currentDifficulty = this.settings.difficulty || 'normal';
         console.log('Settings.js current theme:', this.currentTheme);
         
         // Check if theme has already been applied by client-side script
@@ -65,8 +60,6 @@ export class SettingsManager {
         // Load effects settings
         this.loadEffectsSettings();
         
-        // Update difficulty UI to apply theme-specific styling
-        this.updateDifficultyUI();
     }
     
     loadEffectsSettings() {
@@ -173,10 +166,6 @@ export class SettingsManager {
             showPlacementPoints.checked = this.settings.showPlacementPoints === true; // Default to false
         }
 
-        const showHighScore = document.getElementById('show-high-score');
-        if (showHighScore) {
-            showHighScore.checked = this.settings.showHighScore === true; // Default to false
-        }
         
         // Speed mode - handle cycling button
         this.speedModeOrder = ['ignored', 'bonus', 'punishment'];
@@ -378,68 +367,6 @@ export class SettingsManager {
             });
         });
         
-        // Difficulty selection with press duration requirement
-        document.querySelectorAll('.difficulty-option').forEach(option => {
-            let pressStartTime = null;
-            let pressTimeout = null;
-            let isPressed = false;
-            
-            const resetPressState = () => {
-                // Clear timeout
-                if (pressTimeout) {
-                    clearTimeout(pressTimeout);
-                    pressTimeout = null;
-                }
-                
-                // Reset state
-                isPressed = false;
-                pressStartTime = null;
-                
-                // Remove visual feedback
-                option.classList.remove('pressing');
-            };
-            
-            const startPress = (e) => {
-                e.preventDefault();
-                if (isPressed) return;
-                
-                isPressed = true;
-                pressStartTime = Date.now();
-                option.classList.add('pressing');
-                
-                // Capture the difficulty value before the timeout
-                const difficulty = option.dataset.difficulty;
-                
-                pressTimeout = setTimeout(async () => {
-                    if (isPressed) {
-                        await this.selectDifficulty(difficulty);
-                        resetPressState();
-                    }
-                }, 10);
-            };
-            
-            const cancelPress = (e) => {
-                if (!isPressed) return;
-                e.preventDefault();
-                resetPressState();
-            };
-            
-            option.addEventListener('mousedown', startPress);
-            option.addEventListener('mouseup', cancelPress);
-            option.addEventListener('mouseleave', cancelPress);
-            option.addEventListener('touchstart', startPress, { passive: false });
-            option.addEventListener('touchend', cancelPress, { passive: false });
-            option.addEventListener('touchcancel', cancelPress, { passive: false });
-            
-            option.addEventListener('click', async (e) => {
-                e.preventDefault();
-                if (!isPressed && (!pressStartTime || (Date.now() - pressStartTime) < 200)) {
-                    // Capture the difficulty value and select it
-                    const difficulty = option.dataset.difficulty;
-                    await this.selectDifficulty(difficulty);
-                }
-            });
-        });
         
         // Game settings (only if elements exist)
         const enableHints = document.getElementById('enable-hints');
@@ -579,12 +506,6 @@ export class SettingsManager {
             });
         }
 
-        const showHighScore = document.getElementById('show-high-score');
-        if (showHighScore) {
-            showHighScore.addEventListener('change', (e) => {
-                this.updateSetting('showHighScore', e.target.checked);
-            });
-        }
         
         // Speed mode cycling button
         const speedModeToggle = document.getElementById('speed-mode-toggle');
@@ -1067,7 +988,6 @@ export class SettingsManager {
         this.currentTheme = theme;
         this.applyTheme(theme);
         this.updateThemeUI();
-        this.updateDifficultyUI(); // Update difficulty UI to apply theme-specific styling
         this.saveSettings();
     }
     
@@ -1106,70 +1026,6 @@ export class SettingsManager {
         document.body.classList.add(`${theme}-theme`);
     }
     
-    async selectDifficulty(difficulty) {
-        // Check if there's a game in progress by looking at localStorage
-        const gameState = localStorage.getItem(this.storage?.storageKey || 'blockdoku_game_data');
-        let gameInProgress = false;
-        
-        if (gameState) {
-            try {
-                const state = JSON.parse(gameState);
-                gameInProgress = state.score > 0 || state.board.some(row => row.some(cell => cell === 1));
-            } catch (e) {
-                // If we can't parse the game state, assume no game in progress
-                gameInProgress = false;
-            }
-        }
-        
-        if (gameInProgress) {
-            // Show confirmation dialog
-            const confirmed = await this.confirmationDialog.show(
-                `Changing difficulty to ${difficulty.toUpperCase()} will reset your current game and you'll lose your progress. Are you sure you want to continue?`
-            );
-            
-            if (!confirmed) {
-                // User cancelled, revert the UI selection
-                this.updateDifficultyUI();
-                return;
-            }
-        }
-        
-        // Update difficulty using the same system as the main game
-        this.currentDifficulty = difficulty;
-        this.settings.difficulty = difficulty;
-        this.saveSettings();
-        
-        // Apply difficulty-specific settings using the DifficultySettingsManager
-        const difficultySettings = this.difficultySettingsManager.getSettingsForDifficulty(difficulty);
-        console.log(`🎮 Settings page applying difficulty settings for: ${difficulty.toUpperCase()}`);
-        console.log('Applied settings:', difficultySettings);
-        
-        // Update the settings with difficulty-specific defaults
-        Object.keys(difficultySettings).forEach(key => {
-            if (this.settings[key] !== undefined) {
-                this.settings[key] = difficultySettings[key];
-            }
-        });
-        
-        // Save the updated settings
-        this.saveSettings();
-        
-        // Update UI to reflect the changes
-        this.updateDifficultyUI();
-        
-        // Also update the main game's difficulty if we're on the settings page
-        // This ensures the difficulty change takes effect immediately
-        if (window.parent && window.parent !== window) {
-            // If we're in an iframe, communicate with parent
-            window.parent.postMessage({
-                type: 'difficultyChanged',
-                difficulty: difficulty
-            }, '*');
-        } else {
-            // If we're on the settings page directly, store the change for the main game to pick up
-            localStorage.setItem('blockdoku_pending_difficulty', difficulty);
-        }
-    }
     
     updateSetting(key, value) {
         this.settings[key] = value;
@@ -1178,7 +1034,6 @@ export class SettingsManager {
     
     updateUI() {
         this.updateThemeUI();
-        this.updateDifficultyUI();
         this.updateGameSettingsUI();
     }
     
@@ -1191,47 +1046,6 @@ export class SettingsManager {
         });
     }
     
-    updateDifficultyUI() {
-        document.querySelectorAll('.difficulty-option').forEach(option => {
-            option.classList.remove('selected');
-            if (option.dataset.difficulty === this.currentDifficulty) {
-                option.classList.add('selected');
-                
-                // Force white text for light theme
-                if (this.currentTheme === 'light') {
-                    option.style.color = 'white';
-                    option.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.7)';
-                    
-                    // Also style child elements
-                    const h4 = option.querySelector('h4');
-                    if (h4) {
-                        h4.style.color = 'white';
-                        h4.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.7)';
-                    }
-                    
-                    const p = option.querySelector('p');
-                    if (p) {
-                        p.style.color = 'white';
-                        p.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.7)';
-                    }
-                } else {
-                    // Reset styles for other themes
-                    option.style.color = '';
-                    option.style.textShadow = '';
-                    const h4 = option.querySelector('h4');
-                    if (h4) {
-                        h4.style.color = '';
-                        h4.style.textShadow = '';
-                    }
-                    const p = option.querySelector('p');
-                    if (p) {
-                        p.style.color = '';
-                        p.style.textShadow = '';
-                    }
-                }
-            }
-        });
-    }
     
     updateGameSettingsUI() {
         const enableHints = document.getElementById('enable-hints');
@@ -1402,8 +1216,7 @@ export class SettingsManager {
     saveSettings() {
         const settings = {
             ...this.settings,
-            theme: this.currentTheme,
-            difficulty: this.currentDifficulty
+            theme: this.currentTheme
         };
         this.storage.saveSettings(settings);
     }
