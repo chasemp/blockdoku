@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test About Section - Debug</title>
+    <style>
+        .settings-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        
+        .settings-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            justify-content: center;
+        }
+        
+        .nav-item {
+            padding: 1rem 2rem;
+            background: #f0f0f0;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        .nav-item:hover {
+            border-color: #007bff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .nav-item.active {
+            border-color: #007bff;
+            background: #007bff;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .settings-content {
+            background: #f9f9f9;
+            border: 2px solid #ddd;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .settings-section {
+            display: none;
+        }
+        
+        .settings-section.active {
+            display: block;
+        }
+        
+        .about-content {
+            display: grid;
+            gap: 2rem;
+        }
+        
+        .about-item {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .about-item h3 {
+            color: #007bff;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 0.5rem;
+        }
+        
+        .about-item p {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+        
+        .about-item p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .about-item a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .about-item a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+        
+        .debug-info {
+            background: #e8f4f8;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .debug-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="debug-info">
+            <h3>Debug Information</h3>
+            <p>This page tests the about section with the exact same structure and JavaScript as the main settings page.</p>
+            <p>Press and hold the About button for 10ms to activate it, or click quickly for accessibility.</p>
+        </div>
+        
+        <div class="settings-nav">
+            <a href="#" class="nav-item active" data-section="theme">🎨 Theme</a>
+            <a href="#" class="nav-item" data-section="about">ℹ️ About</a>
+        </div>
+        
+        <div class="settings-content">
+            <!-- Theme Section -->
+            <div class="settings-section active" id="theme-section">
+                <h2>Theme</h2>
+                <p>Theme content here</p>
+            </div>
+            
+            <!-- About Section -->
+            <div class="settings-section" id="about-section">
+                <h2>About Blockdoku</h2>
+                <div class="about-content">
+                    <div class="about-item">
+                        <h3>Author</h3>
+                        <p>Chase Pettet, <a href="https://523.life" target="_blank" rel="noopener noreferrer">523.life</a></p>
+                    </div>
+                    
+                    <div class="about-item">
+                        <h3>Source Code</h3>
+                        <p>This is a Progressive Web App (PWA) built with modern web technologies including Vite, vanilla JavaScript, and CSS3.</p>
+                        <p>The source code is available and open for contribution under the <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener noreferrer">AGPL-3.0 license</a>.</p>
+                        <p><a href="https://github.com/chasepettet/blockdoku" target="_blank" rel="noopener noreferrer">View on GitHub</a></p>
+                    </div>
+                    
+                    <div class="about-item">
+                        <h3>Version</h3>
+                        <p>Version 1.0.0</p>
+                        <p>Build: Test</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="debug-section">
+            <h3>Debug Output</h3>
+            <div id="debug-output"></div>
+        </div>
+    </div>
+    
+    <script>
+        function showSection(sectionName) {
+            console.log('Switching to section:', sectionName);
+            
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const navItem = document.querySelector(`[data-section="${sectionName}"]`);
+            if (navItem) {
+                navItem.classList.add('active');
+                console.log('Navigation item activated:', sectionName);
+            } else {
+                console.error('Navigation item not found for section:', sectionName);
+            }
+            
+            // Update content
+            document.querySelectorAll('.settings-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            const targetSection = document.getElementById(`${sectionName}-section`);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                console.log('Section activated:', sectionName);
+            } else {
+                console.error('Section not found:', `${sectionName}-section`);
+            }
+        }
+        
+        // Add the same press-and-hold mechanism as the main settings page
+        document.querySelectorAll('.nav-item').forEach(item => {
+            let pressStartTime = null;
+            let pressTimeout = null;
+            let isPressed = false;
+            
+            const handleNavActivation = (e) => {
+                e.preventDefault();
+                console.log('Navigation activated for section:', item.dataset.section);
+                showSection(item.dataset.section);
+            };
+            
+            const resetPressState = () => {
+                // Clear timeout
+                if (pressTimeout) {
+                    clearTimeout(pressTimeout);
+                    pressTimeout = null;
+                }
+                
+                // Reset state
+                isPressed = false;
+                pressStartTime = null;
+                
+                // Remove visual feedback
+                item.classList.remove('pressing');
+            };
+            
+            const startPress = (e) => {
+                e.preventDefault();
+                if (isPressed) return; // Already pressing
+                
+                console.log('Press started for section:', item.dataset.section);
+                isPressed = true;
+                pressStartTime = Date.now();
+                
+                // Add visual feedback
+                item.classList.add('pressing');
+                
+                // Set timeout for 10ms (same as main settings)
+                pressTimeout = setTimeout(() => {
+                    if (isPressed) {
+                        console.log('Press timeout reached for section:', item.dataset.section);
+                        handleNavActivation(e);
+                        resetPressState();
+                    }
+                }, 10);
+            };
+            
+            const cancelPress = (e) => {
+                if (!isPressed) return;
+                
+                console.log('Press cancelled for section:', item.dataset.section);
+                e.preventDefault();
+                resetPressState();
+            };
+            
+            // Mouse events
+            item.addEventListener('mousedown', startPress);
+            item.addEventListener('mouseup', cancelPress);
+            item.addEventListener('mouseleave', cancelPress);
+            
+            // Touch events
+            item.addEventListener('touchstart', startPress, { passive: false });
+            item.addEventListener('touchend', cancelPress, { passive: false });
+            item.addEventListener('touchcancel', cancelPress, { passive: false });
+            
+            // Fallback click handler for accessibility
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Click handler triggered for section:', item.dataset.section, 'isPressed:', isPressed, 'pressStartTime:', pressStartTime);
+                // Only allow click if it's a quick press (accessibility)
+                if (!isPressed && (!pressStartTime || (Date.now() - pressStartTime) < 200)) {
+                    console.log('Fallback click activation for section:', item.dataset.section);
+                    handleNavActivation(e);
+                }
+            });
+        });
+        
+        // Debug output
+        function addDebugOutput(message) {
+            const debugOutput = document.getElementById('debug-output');
+            const p = document.createElement('p');
+            p.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            debugOutput.appendChild(p);
+            debugOutput.scrollTop = debugOutput.scrollHeight;
+        }
+        
+        // Override console.log to also show in debug output
+        const originalConsoleLog = console.log;
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            addDebugOutput(args.join(' '));
+        };
+        
+        console.log('Test page loaded');
+        console.log('About section element:', document.getElementById('about-section'));
+        console.log('About nav item:', document.querySelector('[data-section="about"]'));
+        
+        // Test the about section directly
+        setTimeout(() => {
+            console.log('Testing about section activation...');
+            showSection('about');
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -34,12 +34,29 @@ export class SettingsManager {
         setTimeout(() => {
             const aboutSection = document.getElementById('about-section');
             const aboutNavItem = document.querySelector('[data-section="about"]');
+            const settingsContent = document.querySelector('.settings-content');
+            
             console.log('About section test:', {
                 section: aboutSection,
                 navItem: aboutNavItem,
                 sectionVisible: aboutSection ? window.getComputedStyle(aboutSection).display : 'not found',
-                sectionClasses: aboutSection ? aboutSection.className : 'not found'
+                sectionClasses: aboutSection ? aboutSection.className : 'not found',
+                sectionParent: aboutSection ? aboutSection.parentElement?.id : 'not found',
+                inSettingsContent: aboutSection && settingsContent ? settingsContent.contains(aboutSection) : 'not found'
             });
+            
+            // Test direct activation of about section
+            if (aboutSection) {
+                console.log('Testing direct about section activation...');
+                this.showSection('about');
+                setTimeout(() => {
+                    console.log('About section after activation:', {
+                        hasActiveClass: aboutSection.classList.contains('active'),
+                        display: window.getComputedStyle(aboutSection).display,
+                        visibility: window.getComputedStyle(aboutSection).visibility
+                    });
+                }, 100);
+            }
         }, 100);
     }
     
@@ -1513,31 +1530,61 @@ export class SettingsManager {
         const aboutSection = document.getElementById('about-section');
         const soundSection = document.getElementById('sounds-section');
         const gameSection = document.getElementById('game-section');
+        const settingsContent = document.querySelector('.settings-content');
         
         console.log('About section parent:', aboutSection?.parentElement?.id);
         console.log('Game section:', gameSection?.id);
+        console.log('Settings content:', settingsContent?.id);
         
         // Only move sections if they are actually inside the game-section
         if (aboutSection && gameSection && aboutSection.parentElement === gameSection) {
             console.log('Moving about section outside game-section');
-            // Move About section outside game-section
-            aboutSection.remove();
-            gameSection.insertAdjacentElement('afterend', aboutSection);
+            // Move About section outside game-section but keep it inside settings-content
+            if (settingsContent) {
+                aboutSection.remove();
+                settingsContent.appendChild(aboutSection);
+                console.log('About section moved to settings-content');
+            } else {
+                // Fallback to original method
+                aboutSection.remove();
+                gameSection.insertAdjacentElement('afterend', aboutSection);
+            }
         } else {
             console.log('About section is already outside game-section');
-            // Ensure about section is still accessible
+            // Ensure about section is still accessible and inside settings-content
             if (aboutSection && aboutSection.parentElement) {
                 console.log('About section parent:', aboutSection.parentElement.id);
+                // Check if about section is inside settings-content
+                if (settingsContent && !settingsContent.contains(aboutSection)) {
+                    console.log('About section is outside settings-content, moving it back');
+                    aboutSection.remove();
+                    settingsContent.appendChild(aboutSection);
+                }
             }
         }
         
         if (soundSection && gameSection && soundSection.parentElement === gameSection) {
             console.log('Moving sound section outside game-section');
-            // Move Sound Effects section outside game-section
-            soundSection.remove();
-            gameSection.insertAdjacentElement('afterend', soundSection);
+            // Move Sound Effects section outside game-section but keep it inside settings-content
+            if (settingsContent) {
+                soundSection.remove();
+                settingsContent.appendChild(soundSection);
+                console.log('Sound section moved to settings-content');
+            } else {
+                // Fallback to original method
+                soundSection.remove();
+                gameSection.insertAdjacentElement('afterend', soundSection);
+            }
         } else {
             console.log('Sound section is already outside game-section');
+            // Ensure sound section is still accessible and inside settings-content
+            if (soundSection && soundSection.parentElement) {
+                if (settingsContent && !settingsContent.contains(soundSection)) {
+                    console.log('Sound section is outside settings-content, moving it back');
+                    soundSection.remove();
+                    settingsContent.appendChild(soundSection);
+                }
+            }
         }
         
         // Ensure about section is properly accessible
@@ -1545,6 +1592,8 @@ export class SettingsManager {
             console.log('About section found and accessible');
             console.log('About section classes:', aboutSection.className);
             console.log('About section display:', window.getComputedStyle(aboutSection).display);
+            console.log('About section parent:', aboutSection.parentElement?.id);
+            console.log('About section in settings-content:', settingsContent ? settingsContent.contains(aboutSection) : 'no settings-content');
         } else {
             console.error('About section not found!');
         }
