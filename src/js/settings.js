@@ -29,6 +29,18 @@ export class SettingsManager {
         this.updateUI();
         this.updateBuildInfo();
         this.initializePWA();
+        
+        // Test about section accessibility
+        setTimeout(() => {
+            const aboutSection = document.getElementById('about-section');
+            const aboutNavItem = document.querySelector('[data-section="about"]');
+            console.log('About section test:', {
+                section: aboutSection,
+                navItem: aboutNavItem,
+                sectionVisible: aboutSection ? window.getComputedStyle(aboutSection).display : 'not found',
+                sectionClasses: aboutSection ? aboutSection.className : 'not found'
+            });
+        }, 100);
     }
     
     initializePWA() {
@@ -239,6 +251,7 @@ export class SettingsManager {
             
             const handleNavActivation = (e) => {
                 e.preventDefault();
+                console.log('Navigation activated for section:', item.dataset.section);
                 this.showSection(item.dataset.section);
             };
             
@@ -261,15 +274,17 @@ export class SettingsManager {
                 e.preventDefault();
                 if (isPressed) return; // Already pressing
                 
+                console.log('Press started for section:', item.dataset.section);
                 isPressed = true;
                 pressStartTime = Date.now();
                 
                 // Add visual feedback
                 item.classList.add('pressing');
                 
-                // Set timeout for 0.75 seconds
+                // Set timeout for 10ms (same as main settings)
                 pressTimeout = setTimeout(() => {
                     if (isPressed) {
+                        console.log('Press timeout reached for section:', item.dataset.section);
                         handleNavActivation(e);
                         resetPressState();
                     }
@@ -279,6 +294,7 @@ export class SettingsManager {
             const cancelPress = (e) => {
                 if (!isPressed) return;
                 
+                console.log('Press cancelled for section:', item.dataset.section);
                 e.preventDefault();
                 resetPressState();
             };
@@ -296,8 +312,10 @@ export class SettingsManager {
             // Fallback click handler for accessibility
             item.addEventListener('click', (e) => {
                 e.preventDefault();
+                console.log('Click handler triggered for section:', item.dataset.section, 'isPressed:', isPressed, 'pressStartTime:', pressStartTime);
                 // Only allow click if it's a quick press (accessibility)
                 if (!isPressed && (!pressStartTime || (Date.now() - pressStartTime) < 200)) {
+                    console.log('Fallback click activation for section:', item.dataset.section);
                     handleNavActivation(e);
                 }
             });
@@ -672,6 +690,12 @@ export class SettingsManager {
             this.loadSoundCustomization();
         } else if (sectionName === 'about') {
             console.log('About section loaded');
+            // Ensure about section is visible
+            const aboutSection = document.getElementById('about-section');
+            if (aboutSection) {
+                console.log('About section is visible:', aboutSection.classList.contains('active'));
+                console.log('About section display style:', window.getComputedStyle(aboutSection).display);
+            }
         }
     }
     
@@ -1493,6 +1517,7 @@ export class SettingsManager {
         console.log('About section parent:', aboutSection?.parentElement?.id);
         console.log('Game section:', gameSection?.id);
         
+        // Only move sections if they are actually inside the game-section
         if (aboutSection && gameSection && aboutSection.parentElement === gameSection) {
             console.log('Moving about section outside game-section');
             // Move About section outside game-section
@@ -1500,6 +1525,10 @@ export class SettingsManager {
             gameSection.insertAdjacentElement('afterend', aboutSection);
         } else {
             console.log('About section is already outside game-section');
+            // Ensure about section is still accessible
+            if (aboutSection && aboutSection.parentElement) {
+                console.log('About section parent:', aboutSection.parentElement.id);
+            }
         }
         
         if (soundSection && gameSection && soundSection.parentElement === gameSection) {
@@ -1509,6 +1538,15 @@ export class SettingsManager {
             gameSection.insertAdjacentElement('afterend', soundSection);
         } else {
             console.log('Sound section is already outside game-section');
+        }
+        
+        // Ensure about section is properly accessible
+        if (aboutSection) {
+            console.log('About section found and accessible');
+            console.log('About section classes:', aboutSection.className);
+            console.log('About section display:', window.getComputedStyle(aboutSection).display);
+        } else {
+            console.error('About section not found!');
         }
     }
 }
