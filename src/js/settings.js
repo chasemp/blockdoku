@@ -273,7 +273,7 @@ export class SettingsManager {
                         handleNavActivation(e);
                         resetPressState();
                     }
-                }, 100);
+                }, 10);
             };
             
             const cancelPress = (e) => {
@@ -343,7 +343,7 @@ export class SettingsManager {
                         handleThemeActivation(themeValue);
                         resetPressState();
                     }
-                }, 100);
+                }, 10);
             };
             
             const cancelPress = (e) => {
@@ -405,7 +405,7 @@ export class SettingsManager {
                         await handleDifficultyActivation(e);
                         resetPressState();
                     }
-                }, 100);
+                }, 10);
             };
             
             const cancelPress = (e) => {

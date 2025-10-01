@@ -44,7 +44,7 @@ class StateManager { /* state management only */ }
 - **Global Access**: SettingsManager must be available globally (`window.settingsManager`)
 - **Persistence Issues**: UI and game logic can get out of sync - always validate
 - **Section Organization**: Large settings pages should be split into dedicated pages
-- **Touch Responsiveness**: 100ms touch delay provides good balance of responsiveness vs intentionality
+- **Touch Responsiveness**: 10ms touch delay provides optimal responsiveness for settings page interactions
 
 ---
 
@@ -103,7 +103,7 @@ if (document.readyState === 'loading') {
 **Lesson**: Touch events need careful handling to prevent accidental interactions.
 
 **Key Insights**:
-- **Touch and Hold**: 100ms delay provides good balance (was 750ms, too slow)
+- **Touch and Hold**: 10ms delay provides optimal responsiveness (was 100ms, now optimized for settings)
 - **Event Prevention**: Always use `preventDefault()` and `passive: false`
 - **Visual Feedback**: Show pressing state during touch interactions
 - **Multiple Event Types**: Handle both touch and mouse events
@@ -123,7 +123,7 @@ const startPress = (e) => {
       handleActivation();
       resetPressState();
     }
-  }, 100); // Optimal delay
+  }, 10); // Optimal delay for settings page responsiveness
 };
 ```
 
