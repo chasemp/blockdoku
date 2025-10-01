@@ -32,7 +32,7 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
-/* Utility bar between score bar and game board */
+/* UTILITY BAR: Optional items controlled by gamesettings.html (hints, timer, personal best, speed timer) */
 .utility-bar {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -327,6 +327,7 @@ body {
     z-index: 1;
 }
 
+/* SCORING BAR: Always visible score, level, and combo display */
 .game-info {
     display: flex;
     gap: 1.5rem;
