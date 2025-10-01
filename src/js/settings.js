@@ -41,12 +41,21 @@ export class SettingsManager {
     }
     
     loadSettings() {
+        console.log('Settings.js loading settings:', this.settings);
         this.currentTheme = this.settings.theme || 'wood';
         this.currentDifficulty = this.settings.difficulty || 'normal';
+        console.log('Settings.js current theme:', this.currentTheme);
         
-        
-        // Apply the loaded theme immediately
-        this.applyTheme(this.currentTheme);
+        // Check if theme has already been applied by client-side script
+        const currentDataTheme = document.documentElement.getAttribute('data-theme');
+        console.log('Current data-theme attribute:', currentDataTheme);
+        if (!currentDataTheme || currentDataTheme !== this.currentTheme) {
+            console.log('Applying theme from settings.js:', this.currentTheme);
+            // Apply the loaded theme immediately
+            this.applyTheme(this.currentTheme);
+        } else {
+            console.log('Theme already applied, skipping');
+        }
         
         // Fix section placement (ensure About and Sound sections are outside game-section)
         this.fixSectionPlacement();
@@ -231,8 +240,8 @@ export class SettingsManager {
     }
     
     setupEventListeners() {
-        // Navigation with press duration requirement
-        document.querySelectorAll('.nav-item').forEach(item => {
+        // Navigation with press duration requirement (only for internal navigation)
+        document.querySelectorAll('.nav-item[data-section]').forEach(item => {
             let pressStartTime = null;
             let pressTimeout = null;
             let isPressed = false;
@@ -429,14 +438,20 @@ export class SettingsManager {
             });
         });
         
-        // Game settings
-        document.getElementById('enable-hints').addEventListener('change', (e) => {
-            this.updateSetting('enableHints', e.target.checked);
-        });
+        // Game settings (only if elements exist)
+        const enableHints = document.getElementById('enable-hints');
+        if (enableHints) {
+            enableHints.addEventListener('change', (e) => {
+                this.updateSetting('enableHints', e.target.checked);
+            });
+        }
         
-        document.getElementById('enable-timer').addEventListener('change', (e) => {
-            this.updateSetting('enableTimer', e.target.checked);
-        });
+        const enableTimer = document.getElementById('enable-timer');
+        if (enableTimer) {
+            enableTimer.addEventListener('change', (e) => {
+                this.updateSetting('enableTimer', e.target.checked);
+            });
+        }
         
         const enablePetrification = document.getElementById('enable-petrification');
         if (enablePetrification) {
@@ -470,14 +485,17 @@ export class SettingsManager {
             });
         }
         
-        document.getElementById('sound-enabled').addEventListener('change', (e) => {
-            this.updateSetting('soundEnabled', e.target.checked);
-            // Also update the sound toggle in sounds section to keep them in sync
-            const soundsSectionToggle = document.getElementById('sound-enabled-sounds-section');
-            if (soundsSectionToggle) {
-                soundsSectionToggle.checked = e.target.checked;
-            }
-        });
+        const soundEnabled = document.getElementById('sound-enabled');
+        if (soundEnabled) {
+            soundEnabled.addEventListener('change', (e) => {
+                this.updateSetting('soundEnabled', e.target.checked);
+                // Also update the sound toggle in sounds section to keep them in sync
+                const soundsSectionToggle = document.getElementById('sound-enabled-sounds-section');
+                if (soundsSectionToggle) {
+                    soundsSectionToggle.checked = e.target.checked;
+                }
+            });
+        }
         
         // Sound toggle in sounds section
         const soundEnabledSounds = document.getElementById('sound-enabled-sounds-section');
@@ -492,40 +510,64 @@ export class SettingsManager {
             });
         }
         
-        document.getElementById('animations-enabled').addEventListener('change', (e) => {
-            this.updateSetting('animationsEnabled', e.target.checked);
-            this.updateAnimationSettingsVisibility();
-        });
+        const animationsEnabled = document.getElementById('animations-enabled');
+        if (animationsEnabled) {
+            animationsEnabled.addEventListener('change', (e) => {
+                this.updateSetting('animationsEnabled', e.target.checked);
+                this.updateAnimationSettingsVisibility();
+            });
+        }
         
         // Enhanced animation settings
-        document.getElementById('block-hover-effects').addEventListener('change', (e) => {
-            this.updateSetting('blockHoverEffects', e.target.checked);
-        });
+        const blockHoverEffects = document.getElementById('block-hover-effects');
+        if (blockHoverEffects) {
+            blockHoverEffects.addEventListener('change', (e) => {
+                this.updateSetting('blockHoverEffects', e.target.checked);
+            });
+        }
         
-        document.getElementById('block-selection-glow').addEventListener('change', (e) => {
-            this.updateSetting('blockSelectionGlow', e.target.checked);
-        });
+        const blockSelectionGlow = document.getElementById('block-selection-glow');
+        if (blockSelectionGlow) {
+            blockSelectionGlow.addEventListener('change', (e) => {
+                this.updateSetting('blockSelectionGlow', e.target.checked);
+            });
+        }
         
-        document.getElementById('block-entrance-animations').addEventListener('change', (e) => {
-            this.updateSetting('blockEntranceAnimations', e.target.checked);
-        });
+        const blockEntranceAnimations = document.getElementById('block-entrance-animations');
+        if (blockEntranceAnimations) {
+            blockEntranceAnimations.addEventListener('change', (e) => {
+                this.updateSetting('blockEntranceAnimations', e.target.checked);
+            });
+        }
         
-        document.getElementById('particle-effects').addEventListener('change', (e) => {
-            this.updateSetting('particleEffects', e.target.checked);
-        });
+        const particleEffects = document.getElementById('particle-effects');
+        if (particleEffects) {
+            particleEffects.addEventListener('change', (e) => {
+                this.updateSetting('particleEffects', e.target.checked);
+            });
+        }
         
-        document.getElementById('animation-speed').addEventListener('change', (e) => {
-            this.updateSetting('animationSpeed', e.target.value);
-        });
+        const animationSpeed = document.getElementById('animation-speed');
+        if (animationSpeed) {
+            animationSpeed.addEventListener('change', (e) => {
+                this.updateSetting('animationSpeed', e.target.value);
+            });
+        }
         
-        document.getElementById('auto-save').addEventListener('change', (e) => {
-            this.updateSetting('autoSave', e.target.checked);
-        });
+        const autoSave = document.getElementById('auto-save');
+        if (autoSave) {
+            autoSave.addEventListener('change', (e) => {
+                this.updateSetting('autoSave', e.target.checked);
+            });
+        }
         
-        document.getElementById('show-points').addEventListener('change', (e) => {
-            this.updateSetting('showPoints', e.target.checked);
-            this.updateBlockPointsDisplay();
-        });
+        const showPoints = document.getElementById('show-points');
+        if (showPoints) {
+            showPoints.addEventListener('change', (e) => {
+                this.updateSetting('showPoints', e.target.checked);
+                this.updateBlockPointsDisplay();
+            });
+        }
 
         const showPlacementPoints = document.getElementById('show-placement-points');
         if (showPlacementPoints) {
@@ -592,9 +634,12 @@ export class SettingsManager {
         
         // Effects settings
         
-        document.getElementById('haptic-enabled').addEventListener('change', (e) => {
-            this.updateSetting('hapticEnabled', e.target.checked);
-        });
+        const hapticEnabled = document.getElementById('haptic-enabled');
+        if (hapticEnabled) {
+            hapticEnabled.addEventListener('change', (e) => {
+                this.updateSetting('hapticEnabled', e.target.checked);
+            });
+        }
         
         // Share button
         const shareButton = document.getElementById('share-button');
@@ -644,13 +689,19 @@ export class SettingsManager {
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
         });
-        document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
+        const navItem = document.querySelector(`[data-section="${sectionName}"]`);
+        if (navItem) {
+            navItem.classList.add('active');
+        }
         
         // Update content
         document.querySelectorAll('.settings-section').forEach(section => {
             section.classList.remove('active');
         });
-        document.getElementById(`${sectionName}-section`).classList.add('active');
+        const sectionElement = document.getElementById(`${sectionName}-section`);
+        if (sectionElement) {
+            sectionElement.classList.add('active');
+        }
         
         // Load section-specific data
         if (sectionName === 'scores') {
@@ -1161,10 +1212,25 @@ export class SettingsManager {
     }
     
     updateGameSettingsUI() {
-        document.getElementById('enable-hints').checked = this.settings.enableHints || false;
-        document.getElementById('enable-timer').checked = this.settings.enableTimer || false;
-        document.getElementById('auto-save').checked = this.settings.autoSave !== false;
-        document.getElementById('show-points').checked = this.settings.showPoints || false;
+        const enableHints = document.getElementById('enable-hints');
+        if (enableHints) {
+            enableHints.checked = this.settings.enableHints || false;
+        }
+        
+        const enableTimer = document.getElementById('enable-timer');
+        if (enableTimer) {
+            enableTimer.checked = this.settings.enableTimer || false;
+        }
+        
+        const autoSave = document.getElementById('auto-save');
+        if (autoSave) {
+            autoSave.checked = this.settings.autoSave !== false;
+        }
+        
+        const showPoints = document.getElementById('show-points');
+        if (showPoints) {
+            showPoints.checked = this.settings.showPoints || false;
+        }
         
         // Effects settings are handled by loadEffectsSettings()
         this.loadEffectsSettings();

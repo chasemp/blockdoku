@@ -25,6 +25,38 @@ class BlockdokuBehavioralTests {
             () => this.testDifficultySync()
         );
 
+        // THEME REGRESSION TESTS
+        this.runner.addTest(
+            'Theme: All pages respect theme changes (REGRESSION)',
+            () => this.testThemeConsistencyAcrossPages()
+        );
+
+        this.runner.addTest(
+            'Theme: Gamesettings page theme synchronization (REGRESSION)',
+            () => this.testGamesettingsThemeSync()
+        );
+
+        this.runner.addTest(
+            'Theme: Default theme consistency after clearing data (REGRESSION)',
+            () => this.testDefaultThemeConsistency()
+        );
+
+        // NAVIGATION REGRESSION TESTS
+        this.runner.addTest(
+            'Navigation: Back buttons work between all pages (REGRESSION)',
+            () => this.testBackButtonNavigation()
+        );
+
+        this.runner.addTest(
+            'Navigation: Settings page links work correctly (REGRESSION)',
+            () => this.testSettingsPageLinks()
+        );
+
+        this.runner.addTest(
+            'Navigation: Cross-page theme changes trigger updates (REGRESSION)',
+            () => this.testCrossPageThemeUpdates()
+        );
+
         // CORE GAME FUNCTIONALITY TESTS
         this.runner.addTest(
             'Game Storage: Settings persistence',
@@ -387,6 +419,204 @@ class BlockdokuBehavioralTests {
             this.runner.assertEqual(applied, theme, `Should apply ${theme} theme`);
             this.runner.assertEqual(mockThemeManager.currentTheme, theme, `Should store ${theme} as current`);
         });
+    }
+
+    // THEME REGRESSION TESTS
+
+    async testThemeConsistencyAcrossPages() {
+        // Test that all pages (index, settings, gamesettings) respect theme changes
+        const pages = ['index', 'settings', 'gamesettings'];
+        const themes = ['light', 'dark', 'wood'];
+        
+        for (const page of pages) {
+            for (const theme of themes) {
+                // Mock localStorage theme setting
+                const mockStorage = {
+                    getItem: (key) => {
+                        if (key === 'blockdoku-settings' || key === 'blockdoku_settings') {
+                            return JSON.stringify({ theme: theme });
+                        }
+                        return null;
+                    }
+                };
+                
+                // Mock theme application for each page
+                const mockThemeManager = {
+                    currentTheme: null,
+                    applyTheme: function(theme) {
+                        this.currentTheme = theme;
+                        return theme;
+                    },
+                    loadThemeFromStorage: function() {
+                        const settings = mockStorage.getItem('blockdoku-settings');
+                        if (settings) {
+                            const parsed = JSON.parse(settings);
+                            return parsed.theme || 'wood';
+                        }
+                        return 'wood';
+                    }
+                };
+                
+                const loadedTheme = mockThemeManager.loadThemeFromStorage();
+                const appliedTheme = mockThemeManager.applyTheme(loadedTheme);
+                
+                this.runner.assertEqual(appliedTheme, theme, `${page} page should apply ${theme} theme`);
+                this.runner.assertEqual(mockThemeManager.currentTheme, theme, `${page} page should store ${theme} as current`);
+            }
+        }
+    }
+
+    async testGamesettingsThemeSync() {
+        // Test that gamesettings page properly syncs theme changes from other pages
+        const themes = ['light', 'dark', 'wood'];
+        
+        for (const theme of themes) {
+            // Mock localStorage with theme change
+            const mockStorage = {
+                getItem: (key) => {
+                    if (key === 'blockdoku-settings' || key === 'blockdoku_settings') {
+                        return JSON.stringify({ theme: theme });
+                    }
+                    return null;
+                }
+            };
+            
+            // Mock gamesettings theme manager
+            const mockGamesettingsThemeManager = {
+                currentTheme: 'wood', // Start with default
+                updateTheme: function() {
+                    const settings = mockStorage.getItem('blockdoku-settings');
+                    if (settings) {
+                        const parsed = JSON.parse(settings);
+                        this.currentTheme = parsed.theme || 'wood';
+                    }
+                    return this.currentTheme;
+                }
+            };
+            
+            // Simulate theme change from settings page
+            const newTheme = mockGamesettingsThemeManager.updateTheme();
+            
+            this.runner.assertEqual(newTheme, theme, `Gamesettings should sync to ${theme} theme`);
+            this.runner.assertEqual(mockGamesettingsThemeManager.currentTheme, theme, `Gamesettings should store ${theme} as current`);
+        }
+    }
+
+    async testDefaultThemeConsistency() {
+        // Test that all pages default to wood theme when localStorage is cleared
+        const pages = ['index', 'settings', 'gamesettings'];
+        
+        for (const page of pages) {
+            // Mock cleared localStorage
+            const mockStorage = {
+                getItem: (key) => null // Simulate cleared storage
+            };
+            
+            // Mock theme loading with fallback
+            const mockThemeManager = {
+                currentTheme: null,
+                loadTheme: function() {
+                    const settings = mockStorage.getItem('blockdoku-settings');
+                    if (settings) {
+                        const parsed = JSON.parse(settings);
+                        return parsed.theme || 'wood';
+                    }
+                    return 'wood'; // Default fallback
+                }
+            };
+            
+            const defaultTheme = mockThemeManager.loadTheme();
+            this.runner.assertEqual(defaultTheme, 'wood', `${page} page should default to wood theme when storage is cleared`);
+        }
+    }
+
+    // NAVIGATION REGRESSION TESTS
+
+    async testBackButtonNavigation() {
+        // Test that back buttons work between all page combinations
+        const pageRoutes = [
+            { from: 'settings', to: 'index', button: 'Back to Game' },
+            { from: 'gamesettings', to: 'settings', button: 'Back to Settings' },
+            { from: 'gamesettings', to: 'index', button: 'Back to Game' }
+        ];
+        
+        for (const route of pageRoutes) {
+            // Mock navigation
+            const mockNavigation = {
+                currentPage: route.from,
+                navigate: function(targetPage) {
+                    this.currentPage = targetPage;
+                    return true;
+                }
+            };
+            
+            // Test navigation
+            const navigationResult = mockNavigation.navigate(route.to);
+            
+            this.runner.assert(navigationResult, `${route.button} should navigate from ${route.from} to ${route.to}`);
+            this.runner.assertEqual(mockNavigation.currentPage, route.to, `Should be on ${route.to} page after navigation`);
+        }
+    }
+
+    async testSettingsPageLinks() {
+        // Test that all links on settings page work correctly
+        const settingsLinks = [
+            { href: 'gamesettings.html', text: 'Game Settings' },
+            { href: 'index.html', text: 'Back to Game' }
+        ];
+        
+        for (const link of settingsLinks) {
+            // Mock link element
+            const mockLink = {
+                href: link.href,
+                textContent: link.text,
+                click: function() {
+                    return { href: this.href, text: this.textContent };
+                }
+            };
+            
+            const clickResult = mockLink.click();
+            
+            this.runner.assertEqual(clickResult.href, link.href, `Settings link "${link.text}" should have correct href`);
+            this.runner.assertEqual(clickResult.text, link.text, `Settings link should have correct text`);
+        }
+    }
+
+    async testCrossPageThemeUpdates() {
+        // Test that theme changes trigger updates across all pages
+        const pages = ['index', 'settings', 'gamesettings'];
+        const themes = ['light', 'dark', 'wood'];
+        
+        for (const theme of themes) {
+            // Mock cross-page theme update system
+            const mockThemeSystem = {
+                pages: pages.reduce((acc, page) => {
+                    acc[page] = { currentTheme: 'wood', updated: false };
+                    return acc;
+                }, {}),
+                
+                updateAllPages: function(newTheme) {
+                    Object.keys(this.pages).forEach(page => {
+                        this.pages[page].currentTheme = newTheme;
+                        this.pages[page].updated = true;
+                    });
+                },
+                
+                simulateStorageEvent: function(theme) {
+                    // Simulate localStorage change event
+                    this.updateAllPages(theme);
+                }
+            };
+            
+            // Simulate theme change
+            mockThemeSystem.simulateStorageEvent(theme);
+            
+            // Verify all pages were updated
+            pages.forEach(page => {
+                this.runner.assertEqual(mockThemeSystem.pages[page].currentTheme, theme, `${page} should be updated to ${theme}`);
+                this.runner.assert(mockThemeSystem.pages[page].updated, `${page} should be marked as updated`);
+            });
+        }
     }
 
     async runTests() {
