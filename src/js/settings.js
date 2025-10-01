@@ -2,6 +2,7 @@ import { GameStorage } from './storage/game-storage.js';
 import { PWAInstallManager } from './pwa/install.js';
 import { ConfirmationDialog } from './ui/confirmation-dialog.js';
 import { SoundManager } from './effects/sound-manager.js';
+import { DifficultySettingsManager } from './difficulty/difficulty-settings-manager.js';
 // Build info is generated during build by scripts/generate-build-info.js.
 // If that generator is skipped, the About section will show fallback values.
 import { buildInfo } from './utils/build-info.js';
@@ -18,6 +19,7 @@ export class SettingsManager {
         this.pwaInstallManager = null;
         this.confirmationDialog = new ConfirmationDialog();
         this.soundManager = new SoundManager();
+        this.difficultySettingsManager = new DifficultySettingsManager(this.storage);
         
         
         this.init();
@@ -382,10 +384,6 @@ export class SettingsManager {
             let pressTimeout = null;
             let isPressed = false;
             
-            const handleDifficultyActivation = async (e) => {
-                await this.selectDifficulty(e.currentTarget.dataset.difficulty);
-            };
-            
             const resetPressState = () => {
                 // Clear timeout
                 if (pressTimeout) {
@@ -409,9 +407,12 @@ export class SettingsManager {
                 pressStartTime = Date.now();
                 option.classList.add('pressing');
                 
+                // Capture the difficulty value before the timeout
+                const difficulty = option.dataset.difficulty;
+                
                 pressTimeout = setTimeout(async () => {
                     if (isPressed) {
-                        await handleDifficultyActivation(e);
+                        await this.selectDifficulty(difficulty);
                         resetPressState();
                     }
                 }, 10);
@@ -433,7 +434,9 @@ export class SettingsManager {
             option.addEventListener('click', async (e) => {
                 e.preventDefault();
                 if (!isPressed && (!pressStartTime || (Date.now() - pressStartTime) < 200)) {
-                    await handleDifficultyActivation(e);
+                    // Capture the difficulty value and select it
+                    const difficulty = option.dataset.difficulty;
+                    await this.selectDifficulty(difficulty);
                 }
             });
         });
@@ -1131,9 +1134,28 @@ export class SettingsManager {
             }
         }
         
+        // Update difficulty using the same system as the main game
         this.currentDifficulty = difficulty;
-        this.updateDifficultyUI();
+        this.settings.difficulty = difficulty;
         this.saveSettings();
+        
+        // Apply difficulty-specific settings using the DifficultySettingsManager
+        const difficultySettings = this.difficultySettingsManager.getSettingsForDifficulty(difficulty);
+        console.log(`🎮 Settings page applying difficulty settings for: ${difficulty.toUpperCase()}`);
+        console.log('Applied settings:', difficultySettings);
+        
+        // Update the settings with difficulty-specific defaults
+        Object.keys(difficultySettings).forEach(key => {
+            if (this.settings[key] !== undefined) {
+                this.settings[key] = difficultySettings[key];
+            }
+        });
+        
+        // Save the updated settings
+        this.saveSettings();
+        
+        // Update UI to reflect the changes
+        this.updateDifficultyUI();
         
         // Also update the main game's difficulty if we're on the settings page
         // This ensures the difficulty change takes effect immediately

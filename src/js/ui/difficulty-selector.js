@@ -145,6 +145,16 @@ export class DifficultySelector {
         let pressTimeout = null;
         let isPressed = false;
         
+        const resetPressState = () => {
+            if (pressTimeout) {
+                clearTimeout(pressTimeout);
+                pressTimeout = null;
+            }
+            isPressed = false;
+            pressStartTime = null;
+            option.classList.remove('pressing');
+        };
+        
         const handleDifficultyActivation = async (e) => {
             e.preventDefault();
             await this.selectDifficulty(difficulty.key);
@@ -160,20 +170,20 @@ export class DifficultySelector {
             // Add visual feedback
             option.classList.add('pressing');
             
-            // Set timeout for 3ms (same as settings page)
+            // Set timeout for 10ms (increased from 3ms for better reliability)
             pressTimeout = setTimeout(() => {
                 if (isPressed) {
                     handleDifficultyActivation(e);
-                    this.resetPressState(option, pressTimeout, isPressed);
+                    resetPressState();
                 }
-            }, 3);
+            }, 10);
         };
         
         const cancelPress = (e) => {
             if (!isPressed) return;
             
             e.preventDefault();
-            this.resetPressState(option, pressTimeout, isPressed);
+            resetPressState();
         };
         
         // Mouse events
@@ -209,13 +219,17 @@ export class DifficultySelector {
     }
     
     async selectDifficulty(difficulty) {
+        console.log(`🎯 DifficultySelector: selectDifficulty called with difficulty: ${difficulty}`);
+        
         // Update difficulty manager
-        this.difficultyManager.setDifficulty(difficulty);
+        const success = this.difficultyManager.setDifficulty(difficulty);
+        console.log(`🎯 DifficultySelector: difficultyManager.setDifficulty(${difficulty}) returned: ${success}`);
         
         // Update UI
         this.updateSelection(difficulty);
         
         // Apply difficulty settings to current game (no reset needed)
+        console.log(`🎯 DifficultySelector: calling game.selectDifficulty(${difficulty})`);
         this.game.selectDifficulty(difficulty);
         
         // Hide selector
@@ -233,15 +247,6 @@ export class DifficultySelector {
         });
     }
     
-    resetPressState(item, pressTimeout, isPressed) {
-        // Clear timeout
-        if (pressTimeout) {
-            clearTimeout(pressTimeout);
-        }
-        
-        // Remove visual feedback
-        item.classList.remove('pressing');
-    }
     
     show() {
         if (!this.container) {

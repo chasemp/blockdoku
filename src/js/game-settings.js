@@ -175,18 +175,18 @@ export class GameSettingsManager {
     
     loadAdditionalSettings() {
         const additionalSettings = [
-            'haptic-enabled',
-            'auto-save',
-            'show-points',
-            'show-placement-points',
-            'enable-prize-recognition',
-            'success-mode-enabled'
+            { id: 'haptic-enabled', key: 'hapticEnabled' },
+            { id: 'auto-save', key: 'autoSave' },
+            { id: 'show-points', key: 'showPoints' },
+            { id: 'show-placement-points', key: 'showPlacementPoints' },
+            { id: 'enable-prize-recognition', key: 'enablePrizeRecognition' },
+            { id: 'success-mode-enabled', key: 'successModeEnabled' }
         ];
         
-        additionalSettings.forEach(settingId => {
-            const checkbox = document.getElementById(settingId);
+        additionalSettings.forEach(({ id, key }) => {
+            const checkbox = document.getElementById(id);
             if (checkbox) {
-                checkbox.checked = this.settings[settingId] !== false; // Default to true for most
+                checkbox.checked = this.settings[key] === true;
             }
         });
     }
@@ -399,22 +399,22 @@ export class GameSettingsManager {
     
     setupAdditionalSettingsListeners() {
         const additionalSettings = [
-            'haptic-enabled',
-            'auto-save',
-            'show-points',
-            'show-placement-points',
-            'enable-prize-recognition',
-            'success-mode-enabled'
+            { id: 'haptic-enabled', key: 'hapticEnabled' },
+            { id: 'auto-save', key: 'autoSave' },
+            { id: 'show-points', key: 'showPoints' },
+            { id: 'show-placement-points', key: 'showPlacementPoints' },
+            { id: 'enable-prize-recognition', key: 'enablePrizeRecognition' },
+            { id: 'success-mode-enabled', key: 'successModeEnabled' }
         ];
         
-        additionalSettings.forEach(settingId => {
-            const checkbox = document.getElementById(settingId);
+        additionalSettings.forEach(({ id, key }) => {
+            const checkbox = document.getElementById(id);
             if (checkbox) {
                 checkbox.addEventListener('change', () => {
-                    this.saveSetting(settingId, checkbox.checked);
+                    this.saveSetting(key, checkbox.checked);
                     
                     // Special handling for show-points setting
-                    if (settingId === 'show-points') {
+                    if (id === 'show-points') {
                         this.updateBlockPointsDisplay();
                     }
                 });

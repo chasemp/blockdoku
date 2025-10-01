@@ -140,6 +140,7 @@ class BlockdokuGame {
             if (e.key === 'blockdoku-settings' || e.key === 'blockdoku_settings') {
                 this.loadSettings();
                 this.updateDifficultyButton();
+                this.updateHintControls();
                 this.renderPersonalBests();
                 
                 // Always reload game state when settings change (if not game over)
@@ -3375,19 +3376,36 @@ class BlockdokuGame {
     }
 
     async selectDifficulty(difficulty) {
+        console.log(`🎮 App.js: selectDifficulty called with difficulty: ${difficulty}`);
+        console.log(`🎮 App.js: current difficulty before change: ${this.difficulty}`);
+        
         this.difficulty = difficulty;
+        console.log(`🎮 App.js: difficulty set to: ${this.difficulty}`);
         
         // Update difficulty manager
         if (this.difficultyManager) {
-            this.difficultyManager.setDifficulty(difficulty);
+            const success = this.difficultyManager.setDifficulty(difficulty);
+            console.log(`🎮 App.js: difficultyManager.setDifficulty(${difficulty}) returned: ${success}`);
         }
         
+        // Save the difficulty change FIRST before reloading settings
+        console.log(`🎮 App.js: calling saveSettings()...`);
+        this.saveSettings();
+        
         // Reload settings to apply difficulty-specific defaults
+        console.log(`🎮 App.js: calling loadSettings()...`);
         this.loadSettings();
         
+        console.log(`🎮 App.js: calling updateDifficultyUI()...`);
         this.updateDifficultyUI();
+        
+        console.log(`🎮 App.js: calling updateDifficultyButton()...`);
         this.updateDifficultyButton();
-        this.saveSettings();
+        
+        console.log(`🎮 App.js: calling updateHintControls()...`);
+        this.updateHintControls();
+        
+        console.log(`🎮 App.js: selectDifficulty completed. Final difficulty: ${this.difficulty}`);
         
         // No game reset needed - difficulty settings apply to current game
     }

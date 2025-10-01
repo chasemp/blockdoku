@@ -31,7 +31,7 @@ export class DifficultySettingsManager {
                 enableTimer: false,
                 enablePetrification: false,
                 enableDeadPixels: false,
-                showPersonalBests: false,
+                showPersonalBests: true,
                 showSpeedTimer: false,
                 speedMode: 'ignored',
                 animationsEnabled: true,

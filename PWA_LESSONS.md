@@ -2,9 +2,40 @@
 
 ## 🚀 Key Insights from Blockdoku PWA Development
 
-> **📚 For comprehensive lessons learned including theme management, navigation, and regression testing, see [PWA_LESSONS_LEARNED.md](./PWA_LESSONS_LEARNED.md)**
+> **📚 For comprehensive lessons learned including theme management, navigation, regression testing, and MCP Playwright testing strategies, see [PWA_LESSONS_LEARNED.md](./PWA_LESSONS_LEARNED.md)**
 
 ## 🎯 Quick Reference
+
+### 🧪 **MCP Playwright Testing Strategy**
+
+**The Problem:** Manual testing is time-consuming, error-prone, and misses subtle cross-page synchronization issues.
+
+**The Solution:** MCP Playwright provides human-readable, executable test instructions that can be run consistently and comprehensively.
+
+**Key Benefits:**
+- **Human-Readable:** Clear, step-by-step instructions anyone can follow
+- **Comprehensive:** Covers all critical functionality in one test suite
+- **Reusable:** Can be run anytime to verify app functionality
+- **Regression Prevention:** Catches issues before they reach production
+
+**Quick Start:**
+```bash
+# Run test instructions
+npm run test:e2e
+
+# View detailed instructions
+npm run test:e2e:instructions
+```
+
+**Test Coverage:**
+- Theme switching and synchronization across all pages
+- Navigation between all page combinations
+- Performance validation (load times, console health)
+- Game state preservation during navigation
+
+> **📚 For detailed MCP Playwright implementation and best practices, see [PWA_LESSONS_LEARNED.md](./PWA_LESSONS_LEARNED.md#-mcp-playwright-testing-strategy)**
+
+---
 
 ### 📚 **Module Loading: Static vs Dynamic Imports**
 
