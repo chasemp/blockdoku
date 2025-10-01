@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Settings - Blockdoku</title>
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/themes/wood.css" id="theme-css">
-    <link rel="stylesheet" href="css/themes/light.css" id="theme-css-light" media="not all">
-    <link rel="stylesheet" href="css/themes/dark.css" id="theme-css-dark" media="not all">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/themes/wood.css" id="theme-css">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#8B4513">
     <meta name="description" content="Blockdoku - A modern take on the classic block puzzle game">
     <meta name="keywords" content="blockdoku, puzzle, game, blocks, tetris, mobile, pwa">
@@ -28,364 +26,6 @@
     <meta property="twitter:title" content="Blockdoku - Block Puzzle Game">
     <meta property="twitter:description" content="A modern take on the classic block puzzle game. Play anywhere, anytime!">
     <meta property="twitter:image" content="https://blockdoku.523.life/icons/icon-512x512.png">
-    
-    <script>
-        // Function to update theme
-        function updateTheme() {
-            const savedSettings = localStorage.getItem('blockdoku_settings') || localStorage.getItem('blockdoku-settings');
-            if (savedSettings) {
-                try {
-                    const settings = JSON.parse(savedSettings);
-                    if (settings.theme) {
-                        let themeLink = document.getElementById('theme-css');
-                        if (!themeLink) {
-                            themeLink = document.createElement('link');
-                            themeLink.rel = 'stylesheet';
-                            themeLink.id = 'theme-css';
-                            document.head.appendChild(themeLink);
-                        }
-                        themeLink.href = `css/themes/${settings.theme}.css`;
-
-                        // If Vite injected a wood stylesheet into built HTML, disable it when switching away
-                        try {
-                            const builtWoodLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
-                                .filter(l => (l.getAttribute('href') || '').includes('/assets/wood-') || (l.href || '').includes('/assets/wood-'));
-                            builtWoodLinks.forEach(l => {
-                                l.disabled = settings.theme !== 'wood';
-                            });
-                        } catch (e) {}
-                    }
-                } catch (e) {
-                    console.log('Error parsing settings:', e);
-                }
-            }
-        }
-        
-        // Load current theme from localStorage on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add a small delay to ensure everything is loaded
-            setTimeout(updateTheme, 100);
-        });
-        
-        // Listen for theme changes from other pages
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'blockdoku-settings' || e.key === 'blockdoku-settings') {
-                updateTheme();
-            }
-        });
-        
-        // Also listen for focus events (when returning from main page)
-        window.addEventListener('focus', function() {
-            updateTheme();
-        });
-    </script>
-    <style>
-        .settings-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-            min-height: 100vh;
-        }
-        
-        /* Settings sections as direct children */
-        .settings-container > .settings-section {
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .settings-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        
-        .settings-header h1 {
-            color: var(--text-color);
-            margin-bottom: 0.5rem;
-        }
-        
-        .settings-header p {
-            color: var(--text-muted);
-            margin: 0;
-        }
-        
-        .settings-nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 3rem;
-            justify-content: center;
-        }
-        
-        .nav-item {
-            padding: 1rem 2rem;
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            color: var(--text-color);
-            font-weight: 500;
-            min-width: 120px;
-            text-align: center;
-        }
-        
-        .nav-item:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-        
-        .nav-item.active {
-            border-color: var(--primary-color);
-            background: var(--primary-color);
-            color: white;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-        }
-        
-        /* Override for light theme to ensure readability */
-        [data-theme="light"] .nav-item.active,
-        body.light-theme .nav-item.active,
-        html.light-theme .nav-item.active {
-            color: white !important;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
-        }
-        
-        .settings-content {
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .section-title {
-            color: var(--text-color);
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-        
-        /* Speed Mode Settings */
-        .speed-mode-settings h3 {
-            margin: 0 0 1rem 0;
-            color: var(--text-color);
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-        
-        .speed-mode-options {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        
-        /* Speed Display Options */
-        .speed-display-options {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .speed-display-option {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            padding: 1rem;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            background: var(--bg-color);
-            transition: all 0.3s ease;
-            flex: 1;
-            min-width: 120px;
-            text-align: center;
-        }
-
-        .speed-display-option:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .speed-display-option input[type="radio"] {
-            display: none;
-        }
-
-        .speed-display-option input[type="radio"]:checked + .speed-display-label {
-            color: var(--primary-color);
-        }
-
-        .speed-display-option input[type="radio"]:checked {
-            border-color: var(--primary-color);
-            background: var(--primary-color);
-        }
-
-        .speed-display-option input[type="radio"]:checked .speed-display-label,
-        .speed-display-option input[type="radio"]:checked .speed-display-description {
-            color: white;
-        }
-
-        .speed-display-label {
-            font-weight: 600;
-            color: var(--text-color);
-            transition: color 0.3s ease;
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 1rem;
-        }
-
-        .speed-display-description {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            font-style: italic;
-            display: block;
-            line-height: 1.4;
-            text-align: center;
-        }
-
-        /* Combo Display Options */
-        .combo-display-options {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .combo-display-option {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            padding: 1rem;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            background: var(--bg-color);
-            transition: all 0.3s ease;
-            flex: 1;
-            min-width: 120px;
-            text-align: center;
-        }
-
-        .combo-display-option:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .combo-display-option input[type="radio"] {
-            display: none;
-        }
-
-        .combo-display-option input[type="radio"]:checked + .combo-display-label {
-            color: var(--primary-color);
-        }
-
-        .combo-display-option input[type="radio"]:checked {
-            border-color: var(--primary-color);
-            background: var(--primary-color);
-        }
-
-        .combo-display-option input[type="radio"]:checked .combo-display-label,
-        .combo-display-option input[type="radio"]:checked .combo-display-description {
-            color: white;
-        }
-
-        .combo-display-label {
-            font-weight: 600;
-            color: var(--text-color);
-            transition: color 0.3s ease;
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 1rem;
-        }
-
-        .combo-display-description {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            font-style: italic;
-            display: block;
-            line-height: 1.4;
-            text-align: center;
-        }
-        
-        .speed-mode-option {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background: var(--bg-color);
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .speed-mode-option:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-        
-        .speed-mode-option input[type="radio"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            accent-color: var(--primary-color);
-        }
-        
-        .speed-mode-option input[type="radio"]:checked ~ .speed-mode-label {
-            color: var(--primary-color);
-        }
-        
-        .speed-mode-option input[type="radio"]:checked {
-            background: var(--primary-color);
-        }
-        
-        .speed-mode-label {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            flex: 1;
-        }
-        
-        .speed-mode-label strong {
-            color: var(--text-color);
-            font-size: 1rem;
-            transition: color 0.3s ease;
-        }
-        
-        .speed-mode-label small {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            line-height: 1.3;
-        }
-        
-        @media (max-width: 768px) {
-            .settings-container {
-                padding: 1rem;
-            }
-            
-            .settings-nav {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .nav-item {
-                width: 100%;
-                max-width: 300px;
-            }
-            
-            .settings-content {
-                padding: 1.5rem;
-            }
-        }
-    </style>
 </head>
 <body>
     <div class="settings-container">
@@ -395,77 +35,36 @@
         </header>
         
         <div class="settings-nav">
-            <a href="settings.html" class="nav-item">
+            <a href="../settings.html" class="nav-item">
                 ← Back to Settings
             </a>
         </div>
         
-        <div style="text-align: center; margin: 1rem 0 2rem 0; padding: 0 1rem;">
-            <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted); font-style: italic;">
-                Each difficulty level has defaults.<br>
-                Changes made are saved until reset.
-            </p>
-        </div>
-        
+        <div class="settings-content">
+            <!-- Game Settings Section -->
+            <div class="settings-section" id="game-section">
+                <h2 class="section-title">Game Settings</h2>
+                
                 <!-- Combo Display Settings -->
-                <div class="settings-section combo-display-settings">
+                <div class="combo-display-settings">
                     <h3>Combo Display</h3>
-                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0; text-align: center;">Choose how combo points are displayed during gameplay</p>
-                    <div class="combo-display-options">
-                        <label class="combo-display-option">
+                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Choose how combo points are displayed during gameplay</p>
+                    <div class="combo-options">
+                        <label class="combo-option">
                             <input type="radio" name="combo-display-mode" value="streak" id="combo-streak" />
-                            <span class="combo-display-label">Streak</span>
-                            <span class="combo-display-description">Show current streak count</span>
+                            <span class="combo-label">Streak</span>
+                            <span class="combo-description">Show current streak count</span>
                         </label>
-                        <label class="combo-display-option">
+                        <label class="combo-option">
                             <input type="radio" name="combo-display-mode" value="cumulative" id="combo-cumulative" checked />
-                            <span class="combo-display-label">Cumulative</span>
-                            <span class="combo-display-description">Show total combo points earned</span>
+                            <span class="combo-label">Cumulative</span>
+                            <span class="combo-description">Show total combo points earned</span>
                         </label>
                     </div>
                 </div>
                 
-        
-        <!-- Utility Bar Settings -->
-        <div class="settings-section utility-bar-settings">
-                    <h3 style="margin: 1.5rem 0 1rem 0; color: var(--text-color); font-size: 1.1rem; text-align: center;">Utility Bar Settings</h3>
-                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Configure what appears in the utility bar during gameplay</p>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="enable-hints" />
-                            Enable hints
-                        </label>
-                        <p class="setting-description">Show placement suggestions for blocks when you're stuck</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="enable-timer" />
-                            Enable Game Timer
-                        </label>
-                        <p class="setting-description">Add time pressure with countdown timer that ends the game when it reaches zero</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="show-personal-bests" />
-                            Enable Personal Best
-                        </label>
-                        <p class="setting-description">Display your personal best score and level in the utility bar</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="show-speed-timer" />
-                            Enable Speed Timer
-                        </label>
-                        <p class="setting-description">Show speed tracking display in utility bar (visual feedback only, doesn't affect gameplay)</p>
-                    </div>
-        </div>
-        
-        <!-- Game Modes Section -->
-        <div class="settings-section game-modes-settings">
+                <!-- Game Modes Section -->
+                <div class="game-modes-settings">
                     <h3>Game Modes</h3>
                     <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Enable special game modes that add unique challenges and mechanics. Multiple modes can be active simultaneously!</p>
                     
@@ -491,58 +90,47 @@
                         <input type="range" id="dead-pixels-intensity" min="0" max="5" value="0" step="1" style="width: 100%; max-width: 300px; margin-top: 0.5rem;" />
                         <p class="setting-description" style="font-size: 0.85rem; margin-top: 0.5rem;">0 = Off, 5 = Maximum dead pixels (~15-20)</p>
                     </div>
-        </div>
-        
-        <!-- Speed Tracking Mode Settings -->
-        <div class="settings-section speed-mode-settings">
-            <h3>Speed Tracking Mode</h3>
-            <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Choose how placement speed affects your score</p>
-            <div class="speed-mode-options">
-                <label class="speed-mode-option">
-                    <input type="radio" name="speed-mode" value="bonus" id="speed-mode-bonus" checked />
-                    <span class="speed-mode-label">
-                        <strong>Bonus</strong>
-                        <small>Faster = more points (bonus points for quick placements)</small>
-                    </span>
-                </label>
-                <label class="speed-mode-option">
-                    <input type="radio" name="speed-mode" value="punishment" id="speed-mode-punishment" />
-                    <span class="speed-mode-label">
-                        <strong>Punishment</strong>
-                        <small>Slower = less points (every second past 1 subtracts 1 point)</small>
-                    </span>
-                </label>
-                <label class="speed-mode-option">
-                    <input type="radio" name="speed-mode" value="ignored" id="speed-mode-ignored" />
-                    <span class="speed-mode-label">
-                        <strong>Ignored</strong>
-                        <small>Speed doesn't affect score</small>
-                    </span>
-                </label>
-            </div>
-            
-            <!-- Speed Display Toggle -->
-            <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
-                <h4 style="margin: 0 0 1rem 0; color: var(--text-color); font-size: 1rem; text-align: center;">Speed Display</h4>
-                <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0; text-align: center;">Choose how speed information is displayed in the utility bar when active</p>
-                <div class="speed-display-options">
-                    <label class="speed-display-option">
-                        <input type="radio" name="speed-display-mode" value="timer" id="speed-display-timer" checked />
-                        <span class="speed-display-label">Speed Timer</span>
-                        <span class="speed-display-description">Show countdown clock between placements</span>
-                    </label>
-                    <label class="speed-display-option">
-                        <input type="radio" name="speed-display-mode" value="points" id="speed-display-points" />
-                        <span class="speed-display-label">Speed Points</span>
-                        <span class="speed-display-description">Show total speed bonus points earned</span>
-                    </label>
+                    
+                    <!-- Speed Mode Settings -->
+                    <div class="speed-mode-settings">
+                        <h4>Speed Tracking Mode</h4>
+                        <p class="setting-description" style="margin-bottom: 0.5rem; margin-left: 0;">Choose how placement speed affects your score</p>
+                        <div class="speed-mode-options">
+                            <label class="speed-mode-option">
+                                <input type="radio" name="speed-mode" value="bonus" id="speed-mode-bonus" checked />
+                                <span class="speed-mode-label">
+                                    <strong>Bonus</strong>
+                                    <small>Faster = more points</small>
+                                </span>
+                            </label>
+                            <label class="speed-mode-option">
+                                <input type="radio" name="speed-mode" value="punishment" id="speed-mode-punishment" />
+                                <span class="speed-mode-label">
+                                    <strong>Punishment</strong>
+                                    <small>Faster = less points (scales with level)</small>
+                                </span>
+                            </label>
+                            <label class="speed-mode-option">
+                                <input type="radio" name="speed-mode" value="ignored" id="speed-mode-ignored" />
+                                <span class="speed-mode-label">
+                                    <strong>Ignored</strong>
+                                    <small>Speed doesn't affect score</small>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Basic Game Settings -->
-        <div class="settings-section basic-game-settings">
+                
+                <!-- Basic Game Settings -->
+                <div class="basic-game-settings">
                     <h3>Basic Settings</h3>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="show-high-score" />
+                            Show current high score in header
+                        </label>
+                        <p class="setting-description">Display your best score in the game header for motivation</p>
+                    </div>
                 <div class="setting-item">
                     <label>
                         <input type="checkbox" id="sound-enabled" />
@@ -557,17 +145,9 @@
                     </label>
                     <p class="setting-description">Enable smooth transitions and visual effects during gameplay</p>
                 </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="piece-timeout-enabled" />
-                        Enable piece timeout
-                    </label>
-                    <p class="setting-description">Automatically end game when pieces sit unused for 30 seconds (15s warning, 30s timeout)</p>
-                </div>
-        </div>
-        
-        <!-- Enhanced Animation Settings -->
-        <div class="settings-section animation-settings" id="animation-settings">
+                
+                <!-- Enhanced Animation Settings -->
+                <div class="animation-settings" id="animation-settings">
                     <h3 style="margin: 1.5rem 0 1rem 0; color: var(--text-color); font-size: 1.1rem;">Enhanced Animation Controls</h3>
                     
                     <div class="setting-item">
@@ -627,20 +207,19 @@
                         <p class="setting-description">Show particle effects when clearing lines and achieving combos</p>
                     </div>
                     
-                    <div class="setting-item" style="text-align: center;">
-                        <label for="animation-speed" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-color);">Animation Speed</label>
-                        <p class="setting-description" style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">Control the speed of visual effects and transitions during gameplay</p>
-                        <select id="animation-speed" style="padding: 0.5rem 1rem; border-radius: 8px; border: 2px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 1rem; text-align: center; min-width: 120px;">
+                    <div class="setting-item">
+                        <label for="animation-speed">Animation speed:</label>
+                        <select id="animation-speed" style="margin-left: 0.5rem; padding: 0.25rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color);">
                             <option value="slow">Slow</option>
                             <option value="normal" selected>Normal</option>
                             <option value="fast">Fast</option>
                         </select>
                     </div>
-        </div>
-        
-        <!-- Additional Game Settings -->
-        <div class="settings-section additional-game-settings">
-                    <h3 style="margin: 1.5rem 0 1rem 0; color: var(--text-color); font-size: 1.1rem; text-align: center;">Additional Settings</h3>
+                </div>
+                
+                <!-- Additional Game Settings -->
+                <div class="additional-game-settings">
+                    <h3 style="margin: 1.5rem 0 1rem 0; color: var(--text-color); font-size: 1.1rem;">Additional Settings</h3>
                     
                     <div class="setting-item">
                         <label>
@@ -689,86 +268,70 @@
                         </label>
                         <p class="setting-description">Show enhanced success animations and effects when achieving combos</p>
                     </div>
-        </div>
-    </div>
-    
-    <!-- App Management -->
-    <div class="settings-section pwa-stats-management">
-        <h3 style="margin: 1.5rem 0 1rem 0; color: var(--text-color); font-size: 1.1rem; text-align: center;">App Management</h3>
-        
-        <!-- PWA Install Button -->
-        <div class="setting-item">
-            <button id="pwa-install-button" class="pwa-install-button">
-                <span class="install-text">Install as PWA</span>
-                <span class="install-status" id="install-status"></span>
-            </button>
-        </div>
-        
-        <!-- Reset Statistics Button -->
-        <div class="setting-item">
-            <button id="reset-stats" class="reset-stats-button">
-                <span class="reset-text">Reset Statistics</span>
-            </button>
-        </div>
-    </div>
-    
-    <!-- Difficulty Defaults -->
-    <div class="settings-section reset-difficulty-item">
-        <h3 style="margin: 1.5rem 0 1rem 0; color: var(--text-color); font-size: 1.1rem; text-align: center;">Difficulty Defaults</h3>
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <button id="reset-current-difficulty" class="reset-button" style="flex: 1; min-width: 200px;">
-                Reset <span id="current-difficulty-text">Normal</span>
-            </button>
-            <button id="reset-all-difficulties" class="reset-button" style="flex: 1; min-width: 200px;">
-                Reset All
-            </button>
-        </div>
-        <p class="setting-description">Reset difficulty defaults for current or all levels.</p>
-        
-        <!-- Difficulty Defaults Display -->
-        <div style="margin-top: 2rem;">
-            <button id="toggle-difficulty-defaults" class="toggle-button" style="width: 100%; padding: 0.75rem; background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 8px; color: var(--text-color); cursor: pointer; font-weight: 600; transition: all 0.3s ease;">
-                <span id="toggle-text">📋 Show Defaults by Difficulty</span>
-                <span id="toggle-arrow" style="float: right; transition: transform 0.3s ease;">▼</span>
-            </button>
-            
-            <div id="difficulty-defaults-table" style="display: none; margin-top: 1rem; padding: 1.5rem; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; overflow-x: auto;">
-                <h4 style="margin: 0 0 1rem 0; color: var(--text-color); text-align: center;">Default Settings by Difficulty Level</h4>
-                <table id="defaults-table" style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                    <thead>
-                        <tr style="background: var(--primary-color); color: white;">
-                            <th style="padding: 0.75rem; text-align: left; border: 1px solid var(--border-color);">Setting</th>
-                            <th style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">Easy</th>
-                            <th style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">Normal</th>
-                            <th style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">Hard</th>
-                            <th style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">Expert</th>
-                        </tr>
-                    </thead>
-                    <tbody id="defaults-table-body">
-                        <!-- Table rows will be populated by JavaScript -->
-                    </tbody>
-                </table>
-                <p style="margin: 1rem 0 0 0; font-size: 0.8rem; color: var(--text-muted); text-align: center; font-style: italic;">
-                    These are the default values that settings will be reset to for each difficulty level.
-                </p>
+                </div>
+                
+                <!-- Utility Bar Settings -->
+                <div class="utility-bar-settings">
+                    <h3 style="margin: 1.5rem 0 1rem 0; color: var(--text-color); font-size: 1.1rem;">Utility Bar Settings</h3>
+                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Configure what appears in the utility bar during gameplay</p>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="enable-hints" />
+                            Enable hints
+                        </label>
+                        <p class="setting-description">Show placement suggestions for blocks when you're stuck</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="enable-timer" />
+                            Enable timer
+                        </label>
+                        <p class="setting-description">Add time pressure to increase difficulty and excitement</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="show-personal-bests" />
+                            Show personal bests in utility bar
+                        </label>
+                        <p class="setting-description">Display your personal best score and level in the utility bar</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="show-speed-timer" />
+                            Show speed timer in utility bar
+                        </label>
+                        <p class="setting-description">Display speed timer in the utility bar when speed mode is active</p>
+                    </div>
+                </div>
+                
+                <!-- PWA Install Button -->
+                <div class="setting-item pwa-install-item">
+                    <button id="pwa-install-button" class="pwa-install-button">
+                        <span class="install-text">Install as PWA</span>
+                        <span class="install-status" id="install-status"></span>
+                    </button>
+                </div>
+                
+                <!-- Reset Statistics Button -->
+                <div class="setting-item reset-stats-item">
+                    <button id="reset-stats" class="reset-stats-button">
+                        <span class="reset-text">Reset Statistics</span>
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Bottom Back to Settings Button -->
-    <div class="back-navigation" style="margin: 2rem 0; text-align: center;">
-        <a href="settings.html" class="nav-item" style="display: inline-block;">
-            ← Back to Settings
-        </a>
-    </div>
-    
-    <!-- Copyright Notice -->
-    <div class="copyright-notice">
-        <p>&copy; Chase Pettet, <a href="http://523.life" target="_blank" rel="noopener noreferrer">523.life</a></p>
+        
+        <footer class="settings-footer">
+            <p>© Chase Pettet, <a href="http://523.life" target="_blank" rel="noopener noreferrer">523.life</a></p>
+        </footer>
     </div>
 
     <!-- Scripts -->
-    <script type="module" src="js/game-settings.js"></script>
-    <script type="module" src="js/pwa/install.js"></script>
+    <script type="module" src="../js/game-settings.js"></script>
+    <script type="module" src="../js/pwa/install.js"></script>
 </body>
 </html>

@@ -155,12 +155,13 @@ export class DependencyContainer {
             return new DifficultyManager();
         }, true);
 
-        // Scoring system (depends on petrification)
+        // Scoring system (depends on petrification and difficulty)
         this.register('scoringSystem', (container) => {
             const { ScoringSystem } = require('../game/scoring.js');
             const petrificationManager = container.resolve('petrificationManager');
-            return new ScoringSystem(petrificationManager);
-        }, true, ['petrificationManager']);
+            const difficultyManager = container.resolve('difficultyManager');
+            return new ScoringSystem(petrificationManager, difficultyManager);
+        }, true, ['petrificationManager', 'difficultyManager']);
 
         // Effects system (depends on canvas)
         this.register('effectsManager', (container) => {
