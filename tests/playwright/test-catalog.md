@@ -45,23 +45,23 @@ Tests for game-specific functionality and state management.
 
 #### `game-difficulty-switching`
 **Test**: Difficulty switching functionality
-**Prompt**: "Test difficulty switching. Navigate to http://localhost:3456, go to settings, switch between easy, normal, hard, and expert difficulties. Verify the difficulty changes are applied and the game responds correctly."
+**Prompt**: "Test difficulty switching. Navigate to http://localhost:3456, go to game settings, switch between easy, normal, hard, and expert difficulties. Verify the difficulty changes are applied and the game responds correctly."
 
 #### `difficulty-defaults-easy`
 **Test**: Easy difficulty game setting defaults
-**Prompt**: "Test easy difficulty game setting defaults. Navigate to http://localhost:3456, go to settings, switch to easy difficulty, then go to game settings. Verify that easy difficulty defaults are applied (hints ON, show block points ON, etc.)."
+**Prompt**: "Test easy difficulty game setting defaults. Navigate to http://localhost:3456, go to game settings, switch to easy difficulty. Verify that easy difficulty defaults are applied (hints ON, show block points ON, personal best ON, speed mode bonus, etc.)."
 
 #### `difficulty-defaults-normal`
 **Test**: Normal difficulty game setting defaults
-**Prompt**: "Test normal difficulty game setting defaults. Navigate to http://localhost:3456, go to settings, switch to normal difficulty, then go to game settings. Verify that normal difficulty defaults are applied (hints OFF, show block points OFF, etc.)."
+**Prompt**: "Test normal difficulty game setting defaults. Navigate to http://localhost:3456, go to game settings, switch to normal difficulty. Verify that normal difficulty defaults are applied (hints OFF, show block points OFF, personal best OFF, speed mode ignored, etc.)."
 
 #### `difficulty-defaults-comprehensive`
 **Test**: Comprehensive difficulty defaults testing
-**Prompt**: "Test comprehensive difficulty defaults. Navigate to http://localhost:3456, go to settings, switch to easy difficulty, go to game settings and verify easy defaults, then back to settings, switch to normal difficulty, go to game settings and verify normal defaults, then switch to hard difficulty, go to game settings and verify hard defaults, then switch to expert difficulty, go to game settings and verify expert defaults."
+**Prompt**: "Test comprehensive difficulty defaults. Navigate to http://localhost:3456, go to game settings, switch to easy difficulty and verify easy defaults, then switch to normal difficulty and verify normal defaults, then switch to hard difficulty and verify hard defaults, then switch to expert difficulty and verify expert defaults. Test all difficulty levels in sequence on the same page."
 
-#### `dual-difficulty-settings-page`
-**Test**: Difficulty changing via settings page selector
-**Prompt**: "Test difficulty changing via settings page selector. Navigate to http://localhost:3456, go to settings, click on '⚡ Difficulty' section, then test changing between easy, normal, hard, and expert difficulties. Verify each difficulty change is applied correctly and console logs show the proper settings being applied."
+#### `dual-difficulty-gamesettings-page`
+**Test**: Difficulty changing via gamesettings page selector
+**Prompt**: "Test difficulty changing via gamesettings page selector. Navigate to http://localhost:3456, go to game settings, click on difficulty selector buttons (Easy, Normal, Hard, Expert), then test changing between easy, normal, hard, and expert difficulties. Verify each difficulty change is applied correctly and console logs show the proper settings being applied."
 
 #### `dual-difficulty-game-modal`
 **Test**: Difficulty changing via game modal selector
@@ -69,11 +69,11 @@ Tests for game-specific functionality and state management.
 
 #### `dual-difficulty-cross-consistency`
 **Test**: Cross-avenue difficulty consistency verification
-**Prompt**: "Test cross-avenue difficulty consistency. Navigate to http://localhost:3456, go to settings, change difficulty to easy via settings page, then go back to game and verify the difficulty button shows 'Easy'. Then change difficulty to hard via game modal, go back to settings, click '⚡ Difficulty' section, and verify hard is selected. Test with all difficulty levels to ensure both selectors stay synchronized."
+**Prompt**: "Test cross-avenue difficulty consistency. Navigate to http://localhost:3456, go to game settings, change difficulty to easy via gamesettings page, then go back to game and verify the difficulty button shows 'Easy'. Then change difficulty to hard via game modal, go back to game settings, and verify hard is selected. Test with all difficulty levels to ensure both selectors stay synchronized."
 
 #### `dual-difficulty-unified-backend`
 **Test**: Unified backend verification for both difficulty selectors
-**Prompt**: "Test unified backend verification. Navigate to http://localhost:3456, change difficulty via settings page, then change difficulty via game modal, and verify both selectors use the same backend system by checking console logs show identical difficulty management calls and settings application. Verify both selectors produce identical results and stay synchronized."
+**Prompt**: "Test unified backend verification. Navigate to http://localhost:3456, change difficulty via gamesettings page, then change difficulty via game modal, and verify both selectors use the same backend system by checking console logs show identical difficulty management calls and settings application. Verify both selectors produce identical results and stay synchronized."
 
 ### 🔧 Settings Functionality
 Tests for settings page functionality and persistence.
@@ -85,6 +85,10 @@ Tests for settings page functionality and persistence.
 #### `settings-game-settings`
 **Test**: Game settings page functionality
 **Prompt**: "Test game settings page. Navigate to http://localhost:3456, go to settings, then to game settings. Test various game setting toggles and verify they work correctly. Test the back navigation."
+
+#### `gamesettings-difficulty-selector`
+**Test**: Gamesettings page difficulty selector functionality
+**Prompt**: "Test gamesettings page difficulty selector. Navigate to http://localhost:3456, go to game settings, test the difficulty selector section with Easy, Normal, Hard, and Expert buttons. Verify each difficulty selection updates the settings correctly, shows proper difficulty-specific defaults, and updates the reset button text. Test that difficulty changes are applied to the main game when navigating back."
 
 ### 🚀 Performance Testing
 Tests for performance, console health, and error detection.
@@ -117,11 +121,11 @@ Full test suites that combine multiple categories.
 
 #### `comprehensive-dual-difficulty`
 **Test**: Comprehensive dual difficulty selector testing
-**Prompt**: "Run comprehensive dual difficulty selector testing. Test both settings page and game modal difficulty selectors independently, verify cross-avenue consistency, test unified backend functionality, and ensure both selectors stay synchronized across all difficulty levels (easy, normal, hard, expert). Verify console logs show identical difficulty management calls and settings application."
+**Prompt**: "Run comprehensive dual difficulty selector testing. Test both gamesettings page and game modal difficulty selectors independently, verify cross-avenue consistency, test unified backend functionality, and ensure both selectors stay synchronized across all difficulty levels (easy, normal, hard, expert). Verify console logs show identical difficulty management calls and settings application."
 
 #### `comprehensive-all-tests`
 **Test**: Meta comprehensive test - runs ALL catalogued tests
-**Prompt**: "Run the complete comprehensive test suite that executes ALL catalogued tests. This includes: theme-basic, theme-sync, theme-persistence, nav-basic, nav-back-buttons, nav-complete-cycle, game-state-preservation, game-difficulty-switching, difficulty-defaults-easy, difficulty-defaults-normal, difficulty-defaults-comprehensive, dual-difficulty-settings-page, dual-difficulty-game-modal, dual-difficulty-cross-consistency, dual-difficulty-unified-backend, settings-theme-selection, settings-game-settings, performance-load-times, console-health, player-beginner. Execute each test systematically and provide a comprehensive report of all results."
+**Prompt**: "Run the complete comprehensive test suite that executes ALL catalogued tests. This includes: theme-basic, theme-sync, theme-persistence, nav-basic, nav-back-buttons, nav-complete-cycle, game-state-preservation, game-difficulty-switching, difficulty-defaults-easy, difficulty-defaults-normal, difficulty-defaults-comprehensive, dual-difficulty-gamesettings-page, dual-difficulty-game-modal, dual-difficulty-cross-consistency, dual-difficulty-unified-backend, settings-theme-selection, settings-game-settings, gamesettings-difficulty-selector, performance-load-times, console-health, player-beginner. Execute each test systematically and provide a comprehensive report of all results."
 
 ## 🎯 Usage Examples
 
@@ -133,10 +137,11 @@ Full test suites that combine multiple categories.
 "Run the difficulty-defaults-easy test"
 "Execute the difficulty-defaults-normal test"
 "Test the difficulty-defaults-comprehensive functionality"
-"Run the dual-difficulty-settings-page test"
+"Run the dual-difficulty-gamesettings-page test"
 "Execute the dual-difficulty-game-modal test"
 "Test the dual-difficulty-cross-consistency functionality"
 "Run the dual-difficulty-unified-backend test"
+"Run the gamesettings-difficulty-selector test"
 "Run the player-beginner test"
 ```
 
@@ -169,8 +174,8 @@ Each test will provide:
 **Important**: MCP Playwright tests may encounter errors and issues during execution. All known issues are documented in [Test Issues & Error Tracking](./test-issues.md).
 
 ### Current Test Status
-- **Total Tests**: 21
-- **Currently Passing**: 5 (24%)
+- **Total Tests**: 22
+- **Currently Passing**: 5 (23%)
 - **Known Issues**: 6 major issues affecting test reliability
 - **Critical Blockers**: Navigation, block placement (difficulty switching partially fixed)
 
