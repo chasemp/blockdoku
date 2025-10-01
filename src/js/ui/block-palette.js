@@ -96,6 +96,21 @@ export class BlockPalette {
     
     updateBlocks(blocks) {
         console.log('BlockPalette.updateBlocks called with blocks:', blocks);
+        console.log('BlockPalette container:', this.container);
+        console.log('Container element exists:', !!this.container);
+        
+        // Ensure the palette is rendered first
+        if (!this.container) {
+            console.error('BlockPalette container not found!');
+            return;
+        }
+        
+        // Re-render if needed
+        if (!this.container.querySelector('.block-palette')) {
+            console.log('Re-rendering block palette...');
+            this.render();
+        }
+        
         const container = document.getElementById('blocks-container');
         console.log('blocks-container found:', !!container);
         if (!container) {

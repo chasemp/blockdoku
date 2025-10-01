@@ -123,8 +123,11 @@ class BlockdokuGame {
             
             // Always reload game state when returning from settings (if not game over)
             if (!this.isGameOver) {
-                this.loadGameState();
-                this.draw();
+                // Small delay to ensure DOM is ready when returning from settings
+                setTimeout(() => {
+                    this.loadGameState();
+                    this.draw();
+                }, 10);
             }
         });
         
@@ -137,8 +140,11 @@ class BlockdokuGame {
                 
                 // Always reload game state when settings change (if not game over)
                 if (!this.isGameOver) {
-                    this.loadGameState();
-                    this.draw();
+                    // Small delay to ensure DOM is ready when settings change
+                    setTimeout(() => {
+                        this.loadGameState();
+                        this.draw();
+                    }, 10);
                 }
             }
         });
@@ -214,14 +220,9 @@ class BlockdokuGame {
         // this.loadSettings();
         this.loadGameState();
         
-        // Ensure BlockPalette is rendered before generating blocks
+        // Ensure BlockPalette is rendered
         if (this.blockPalette) {
             this.blockPalette.render();
-        }
-        
-        // Only generate new blocks if no blocks were loaded from saved state
-        if (!this.blockManager.currentBlocks || this.blockManager.currentBlocks.length === 0) {
-            this.generateNewBlocks();
         }
         
         // Initialize timer system for current difficulty
@@ -964,7 +965,10 @@ class BlockdokuGame {
     }
     
     generateNewBlocks() {
+        console.log('generateNewBlocks called');
         const newBlocks = this.blockManager.generateRandomBlocks(3, 'all', this.difficultyManager);
+        console.log('Generated blocks:', newBlocks);
+        console.log('BlockPalette available:', !!this.blockPalette);
         this.blockPalette.updateBlocks(newBlocks);
         // Update placeability indicators for new blocks
         this.updatePlaceabilityIndicators();
@@ -2704,11 +2708,26 @@ class BlockdokuGame {
             
             console.log('Game state loaded successfully');
         } else {
-            console.log('No saved game state found - preserving current board state');
-            // If no saved state, ensure we have a valid board (don't overwrite existing state)
+            console.log('No saved game state found - starting fresh game');
+            // If no saved state, ensure we have a valid board and generate blocks
             if (!this.board || !Array.isArray(this.board)) {
                 this.board = this.initializeBoard();
             }
+            
+            // Ensure BlockPalette is rendered before generating blocks
+            if (this.blockPalette) {
+                console.log('Rendering block palette before generating blocks');
+                this.blockPalette.render();
+            } else {
+                console.error('BlockPalette not available!');
+            }
+            
+            // Generate initial blocks for a fresh game (with small delay to ensure DOM is ready)
+            setTimeout(() => {
+                console.log('Generating new blocks for fresh game');
+                this.generateNewBlocks();
+                this.updateUI();
+            }, 10);
         }
     }
 
