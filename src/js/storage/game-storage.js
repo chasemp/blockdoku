@@ -8,6 +8,7 @@ export class GameStorage {
         this.storageKey = 'blockdoku_game_data';
         this.settingsKey = 'blockdoku_settings';
         this.highScoresKey = 'blockdoku_high_scores';
+        this.difficultyOverridesKey = 'blockdoku_difficulty_overrides';
         this.maxHighScores = 10;
         // Migrate any legacy keys to current canonical keys
         this.migrateLegacyKeys();
@@ -138,7 +139,7 @@ export class GameStorage {
     }
 
     getDefaultSettings() {
-        return {
+        const defaults = {
             theme: 'wood',
             soundEnabled: false,
             animationsEnabled: true,
@@ -158,9 +159,14 @@ export class GameStorage {
             enableUndo: false,
             showPoints: false,
             showPlacementPoints: false,
-            showHighScore: false,
-            comboDisplayMode: 'cumulative' // 'streak' or 'cumulative'
+            showPersonalBests: false,
+            comboDisplayMode: 'cumulative', // 'streak' or 'cumulative'
+            speedMode: 'bonus', // 'bonus', 'punishment', or 'ignored'
+            speedDisplayMode: 'timer', // 'timer' or 'points'
+            pieceTimeoutEnabled: false // Enable piece timeout (15s warning, 30s timeout)
         };
+        console.log('Returning default settings with difficulty:', defaults.difficulty);
+        return defaults;
     }
 
     // Statistics Management
@@ -305,6 +311,37 @@ export class GameStorage {
             }
         } catch (error) {
             console.warn('GameStorage migration skipped due to error:', error);
+        }
+    }
+
+    // Difficulty Overrides Management
+    loadDifficultyOverrides() {
+        try {
+            const data = localStorage.getItem(this.difficultyOverridesKey);
+            return data ? JSON.parse(data) : {};
+        } catch (error) {
+            console.error('Failed to load difficulty overrides:', error);
+            return {};
+        }
+    }
+
+    saveDifficultyOverrides(overrides) {
+        try {
+            localStorage.setItem(this.difficultyOverridesKey, JSON.stringify(overrides));
+            return true;
+        } catch (error) {
+            console.error('Failed to save difficulty overrides:', error);
+            return false;
+        }
+    }
+
+    clearDifficultyOverrides() {
+        try {
+            localStorage.removeItem(this.difficultyOverridesKey);
+            return true;
+        } catch (error) {
+            console.error('Failed to clear difficulty overrides:', error);
+            return false;
         }
     }
 }

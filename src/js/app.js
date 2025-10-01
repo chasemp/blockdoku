@@ -17,6 +17,7 @@ import { GameStorage } from './storage/game-storage.js';
 import { PWAInstallManager } from './pwa/install.js';
 import { OfflineManager } from './pwa/offline.js';
 import { DifficultyManager } from './difficulty/difficulty-manager.js';
+import { DifficultySettingsManager } from './difficulty/difficulty-settings-manager.js';
 import { HintSystem } from './difficulty/hint-system.js';
 import { TimerSystem } from './difficulty/timer-system.js';
 import { DifficultySelector } from './ui/difficulty-selector.js';
@@ -72,6 +73,7 @@ class BlockdokuGame {
         this.blockPalette = new BlockPalette('block-palette', this.blockManager, this);
         this.scoringSystem = new ScoringSystem(this.petrificationManager);
         this.storage = new GameStorage();
+        this.difficultySettings = new DifficultySettingsManager(this.storage);
         // this.effectsSystem = new EffectsSystem(this.canvas, this.ctx);
         this.pwaInstallManager = new PWAInstallManager();
         this.offlineManager = new OfflineManager();
@@ -94,6 +96,11 @@ class BlockdokuGame {
         // Track combo display mode usage within a game (streak vs cumulative)
         this.comboModeActive = 'cumulative';
         this.comboModesUsed = new Set();
+        
+        // Speed timer countdown tracking
+        this.speedTimerStartTime = null;
+        this.speedTimerInterval = null;
+        this.speedDisplayMode = 'timer'; // 'timer' or 'points'
         
         // Drag and drop state
         this.isDragging = false;
@@ -212,12 +219,13 @@ class BlockdokuGame {
         this.setupEventListeners();
         this.registerServiceWorker();
         // this.loadSettings();
-        this.loadGameState();
         
-        // Ensure BlockPalette is rendered before generating blocks
+        // Ensure BlockPalette is rendered BEFORE loading game state
         if (this.blockPalette) {
             this.blockPalette.render();
         }
+        
+        this.loadGameState();
         
         // Only generate new blocks if no blocks were loaded from saved state
         if (!this.blockManager.currentBlocks || this.blockManager.currentBlocks.length === 0) {
@@ -873,7 +881,6 @@ class BlockdokuGame {
             }
             return value;
         } catch (e) {
-            console.error(`Failed to get theme color '${varName}':`, e);
             throw new Error(`Theme color '${varName}' is required but not available`);
         }
     }
@@ -889,6 +896,21 @@ class BlockdokuGame {
                 'wood': '#00aaff'
             };
             return fallbackColors[this.currentTheme] || '#00ff00';
+        }
+    }
+    
+    verifyThemeLoaded() {
+        // Check if key CSS variables are available
+        const testVar = getComputedStyle(document.documentElement).getPropertyValue('--clear-glow-color').trim();
+        if (!testVar) {
+            console.warn(`Theme CSS not fully loaded for ${this.currentTheme}, using fallback colors`);
+            // Force a small delay and retry
+            setTimeout(() => {
+                const retryVar = getComputedStyle(document.documentElement).getPropertyValue('--clear-glow-color').trim();
+                if (retryVar) {
+                    console.log(`Theme CSS loaded successfully after delay for ${this.currentTheme}`);
+                }
+            }, 100);
         }
     }
     
@@ -913,21 +935,21 @@ class BlockdokuGame {
     }
     
     handleBlockDragStart(e) {
-        const { block, touch } = e.detail;
+        const { block, input } = e.detail;
         this.selectedBlock = block;
         
         // Start drag operation
         this.isDragging = true;
-        this.dragStartPosition = { x: touch.clientX, y: touch.clientY };
-        this.dragCurrentPosition = { x: touch.clientX, y: touch.clientY };
+        this.dragStartPosition = { x: input.clientX, y: input.clientY };
+        this.dragCurrentPosition = { x: input.clientX, y: input.clientY };
         
         // Create drag element
         this.createDragElement();
         
         // Update preview position with preview offset (1.5 grid boxes above finger)
         const rect = this.canvas.getBoundingClientRect();
-        const x = touch.clientX - rect.left;
-        const y = touch.clientY - rect.top;
+        const x = input.clientX - rect.left;
+        const y = input.clientY - rect.top;
         const col = Math.floor(x / this.mouseCellSize);
         const row = Math.floor(y / this.mouseCellSize);
         const previewOffset = this.getBlockPlacementOffset(block.shape);
@@ -1771,6 +1793,9 @@ class BlockdokuGame {
         this.selectedBlock = null;
         this.previewPosition = null;
         this.isGameOver = false;
+        
+        // Stop speed timer countdown
+        this.stopSpeedTimerCountdown();
         this.isInitialized = true;
         // Load combo display mode from settings
         const settings = this.storage.loadSettings();
@@ -1889,17 +1914,31 @@ class BlockdokuGame {
             
             if (showSpeedTimer) {
                 speedTimerElement.style.display = 'flex';
-                speedTimerValueElement.textContent = speedStats.totalSpeedBonus;
                 
-                // Add pulse animation for recent speed bonuses
-                if (speedStats.speedBonuses.length > 0) {
-                    const lastBonus = speedStats.speedBonuses[speedStats.speedBonuses.length - 1];
-                    const timeSinceLastBonus = Date.now() - lastBonus.timestamp;
-                    if (timeSinceLastBonus < 2000) { // Within last 2 seconds
-                        speedTimerElement.classList.add('speed-pulse');
-                        setTimeout(() => {
-                            speedTimerElement.classList.remove('speed-pulse');
-                        }, 600);
+                // Display either countdown timer or points based on speedDisplayMode
+                if (this.speedDisplayMode === 'timer') {
+                    // Show countdown timer
+                    if (this.speedTimerStartTime) {
+                        const elapsed = Date.now() - this.speedTimerStartTime;
+                        const seconds = (elapsed / 1000).toFixed(1);
+                        speedTimerValueElement.textContent = `${seconds}s`;
+                    } else {
+                        speedTimerValueElement.textContent = '0.0s';
+                    }
+                } else {
+                    // Show total speed bonus points
+                    speedTimerValueElement.textContent = speedStats.totalSpeedBonus;
+                    
+                    // Add pulse animation for recent speed bonuses
+                    if (speedStats.speedBonuses.length > 0) {
+                        const lastBonus = speedStats.speedBonuses[speedStats.speedBonuses.length - 1];
+                        const timeSinceLastBonus = Date.now() - lastBonus.timestamp;
+                        if (timeSinceLastBonus < 2000) { // Within last 2 seconds
+                            speedTimerElement.classList.add('speed-pulse');
+                            setTimeout(() => {
+                                speedTimerElement.classList.remove('speed-pulse');
+                            }, 600);
+                        }
                     }
                 }
             } else {
@@ -1924,7 +1963,7 @@ class BlockdokuGame {
             const container = document.getElementById('personal-bests');
             if (!container) return;
             const settings = this.storage.loadSettings();
-            const show = settings.showHighScore === true;
+            const show = settings.showPersonalBests === true;
             if (!show) {
                 container.style.display = 'none';
                 return;
@@ -2610,45 +2649,6 @@ class BlockdokuGame {
     }
 
     // Storage Methods
-    loadSettings() {
-        const settings = this.storage.loadSettings();
-        this.currentTheme = settings.theme;
-        this.applyTheme(settings.theme);
-        // Load combo display mode from settings
-        this.comboModeActive = settings.comboDisplayMode || 'cumulative';
-        
-        // Load speed mode setting (3-way: 'bonus', 'punishment', or 'ignored')
-        const speedMode = settings.speedMode || 'ignored'; // Default to 'ignored'
-        this.scoringSystem.setSpeedMode(speedMode);
-        
-        // Load dead pixels settings
-        this.enableDeadPixels = settings.enableDeadPixels || false;
-        this.deadPixelsIntensity = settings.deadPixelsIntensity || 0;
-        
-        // Apply dead pixels settings
-        if (this.deadPixelsManager) {
-            const wasEnabled = this.deadPixelsManager.isEnabled();
-            const prevIntensity = this.deadPixelsManager.getIntensity();
-            
-            this.deadPixelsManager.setEnabled(this.enableDeadPixels);
-            this.deadPixelsManager.setIntensity(this.deadPixelsIntensity);
-            
-            // If dead pixels was just enabled or intensity changed, regenerate for current game
-            // But only if we're not loading a saved game (which would have its own dead pixels state)
-            const intensityChanged = this.deadPixelsIntensity !== prevIntensity;
-            if (this.enableDeadPixels && (!wasEnabled || intensityChanged)) {
-                // Only regenerate if we don't have a saved state with dead pixels
-                const hasCurrentDeadPixels = this.deadPixelsManager.getDeadPixels().length > 0;
-                if (!hasCurrentDeadPixels || intensityChanged) {
-                    this.deadPixelsManager.generateDeadPixels(this.boardSize);
-                }
-            }
-            // If disabled, clear dead pixels
-            if (!this.enableDeadPixels && wasEnabled) {
-                this.deadPixelsManager.clearDeadPixels();
-            }
-        }
-    }
 
     loadGameState() {
         const savedState = this.storage.loadGameState();
@@ -2749,21 +2749,57 @@ class BlockdokuGame {
 
     loadSettings() {
         if (this.storage) {
-            const settings = this.storage.loadSettings();
-            this.currentTheme = settings.theme || 'light';
-            this.soundEnabled = settings.soundEnabled === true;
-            this.animationsEnabled = settings.animationsEnabled !== false;
-            this.difficulty = settings.difficulty || 'normal';
-            this.autoSave = settings.autoSave !== false;
-            this.enableHints = settings.enableHints || false;
-            this.enableTimer = settings.enableTimer || false;
-            this.enablePetrification = settings.enablePetrification || false;
-            this.showPoints = settings.showPoints || false;
-            this.showPlacementPoints = settings.showPlacementPoints || false;
-            this.particlesEnabled = settings.particlesEnabled !== false;
-            this.hapticEnabled = settings.hapticEnabled !== false;
-            this.enablePrizeRecognition = settings.enablePrizeRecognition !== false; // Default to true
-            this.successModeEnabled = settings.successModeEnabled !== false; // Default to true
+            const baseSettings = this.storage.loadSettings();
+            console.log('Loading theme from storage:', baseSettings.theme);
+            this.currentTheme = baseSettings.theme || 'wood';
+            console.log('Current theme set to:', this.currentTheme);
+            this.difficulty = baseSettings.difficulty || 'normal';
+            this.autoSave = baseSettings.autoSave !== false;
+            
+            // Get difficulty-specific settings (defaults + overrides)
+            const difficultySettings = this.difficultySettings.getSettingsForDifficulty(this.difficulty);
+            
+            // Apply difficulty-specific settings
+            this.soundEnabled = difficultySettings.soundEnabled === true;
+            this.animationsEnabled = difficultySettings.animationsEnabled !== false;
+            this.enableHints = difficultySettings.enableHints || false;
+            this.enableTimer = difficultySettings.enableTimer || false;
+            this.enablePetrification = difficultySettings.enablePetrification || false;
+            this.enableDeadPixels = difficultySettings.enableDeadPixels || false;
+            this.deadPixelsIntensity = difficultySettings.deadPixelsIntensity || 0;
+            this.showPoints = difficultySettings.showPoints || false;
+            this.showPersonalBests = difficultySettings.showPersonalBests || false;
+            this.showSpeedTimer = difficultySettings.showSpeedTimer || false;
+            
+            // Log difficulty settings application
+            console.log(`🎮 Difficulty level game settings applied for: ${this.difficulty.toUpperCase()}`);
+            console.log('Applied settings:', {
+                soundEnabled: this.soundEnabled,
+                animationsEnabled: this.animationsEnabled,
+                enableHints: this.enableHints,
+                enableTimer: this.enableTimer,
+                enablePetrification: this.enablePetrification,
+                enableDeadPixels: this.enableDeadPixels,
+                showPoints: this.showPoints,
+                showPersonalBests: this.showPersonalBests,
+                showSpeedTimer: this.showSpeedTimer
+            });
+            
+            // Apply non-difficulty-specific settings
+            this.showPlacementPoints = baseSettings.showPlacementPoints || false;
+            this.speedDisplayMode = baseSettings.speedDisplayMode || 'timer';
+            this.particlesEnabled = baseSettings.particlesEnabled !== false;
+            
+            // Load speed mode setting (3-way: 'bonus', 'punishment', or 'ignored')
+            const speedMode = baseSettings.speedMode || 'ignored';
+            this.scoringSystem.setSpeedMode(speedMode);
+            
+            // Load piece timeout setting
+            this.pieceTimeoutEnabled = baseSettings.pieceTimeoutEnabled || false;
+            
+            this.hapticEnabled = baseSettings.hapticEnabled !== false;
+            this.enablePrizeRecognition = baseSettings.enablePrizeRecognition !== false; // Default to true
+            this.successModeEnabled = baseSettings.successModeEnabled !== false; // Default to true
             
             // Apply petrification setting
             if (this.petrificationManager) {
@@ -2771,14 +2807,14 @@ class BlockdokuGame {
             }
             
             // Enhanced animation settings
-            this.blockHoverEffects = settings.blockHoverEffects !== false;
-            this.blockSelectionGlow = settings.blockSelectionGlow !== false;
-            this.blockEntranceAnimations = settings.blockEntranceAnimations !== false;
-            this.particleEffects = settings.particleEffects !== false;
-            this.animationSpeed = settings.animationSpeed || 'normal';
+            this.blockHoverEffects = baseSettings.blockHoverEffects !== false;
+            this.blockSelectionGlow = baseSettings.blockSelectionGlow !== false;
+            this.blockEntranceAnimations = baseSettings.blockEntranceAnimations !== false;
+            this.particleEffects = baseSettings.particleEffects !== false;
+            this.animationSpeed = baseSettings.animationSpeed || 'normal';
             
             // Store all settings for easy access by components
-            this.settings = settings;
+            this.settings = baseSettings;
             
             // Check for pending difficulty changes from settings page
             const pendingDifficulty = localStorage.getItem('blockdoku_pending_difficulty');
@@ -2790,6 +2826,21 @@ class BlockdokuGame {
             // Apply loaded theme
             this.applyTheme(this.currentTheme);
             
+            // Apply piece timeout setting to BlockPalette
+            if (this.blockPalette && this.blockPalette.setPieceTimeoutEnabled) {
+                this.blockPalette.setPieceTimeoutEnabled(this.pieceTimeoutEnabled);
+            }
+            
+            // Verify theme CSS is loaded by checking for a key CSS variable
+            this.verifyThemeLoaded();
+            
+            // Ensure theme is applied after DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    this.applyTheme(this.currentTheme);
+                });
+            }
+            
             // Apply loaded difficulty to difficulty manager
             if (this.difficultyManager) {
                 this.difficultyManager.setDifficulty(this.difficulty);
@@ -2797,6 +2848,30 @@ class BlockdokuGame {
             
             // Apply effects settings
             this.applyEffectsSettings();
+            
+            // Apply dead pixels settings
+            if (this.deadPixelsManager) {
+                const wasEnabled = this.deadPixelsManager.isEnabled();
+                const prevIntensity = this.deadPixelsManager.getIntensity();
+                
+                this.deadPixelsManager.setEnabled(this.enableDeadPixels);
+                this.deadPixelsManager.setIntensity(this.deadPixelsIntensity);
+                
+                // If dead pixels was just enabled or intensity changed, regenerate for current game
+                // But only if we're not loading a saved game (which would have its own dead pixels state)
+                const intensityChanged = this.deadPixelsIntensity !== prevIntensity;
+                if (this.enableDeadPixels && (!wasEnabled || intensityChanged)) {
+                    // Only regenerate if we don't have a saved state with dead pixels
+                    const hasCurrentDeadPixels = this.deadPixelsManager.getDeadPixels().length > 0;
+                    if (!hasCurrentDeadPixels || intensityChanged) {
+                        this.deadPixelsManager.generateDeadPixels(this.boardSize);
+                    }
+                }
+                // If disabled, clear dead pixels
+                if (!this.enableDeadPixels && wasEnabled) {
+                    this.deadPixelsManager.clearDeadPixels();
+                }
+            }
             
             this.updateBlockPointsDisplay();
         }
@@ -2845,7 +2920,48 @@ class BlockdokuGame {
     }
 
     applyTheme(theme) {
+        console.log('App.js applying theme:', theme);
         this.currentTheme = theme;
+        
+        // Handle Vite-injected theme links
+        try {
+            const builtWoodLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+                .filter(l => (l.getAttribute('href') || '').includes('/assets/wood-') || (l.href || '').includes('/assets/wood-'));
+            const builtLightLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+                .filter(l => (l.getAttribute('href') || '').includes('/assets/light-') || (l.href || '').includes('/assets/light-'));
+            const builtDarkLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+                .filter(l => (l.getAttribute('href') || '').includes('/assets/dark-') || (l.href || '').includes('/assets/dark-'));
+            
+            // Disable all built theme links first
+            [...builtWoodLinks, ...builtLightLinks, ...builtDarkLinks].forEach(l => {
+                l.disabled = true;
+            });
+            
+            // Enable the correct built theme link
+            if (theme === 'wood' && builtWoodLinks.length > 0) {
+                builtWoodLinks[0].disabled = false;
+                console.log('App.js enabled built wood theme');
+            } else if (theme === 'light' && builtLightLinks.length > 0) {
+                builtLightLinks[0].disabled = false;
+                console.log('App.js enabled built light theme');
+            } else if (theme === 'dark' && builtDarkLinks.length > 0) {
+                builtDarkLinks[0].disabled = false;
+                console.log('App.js enabled built dark theme');
+            }
+        } catch (e) {
+            console.log('Error managing built theme links:', e);
+        }
+        
+        // Manage preloaded theme links
+        const preloadedThemes = ['light', 'dark', 'wood'];
+        preloadedThemes.forEach(themeName => {
+            const link = document.getElementById(`theme-css-${themeName}`);
+            if (link) {
+                link.disabled = themeName !== theme;
+            }
+        });
+        
+        // Set the main theme-css link as fallback
         let themeLink = document.getElementById('theme-css');
         if (!themeLink) {
             // Create a resilient theme link if missing (e.g., after build transforms)
@@ -2855,24 +2971,11 @@ class BlockdokuGame {
             document.head.appendChild(themeLink);
         }
         themeLink.href = `css/themes/${theme}.css`;
-        // If Vite injected a wood stylesheet into built HTML, disable it when switching away
-        try {
-            const builtWoodLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
-                .filter(l => (l.getAttribute('href') || '').includes('/assets/wood-') || (l.href || '').includes('/assets/wood-'));
-            builtWoodLinks.forEach(l => {
-                l.disabled = theme !== 'wood';
-            });
-        } catch {}
-        // Warm up other theme links (helps after build)
-        const light = document.getElementById('theme-css-light');
-        const dark = document.getElementById('theme-css-dark');
-        if (light) light.media = 'all';
-        if (dark) dark.media = 'all';
         
         // Set data-theme attribute for CSS selectors
         document.documentElement.setAttribute('data-theme', theme);
         
-        // Also add class to body as fallback
+        // Add theme class to body
         document.body.className = document.body.className.replace(/light-theme|dark-theme|wood-theme/g, '');
         document.body.classList.add(`${theme}-theme`);
         
@@ -2920,6 +3023,9 @@ class BlockdokuGame {
         // Prevent multiple game over calls
         if (this.isGameOver) return;
         this.isGameOver = true;
+        
+        // Stop speed timer countdown
+        this.stopSpeedTimerCountdown();
         
         console.log('Game Over! Final Score:', this.score);
         
@@ -3048,6 +3154,8 @@ class BlockdokuGame {
             squareClears: stats.squareClears || 0,
             petrificationStats: stats.petrificationStats,
             enablePetrification: this.enablePetrification,
+            speedStats: this.scoringSystem.getSpeedStats ? this.scoringSystem.getSpeedStats() : null,
+            speedMode: this.scoringSystem.speedConfig ? this.scoringSystem.speedConfig.mode : 'ignored',
             prizeRecognitionEnabled: prizeRecognitionEnabled,
             prize: prize,
             nextPrize: nextPrizeInfo?.nextPrize || null,
@@ -3267,20 +3375,6 @@ class BlockdokuGame {
     }
 
     async selectDifficulty(difficulty) {
-        // Check if game is in progress (has blocks placed or score > 0)
-        const gameInProgress = this.score > 0 || (this.board && this.board.some(row => row.some(cell => cell === 1)));
-        
-        if (gameInProgress) {
-            // Show confirmation dialog
-            const confirmed = await this.confirmationDialog.show(
-                `Changing difficulty to ${difficulty.toUpperCase()} will reset your current game and you'll lose your progress. Are you sure you want to continue?`
-            );
-            
-            if (!confirmed) {
-                return; // User cancelled
-            }
-        }
-        
         this.difficulty = difficulty;
         
         // Update difficulty manager
@@ -3288,19 +3382,14 @@ class BlockdokuGame {
             this.difficultyManager.setDifficulty(difficulty);
         }
         
-        this.applyDifficultySettings();
+        // Reload settings to apply difficulty-specific defaults
+        this.loadSettings();
+        
         this.updateDifficultyUI();
         this.updateDifficultyButton();
         this.saveSettings();
         
-        // Reset the game when difficulty changes (if game was in progress)
-        if (gameInProgress) {
-            // Reset palette drag state before starting new game
-            if (this.blockPalette && this.blockPalette.resetDragState) {
-                this.blockPalette.resetDragState();
-            }
-            this.newGame();
-        }
+        // No game reset needed - difficulty settings apply to current game
     }
 
     selectTheme(theme) {
@@ -3442,6 +3531,9 @@ class BlockdokuGame {
         this.scoringSystem.recordPlacementTime();
         const speedBonusGained = this.scoringSystem.totalSpeedBonus - previousSpeedBonus;
         
+        // Start speed timer countdown for next placement
+        this.startSpeedTimerCountdown();
+        
         // Sync app score with scoring system score after all calculations
         this.score = this.scoringSystem.getScore();
         
@@ -3524,7 +3616,7 @@ class BlockdokuGame {
         
         // Set text and color based on mode
         if (speedMode === 'punishment') {
-            speedText.textContent = `-${bonus} Too Fast!`;
+            speedText.textContent = `-${bonus} Too Slow!`;
         } else {
             speedText.textContent = `+${bonus} Speed!`;
         }
@@ -3713,6 +3805,49 @@ class BlockdokuGame {
             }
         }
         return false;
+    }
+    
+    // Speed timer countdown methods
+    startSpeedTimerCountdown() {
+        // Clear any existing timer
+        if (this.speedTimerInterval) {
+            clearInterval(this.speedTimerInterval);
+        }
+        
+        // Start the countdown timer
+        this.speedTimerStartTime = Date.now();
+        
+        // Update the display every 100ms for smooth countdown
+        this.speedTimerInterval = setInterval(() => {
+            this.updateSpeedTimerDisplay();
+        }, 100);
+    }
+    
+    stopSpeedTimerCountdown() {
+        if (this.speedTimerInterval) {
+            clearInterval(this.speedTimerInterval);
+            this.speedTimerInterval = null;
+        }
+        this.speedTimerStartTime = null;
+    }
+    
+    updateSpeedTimerDisplay() {
+        // Only update if speed timer is enabled and in timer mode
+        const settings = this.storage.loadSettings();
+        const showSpeedTimer = settings.showSpeedTimer === true;
+        
+        if (!showSpeedTimer || this.speedDisplayMode !== 'timer') {
+            return;
+        }
+        
+        const speedTimerElement = document.getElementById('speed-timer');
+        const speedTimerValueElement = document.getElementById('speed-timer-value');
+        
+        if (speedTimerElement && speedTimerValueElement && this.speedTimerStartTime) {
+            const elapsed = Date.now() - this.speedTimerStartTime;
+            const seconds = (elapsed / 1000).toFixed(1);
+            speedTimerValueElement.textContent = `${seconds}s`;
+        }
     }
 }
 

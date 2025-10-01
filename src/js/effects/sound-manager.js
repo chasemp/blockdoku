@@ -645,16 +645,18 @@ export class SoundManager {
         }
     }
     
-    // Preview a grouped sound (plays the first sound in the group)
+    // Preview a grouped sound (plays the currently selected preset for the group)
     previewGroupedSound(groupKey) {
         const groupedEffects = this.getGroupedSoundEffects();
         const groupInfo = groupedEffects[groupKey];
         
         if (!groupInfo || groupInfo.sounds.length === 0) return;
         
-        // Preview the first sound in the group
-        const firstSound = groupInfo.sounds[0];
-        const currentPreset = this.customSoundMappings?.[firstSound] || 'default';
+        // Get the currently selected preset for this group
+        const groupedSettings = this.getGroupedSoundSettings();
+        const currentPreset = groupedSettings[groupKey] || 'default';
+        
+        // Preview the selected preset
         this.previewSound(currentPreset);
     }
 }

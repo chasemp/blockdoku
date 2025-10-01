@@ -420,7 +420,7 @@
             <a href="settings.html" class="nav-btn nav-btn-tertiary">
                 ⚙️ Settings
             </a>
-            <a href="index.html" class="nav-btn nav-btn-tertiary">
+            <a href="settings.html" class="nav-btn nav-btn-tertiary">
                 ← Back
             </a>
         </div>
@@ -539,6 +539,31 @@
                             <p>Blocks Petrified: <strong>${stats.petrificationStats.blocksPetrified || 0}</strong></p>
                             <p>Grid Cells Thawed: <strong>${stats.petrificationStats.gridCellsThawed || 0}</strong></p>
                             <p>Blocks Thawed: <strong>${stats.petrificationStats.blocksThawed || 0}</strong></p>
+                        </div>
+                    `;
+                }
+                
+                // Speed timing stats (if available)
+                if (stats.speedStats && stats.speedMode !== 'ignored') {
+                    const speedModeText = {
+                        'bonus': 'Bonus Mode',
+                        'punishment': 'Punishment Mode',
+                        'ignored': 'Ignored Mode'
+                    };
+                    
+                    const avgSpeed = stats.speedStats.averagePlacementSpeed || 0;
+                    const fastestSpeed = stats.speedStats.fastestPlacement || 0;
+                    const totalSpeedBonus = stats.speedStats.totalSpeedBonus || 0;
+                    const totalPlacements = stats.speedStats.totalPlacements || 0;
+                    
+                    html += `
+                        <div class="petrification-stats" style="background: rgba(255, 165, 0, 0.08); border-color: rgba(255, 165, 0, 0.2);">
+                            <h3 style="color: #ffa500;">⚡ Speed Timing Stats (${speedModeText[stats.speedMode] || 'Unknown'})</h3>
+                            <p>Total Speed Bonus: <strong>${totalSpeedBonus.toLocaleString()} points</strong></p>
+                            <p>Average Placement Time: <strong>${avgSpeed.toFixed(1)}s</strong></p>
+                            <p>Fastest Placement: <strong>${fastestSpeed.toFixed(1)}s</strong></p>
+                            <p>Total Placements: <strong>${totalPlacements}</strong></p>
+                            ${totalPlacements > 0 ? `<p>Speed Bonus per Placement: <strong>${(totalSpeedBonus / totalPlacements).toFixed(1)} points</strong></p>` : ''}
                         </div>
                     `;
                 }

@@ -19,13 +19,13 @@ export class SettingsManager {
         this.confirmationDialog = new ConfirmationDialog();
         this.soundManager = new SoundManager();
         
-        
         this.init();
     }
     
     init() {
         this.loadSettings();
         this.setupEventListeners();
+        this.setupCrossPageCommunication();
         this.updateUI();
         this.updateBuildInfo();
         this.initializePWA();
@@ -41,623 +41,121 @@ export class SettingsManager {
     }
     
     loadSettings() {
+        console.log('Loading settings from storage:', this.settings);
+        console.log('Theme from storage:', this.settings.theme);
         this.currentTheme = this.settings.theme || 'wood';
-        this.currentDifficulty = this.settings.difficulty || 'normal';
+        console.log('Current theme set to:', this.currentTheme);
         
+        // Force difficulty to 'normal' if it's not set or is invalid
+        const validDifficulties = ['easy', 'normal', 'hard', 'expert'];
+        if (!this.settings.difficulty || !validDifficulties.includes(this.settings.difficulty)) {
+            console.log('Invalid or missing difficulty setting, forcing to normal');
+            this.currentDifficulty = 'normal';
+            this.updateSetting('difficulty', 'normal');
+        } else {
+            this.currentDifficulty = this.settings.difficulty;
+        }
+        console.log('Set currentDifficulty to:', this.currentDifficulty);
         
         // Apply the loaded theme immediately
         this.applyTheme(this.currentTheme);
         
-        // Fix section placement (ensure About and Sound sections are outside game-section)
-        this.fixSectionPlacement();
+        // Ensure theme is applied after DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                this.applyTheme(this.currentTheme);
+            });
+        }
         
-        // Load effects settings
-        this.loadEffectsSettings();
+        // Load theme settings
+        this.loadThemeSettings();
         
-        // Update difficulty UI to apply theme-specific styling
+        // Load difficulty settings
+        this.loadDifficultySettings();
+        
+        // Load high scores and statistics
+        this.loadHighScores();
+        this.loadStatistics();
+        
+        // Load sound settings (only for sounds section)
+        this.loadSoundSettings();
+    }
+    
+    loadThemeSettings() {
+        // Update the theme UI to show the current selection
+        this.updateThemeUI();
+    }
+    
+    loadDifficultySettings() {
+        // Update the difficulty UI to show the current selection
+        console.log('Loading difficulty settings, current difficulty:', this.currentDifficulty);
         this.updateDifficultyUI();
     }
     
-    loadEffectsSettings() {
-        // Sound effects
-        const soundEnabled = document.getElementById('sound-enabled');
-        if (soundEnabled) {
-            soundEnabled.checked = this.settings.soundEnabled === true; // Default to false
+    loadHighScores() {
+        const highScoresList = document.getElementById('high-scores-list');
+        if (!highScoresList) return;
+        
+        const statistics = this.storage.loadStatistics();
+        const highScores = statistics.highScores || {};
+        
+        highScoresList.innerHTML = '';
+        
+        if (Object.keys(highScores).length === 0) {
+            highScoresList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No high scores yet. Start playing to set your first record!</p>';
+            return;
         }
         
-        // Sound effects in sounds section
+        // Sort difficulties by a logical order
+        const difficultyOrder = ['easy', 'normal', 'hard', 'expert'];
+        const sortedDifficulties = Object.keys(highScores).sort((a, b) => {
+            return difficultyOrder.indexOf(a) - difficultyOrder.indexOf(b);
+        });
+        
+        sortedDifficulties.forEach(difficulty => {
+            const score = highScores[difficulty];
+            const difficultyDiv = document.createElement('div');
+            difficultyDiv.className = 'high-score-item';
+            difficultyDiv.innerHTML = `
+                <div class="difficulty-name">${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}</div>
+                <div class="score-value">${score.toLocaleString()}</div>
+            `;
+            highScoresList.appendChild(difficultyDiv);
+        });
+    }
+    
+    loadStatistics() {
+        const statisticsDisplay = document.getElementById('statistics-display');
+        if (!statisticsDisplay) return;
+        
+        const statistics = this.storage.loadStatistics();
+        
+        const stats = [
+            { label: 'Total Games Played', value: statistics.totalGamesPlayed || 0 },
+            { label: 'Total Score', value: (statistics.totalScore || 0).toLocaleString() },
+            { label: 'Total Lines Cleared', value: (statistics.totalLinesCleared || 0).toLocaleString() },
+            { label: 'Total Combos', value: (statistics.totalCombos || 0).toLocaleString() },
+            { label: 'Max Combo Streak', value: (statistics.maxComboStreak || 0).toLocaleString() },
+            { label: 'Total Play Time', value: this.formatPlayTime(statistics.totalPlayTime || 0) }
+        ];
+        
+        statisticsDisplay.innerHTML = stats.map(stat => `
+            <div class="stat-item">
+                <span class="stat-label">${stat.label}:</span>
+                <span class="stat-value">${stat.value}</span>
+            </div>
+        `).join('');
+    }
+    
+    loadSoundSettings() {
+        // Handle the sound toggle in the sounds section
         const soundEnabledSounds = document.getElementById('sound-enabled-sounds-section');
         if (soundEnabledSounds) {
-            soundEnabledSounds.checked = this.settings.soundEnabled === true; // Default to false
+            soundEnabledSounds.checked = this.settings.soundEnabled === true;
         }
         
-        // Animations
-        const animationsEnabled = document.getElementById('animations-enabled');
-        if (animationsEnabled) {
-            animationsEnabled.checked = this.settings.animationsEnabled !== false; // Default to true
-        }
-        
-        // Enhanced animation settings
-        const blockHoverEffects = document.getElementById('block-hover-effects');
-        if (blockHoverEffects) {
-            blockHoverEffects.checked = this.settings.blockHoverEffects !== false;
-        }
-        
-        const blockSelectionGlow = document.getElementById('block-selection-glow');
-        if (blockSelectionGlow) {
-            blockSelectionGlow.checked = this.settings.blockSelectionGlow !== false;
-        }
-        
-        const blockEntranceAnimations = document.getElementById('block-entrance-animations');
-        if (blockEntranceAnimations) {
-            blockEntranceAnimations.checked = this.settings.blockEntranceAnimations !== false;
-        }
-        
-        const particleEffects = document.getElementById('particle-effects');
-        if (particleEffects) {
-            particleEffects.checked = this.settings.particleEffects !== false;
-        }
-        
-        const animationSpeed = document.getElementById('animation-speed');
-        if (animationSpeed) {
-            animationSpeed.value = this.settings.animationSpeed || 'normal';
-        }
-        
-        // Haptic feedback
-        const hapticEnabled = document.getElementById('haptic-enabled');
-        if (hapticEnabled) {
-            hapticEnabled.checked = this.settings.hapticEnabled !== false; // Default to true
-        }
-        
-        // Game settings
-        const enableHints = document.getElementById('enable-hints');
-        if (enableHints) {
-            enableHints.checked = this.settings.enableHints === true; // Default to false
-        }
-        
-        const enableTimer = document.getElementById('enable-timer');
-        if (enableTimer) {
-            enableTimer.checked = this.settings.enableTimer === true; // Default to false
-        }
-        
-        const enablePetrification = document.getElementById('enable-petrification');
-        if (enablePetrification) {
-            enablePetrification.checked = this.settings.enablePetrification === true; // Default to false
-        }
-        
-        // Dead pixels
-        const enableDeadPixels = document.getElementById('enable-dead-pixels');
-        if (enableDeadPixels) {
-            enableDeadPixels.checked = this.settings.enableDeadPixels === true; // Default to false
-        }
-        
-        const deadPixelsIntensity = document.getElementById('dead-pixels-intensity');
-        const deadPixelsIntensityValue = document.getElementById('dead-pixels-intensity-value');
-        const deadPixelsIntensityContainer = document.getElementById('dead-pixels-intensity-container');
-        
-        if (deadPixelsIntensity && deadPixelsIntensityValue) {
-            const intensity = this.settings.deadPixelsIntensity || 0;
-            deadPixelsIntensity.value = intensity;
-            deadPixelsIntensityValue.textContent = intensity;
-            
-            // Show/hide intensity slider based on toggle
-            if (deadPixelsIntensityContainer) {
-                deadPixelsIntensityContainer.style.display = 
-                    this.settings.enableDeadPixels === true ? 'block' : 'none';
-            }
-        }
-        
-        const autoSave = document.getElementById('auto-save');
-        if (autoSave) {
-            autoSave.checked = this.settings.autoSave !== false; // Default to true
-        }
-        
-        const showPoints = document.getElementById('show-points');
-        if (showPoints) {
-            showPoints.checked = this.settings.showPoints === true; // Default to false
-        }
-
-        const showPlacementPoints = document.getElementById('show-placement-points');
-        if (showPlacementPoints) {
-            showPlacementPoints.checked = this.settings.showPlacementPoints === true; // Default to false
-        }
-
-        const showHighScore = document.getElementById('show-high-score');
-        if (showHighScore) {
-            showHighScore.checked = this.settings.showHighScore === true; // Default to false
-        }
-        
-        // Speed mode - handle cycling button
-        this.speedModeOrder = ['ignored', 'bonus', 'punishment'];
-        this.currentSpeedModeIndex = 0;
-        
-        const speedModeToggle = document.getElementById('speed-mode-toggle');
-        if (speedModeToggle) {
-            const mode = this.settings.speedMode || 'ignored'; // Default to 'ignored'
-            this.currentSpeedModeIndex = this.speedModeOrder.indexOf(mode);
-            if (this.currentSpeedModeIndex === -1) {
-                this.currentSpeedModeIndex = 0; // Fallback to ignored
-            }
-            this.updateSpeedModeDisplay();
-        }
-        
-
-        // Success mode
-        const successModeEnabled = document.getElementById('success-mode-enabled');
-        if (successModeEnabled) {
-            successModeEnabled.checked = this.settings.successModeEnabled !== false; // Default to true
-        }
-
-        const showSpeedTimer = document.getElementById('show-speed-timer');
-        if (showSpeedTimer) {
-            showSpeedTimer.checked = this.settings.showSpeedTimer === true; // Default to false
-        }
-
-        // Prize recognition
-        const enablePrizeRecognition = document.getElementById('enable-prize-recognition');
-        if (enablePrizeRecognition) {
-            enablePrizeRecognition.checked = this.settings.enablePrizeRecognition !== false; // Default to true
-        }
-
-        // Combo display mode - handle radio buttons
-        const comboStreak = document.getElementById('combo-streak');
-        const comboCumulative = document.getElementById('combo-cumulative');
-        if (comboStreak && comboCumulative) {
-            const mode = this.settings.comboDisplayMode || 'cumulative';
-            if (mode === 'cumulative') {
-                comboCumulative.checked = true;
-            } else {
-                comboStreak.checked = true;
-            }
-        }
-        
-        // Show/hide enhanced animation settings based on master setting
-        this.updateAnimationSettingsVisibility();
-    }
-    
-    updateAnimationSettingsVisibility() {
-        const animationsEnabled = document.getElementById('animations-enabled');
-        const animationSettings = document.getElementById('animation-settings');
-        
-        if (animationsEnabled && animationSettings) {
-            if (animationsEnabled.checked) {
-                animationSettings.style.display = 'block';
-                animationSettings.style.opacity = '1';
-            } else {
-                animationSettings.style.display = 'none';
-                animationSettings.style.opacity = '0.5';
-            }
-        }
-    }
-    
-    setupEventListeners() {
-        // Navigation with press duration requirement
-        document.querySelectorAll('.nav-item').forEach(item => {
-            let pressStartTime = null;
-            let pressTimeout = null;
-            let isPressed = false;
-            
-            const handleNavActivation = (e) => {
-                e.preventDefault();
-                this.showSection(item.dataset.section);
-            };
-            
-            const resetPressState = () => {
-                // Clear timeout
-                if (pressTimeout) {
-                    clearTimeout(pressTimeout);
-                    pressTimeout = null;
-                }
-                
-                // Reset state
-                isPressed = false;
-                pressStartTime = null;
-                
-                // Remove visual feedback
-                item.classList.remove('pressing');
-            };
-            
-            const startPress = (e) => {
-                e.preventDefault();
-                if (isPressed) return; // Already pressing
-                
-                isPressed = true;
-                pressStartTime = Date.now();
-                
-                // Add visual feedback
-                item.classList.add('pressing');
-                
-                // Set timeout for 0.75 seconds
-                pressTimeout = setTimeout(() => {
-                    if (isPressed) {
-                        handleNavActivation(e);
-                        resetPressState();
-                    }
-                }, 100);
-            };
-            
-            const cancelPress = (e) => {
-                if (!isPressed) return;
-                
-                e.preventDefault();
-                resetPressState();
-            };
-            
-            // Mouse events
-            item.addEventListener('mousedown', startPress);
-            item.addEventListener('mouseup', cancelPress);
-            item.addEventListener('mouseleave', cancelPress);
-            
-            // Touch events
-            item.addEventListener('touchstart', startPress, { passive: false });
-            item.addEventListener('touchend', cancelPress, { passive: false });
-            item.addEventListener('touchcancel', cancelPress, { passive: false });
-            
-            // Fallback click handler for accessibility
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                // Only allow click if it's a quick press (accessibility)
-                if (!isPressed && (!pressStartTime || (Date.now() - pressStartTime) < 200)) {
-                    handleNavActivation(e);
-                }
-            });
-        });
-        
-        // Theme selection with press duration requirement
-        document.querySelectorAll('.theme-option').forEach(option => {
-            let pressStartTime = null;
-            let pressTimeout = null;
-            let isPressed = false;
-            let themeValue = null; // Store theme value to avoid null currentTarget issues
-            
-            const handleThemeActivation = (theme) => {
-                this.selectTheme(theme);
-            };
-            
-            const resetPressState = () => {
-                // Clear timeout
-                if (pressTimeout) {
-                    clearTimeout(pressTimeout);
-                    pressTimeout = null;
-                }
-                
-                // Reset state
-                isPressed = false;
-                pressStartTime = null;
-                
-                // Remove visual feedback
-                option.classList.remove('pressing');
-            };
-            
-            const startPress = (e) => {
-                e.preventDefault();
-                if (isPressed) return;
-                
-                isPressed = true;
-                pressStartTime = Date.now();
-                themeValue = e.currentTarget.dataset.theme; // Store theme value
-                option.classList.add('pressing');
-                
-                pressTimeout = setTimeout(() => {
-                    if (isPressed && themeValue) {
-                        handleThemeActivation(themeValue);
-                        resetPressState();
-                    }
-                }, 100);
-            };
-            
-            const cancelPress = (e) => {
-                if (!isPressed) return;
-                e.preventDefault();
-                resetPressState();
-            };
-            
-            option.addEventListener('mousedown', startPress);
-            option.addEventListener('mouseup', cancelPress);
-            option.addEventListener('mouseleave', cancelPress);
-            option.addEventListener('touchstart', startPress, { passive: false });
-            option.addEventListener('touchend', cancelPress, { passive: false });
-            option.addEventListener('touchcancel', cancelPress, { passive: false });
-            
-            option.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (!isPressed && (!pressStartTime || (Date.now() - pressStartTime) < 200)) {
-                    handleThemeActivation(e.currentTarget.dataset.theme);
-                }
-            });
-        });
-        
-        // Difficulty selection with press duration requirement
-        document.querySelectorAll('.difficulty-option').forEach(option => {
-            let pressStartTime = null;
-            let pressTimeout = null;
-            let isPressed = false;
-            
-            const handleDifficultyActivation = async (e) => {
-                await this.selectDifficulty(e.currentTarget.dataset.difficulty);
-            };
-            
-            const resetPressState = () => {
-                // Clear timeout
-                if (pressTimeout) {
-                    clearTimeout(pressTimeout);
-                    pressTimeout = null;
-                }
-                
-                // Reset state
-                isPressed = false;
-                pressStartTime = null;
-                
-                // Remove visual feedback
-                option.classList.remove('pressing');
-            };
-            
-            const startPress = (e) => {
-                e.preventDefault();
-                if (isPressed) return;
-                
-                isPressed = true;
-                pressStartTime = Date.now();
-                option.classList.add('pressing');
-                
-                pressTimeout = setTimeout(async () => {
-                    if (isPressed) {
-                        await handleDifficultyActivation(e);
-                        resetPressState();
-                    }
-                }, 100);
-            };
-            
-            const cancelPress = (e) => {
-                if (!isPressed) return;
-                e.preventDefault();
-                resetPressState();
-            };
-            
-            option.addEventListener('mousedown', startPress);
-            option.addEventListener('mouseup', cancelPress);
-            option.addEventListener('mouseleave', cancelPress);
-            option.addEventListener('touchstart', startPress, { passive: false });
-            option.addEventListener('touchend', cancelPress, { passive: false });
-            option.addEventListener('touchcancel', cancelPress, { passive: false });
-            
-            option.addEventListener('click', async (e) => {
-                e.preventDefault();
-                if (!isPressed && (!pressStartTime || (Date.now() - pressStartTime) < 200)) {
-                    await handleDifficultyActivation(e);
-                }
-            });
-        });
-        
-        // Game settings
-        document.getElementById('enable-hints').addEventListener('change', (e) => {
-            this.updateSetting('enableHints', e.target.checked);
-        });
-        
-        document.getElementById('enable-timer').addEventListener('change', (e) => {
-            this.updateSetting('enableTimer', e.target.checked);
-        });
-        
-        const enablePetrification = document.getElementById('enable-petrification');
-        if (enablePetrification) {
-            enablePetrification.addEventListener('change', (e) => {
-                this.updateSetting('enablePetrification', e.target.checked);
-            });
-        }
-        
-        // Dead pixels toggle
-        const enableDeadPixels = document.getElementById('enable-dead-pixels');
-        if (enableDeadPixels) {
-            enableDeadPixels.addEventListener('change', (e) => {
-                this.updateSetting('enableDeadPixels', e.target.checked);
-                
-                // Show/hide intensity slider
-                const container = document.getElementById('dead-pixels-intensity-container');
-                if (container) {
-                    container.style.display = e.target.checked ? 'block' : 'none';
-                }
-            });
-        }
-        
-        // Dead pixels intensity slider
-        const deadPixelsIntensity = document.getElementById('dead-pixels-intensity');
-        const deadPixelsIntensityValue = document.getElementById('dead-pixels-intensity-value');
-        if (deadPixelsIntensity && deadPixelsIntensityValue) {
-            deadPixelsIntensity.addEventListener('input', (e) => {
-                const value = parseInt(e.target.value);
-                deadPixelsIntensityValue.textContent = value;
-                this.updateSetting('deadPixelsIntensity', value);
-            });
-        }
-        
-        document.getElementById('sound-enabled').addEventListener('change', (e) => {
-            this.updateSetting('soundEnabled', e.target.checked);
-            // Also update the sound toggle in sounds section to keep them in sync
-            const soundsSectionToggle = document.getElementById('sound-enabled-sounds-section');
-            if (soundsSectionToggle) {
-                soundsSectionToggle.checked = e.target.checked;
-            }
-        });
-        
-        // Sound toggle in sounds section
-        const soundEnabledSounds = document.getElementById('sound-enabled-sounds-section');
-        if (soundEnabledSounds) {
-            soundEnabledSounds.addEventListener('change', (e) => {
-                this.updateSetting('soundEnabled', e.target.checked);
-                // Also update the other sound toggle to keep them in sync
-                const otherSoundToggle = document.getElementById('sound-enabled');
-                if (otherSoundToggle) {
-                    otherSoundToggle.checked = e.target.checked;
-                }
-            });
-        }
-        
-        document.getElementById('animations-enabled').addEventListener('change', (e) => {
-            this.updateSetting('animationsEnabled', e.target.checked);
-            this.updateAnimationSettingsVisibility();
-        });
-        
-        // Enhanced animation settings
-        document.getElementById('block-hover-effects').addEventListener('change', (e) => {
-            this.updateSetting('blockHoverEffects', e.target.checked);
-        });
-        
-        document.getElementById('block-selection-glow').addEventListener('change', (e) => {
-            this.updateSetting('blockSelectionGlow', e.target.checked);
-        });
-        
-        document.getElementById('block-entrance-animations').addEventListener('change', (e) => {
-            this.updateSetting('blockEntranceAnimations', e.target.checked);
-        });
-        
-        document.getElementById('particle-effects').addEventListener('change', (e) => {
-            this.updateSetting('particleEffects', e.target.checked);
-        });
-        
-        document.getElementById('animation-speed').addEventListener('change', (e) => {
-            this.updateSetting('animationSpeed', e.target.value);
-        });
-        
-        document.getElementById('auto-save').addEventListener('change', (e) => {
-            this.updateSetting('autoSave', e.target.checked);
-        });
-        
-        document.getElementById('show-points').addEventListener('change', (e) => {
-            this.updateSetting('showPoints', e.target.checked);
-            this.updateBlockPointsDisplay();
-        });
-
-        const showPlacementPoints = document.getElementById('show-placement-points');
-        if (showPlacementPoints) {
-            showPlacementPoints.addEventListener('change', (e) => {
-                this.updateSetting('showPlacementPoints', e.target.checked);
-            });
-        }
-
-        const showHighScore = document.getElementById('show-high-score');
-        if (showHighScore) {
-            showHighScore.addEventListener('change', (e) => {
-                this.updateSetting('showHighScore', e.target.checked);
-            });
-        }
-        
-        // Speed mode cycling button
-        const speedModeToggle = document.getElementById('speed-mode-toggle');
-        if (speedModeToggle) {
-            speedModeToggle.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.cycleSpeedMode();
-            });
-        }
-        
-
-        // Success mode toggle
-        const successModeEnabled = document.getElementById('success-mode-enabled');
-        if (successModeEnabled) {
-            successModeEnabled.addEventListener('change', (e) => {
-                this.updateSetting('successModeEnabled', e.target.checked);
-            });
-        }
-
-        const showSpeedTimer = document.getElementById('show-speed-timer');
-        if (showSpeedTimer) {
-            showSpeedTimer.addEventListener('change', (e) => {
-                this.updateSetting('showSpeedTimer', e.target.checked);
-            });
-        }
-
-        // Prize recognition toggle
-        const enablePrizeRecognition = document.getElementById('enable-prize-recognition');
-        if (enablePrizeRecognition) {
-            enablePrizeRecognition.addEventListener('change', (e) => {
-                this.updateSetting('enablePrizeRecognition', e.target.checked);
-            });
-        }
-
-        // Combo display mode - handle radio buttons
-        const comboStreak = document.getElementById('combo-streak');
-        const comboCumulative = document.getElementById('combo-cumulative');
-        if (comboStreak && comboCumulative) {
-            comboStreak.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    this.updateSetting('comboDisplayMode', 'streak');
-                }
-            });
-            comboCumulative.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    this.updateSetting('comboDisplayMode', 'cumulative');
-                }
-            });
-        }
-        
-        // Effects settings
-        
-        document.getElementById('haptic-enabled').addEventListener('change', (e) => {
-            this.updateSetting('hapticEnabled', e.target.checked);
-        });
-        
-        // Share button
-        const shareButton = document.getElementById('share-button');
-        if (shareButton) {
-            shareButton.addEventListener('click', () => {
-                this.shareGame();
-            });
-        }
-
-        // Share scores button
-        const shareScoresButton = document.getElementById('share-scores-button');
-        if (shareScoresButton) {
-            shareScoresButton.addEventListener('click', () => {
-                this.shareHighScores();
-            });
-        }
-
-        // View last game button
-        const viewLastGameBtn = document.getElementById('view-last-game-btn');
-        if (viewLastGameBtn) {
-            viewLastGameBtn.addEventListener('click', () => {
-                this.viewLastGame();
-            });
-        }
-
-        // Reset statistics button
-        const resetStatsBtn = document.getElementById('reset-stats');
-        if (resetStatsBtn) {
-            resetStatsBtn.addEventListener('click', async () => {
-                const confirmed = await this.confirmationDialog.show(
-                    'This will permanently delete your game statistics (games played, totals, best score). Your high scores and settings will not be affected. Continue?'
-                );
-                if (!confirmed) return;
-                this.storage.clearStatistics();
-                // Refresh stats section if visible
-                try {
-                    this.loadHighScores();
-                } catch {}
-                this.showNotification('Statistics reset');
-            });
-        }
-    }
-    
-    
-    showSection(sectionName) {
-        // Update navigation
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-        });
-        document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
-        
-        // Update content
-        document.querySelectorAll('.settings-section').forEach(section => {
-            section.classList.remove('active');
-        });
-        document.getElementById(`${sectionName}-section`).classList.add('active');
-        
-        // Load section-specific data
-        if (sectionName === 'scores') {
-            this.loadHighScores();
-        } else if (sectionName === 'sounds') {
+        // Load sound customization with grouped effects
             this.loadSoundCustomization();
-        }
     }
     
     loadSoundCustomization() {
@@ -860,26 +358,24 @@ export class SettingsManager {
         const container = document.getElementById('sound-customization-container');
         if (!container) return;
         
-        // Enable sound for previews
-        this.soundManager.setEnabled(true);
-        
         const soundEffects = this.soundManager.getSoundEffects();
         const presets = this.soundManager.getAvailablePresets();
-        const currentMappings = this.soundManager.customSoundMappings || {};
+        const customMappings = this.soundManager.customSoundMappings;
         
         let html = '';
         
-        // Create UI for each sound effect
+        // Create UI for each individual sound effect
         for (const [soundKey, soundInfo] of Object.entries(soundEffects)) {
-            const currentPreset = currentMappings[soundKey] || 'default';
-            
+            const currentPreset = customMappings[soundKey] || 'default';
             const isMuted = currentPreset === 'none';
+            
             html += `
                 <div class="sound-effect-item">
                     <div class="sound-effect-info">
                         <h4>${soundInfo.name}</h4>
                         <p>${soundInfo.description}</p>
                     </div>
+                    <div class="sound-effect-controls">
                     <select class="sound-preset-select" data-sound="${soundKey}">
                         <option value="default" ${currentPreset === 'default' ? 'selected' : ''}>Default</option>
                         <option value="none" ${currentPreset === 'none' ? 'selected' : ''}>None</option>
@@ -895,6 +391,7 @@ export class SettingsManager {
                     <button class="sound-mute-btn ${isMuted ? 'muted' : ''}" data-sound="${soundKey}" title="${isMuted ? 'Unmute' : 'Mute'}">
                         ${isMuted ? '🔇' : '🔊'}
                     </button>
+                    </div>
                 </div>
             `;
         }
@@ -912,17 +409,12 @@ export class SettingsManager {
         
         container.innerHTML = html;
         
-        // Add event listeners for individual sound effects (reuse existing logic)
-        this.setupIndividualSoundEventListeners(container);
-    }
-    
-    setupIndividualSoundEventListeners(container) {
-        // Add event listeners for preset changes
+        // Add event listeners for individual sound preset changes
         container.querySelectorAll('.sound-preset-select').forEach(select => {
             select.addEventListener('change', (e) => {
                 const soundKey = e.target.dataset.sound;
                 const presetId = e.target.value;
-                this.soundManager.setCustomSound(soundKey, presetId);
+                this.soundManager.setCustomSoundMapping(soundKey, presetId);
                 
                 // Update mute button state
                 const muteBtn = e.target.parentElement.querySelector('.sound-mute-btn');
@@ -940,7 +432,7 @@ export class SettingsManager {
             });
         });
         
-        // Add event listeners for preview buttons
+        // Add event listeners for individual sound preview buttons
         container.querySelectorAll('.sound-preview-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const soundKey = e.currentTarget.dataset.sound;
@@ -957,12 +449,12 @@ export class SettingsManager {
                         btn.style.opacity = '1';
                     }, 500);
                 } else {
-                    this.soundManager.play(soundKey);
+                    this.soundManager.previewSound(selectedPreset);
                 }
             });
         });
         
-        // Add event listeners for mute buttons
+        // Add event listeners for individual sound mute buttons
         container.querySelectorAll('.sound-mute-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const soundKey = e.currentTarget.dataset.sound;
@@ -972,14 +464,14 @@ export class SettingsManager {
                 if (currentPreset === 'none') {
                     // Unmute: set to default
                     select.value = 'default';
-                    this.soundManager.setCustomSound(soundKey, 'default');
+                    this.soundManager.setCustomSoundMapping(soundKey, 'default');
                     btn.classList.remove('muted');
                     btn.textContent = '🔊';
                     btn.title = 'Mute';
                 } else {
                     // Mute: set to none
                     select.value = 'none';
-                    this.soundManager.setCustomSound(soundKey, 'none');
+                    this.soundManager.setCustomSoundMapping(soundKey, 'none');
                     btn.classList.add('muted');
                     btn.textContent = '🔇';
                     btn.title = 'Unmute';
@@ -1000,448 +492,102 @@ export class SettingsManager {
             });
         }
         
-        // Add event listener for back to grouped button
-        const backBtn = document.getElementById('show-advanced-sounds');
-        if (backBtn) {
-            backBtn.addEventListener('click', () => {
+        // Add event listener for advanced settings button
+        const advancedBtn = document.getElementById('show-advanced-sounds');
+        if (advancedBtn) {
+            advancedBtn.addEventListener('click', () => {
                 this.toggleAdvancedSoundSettings();
             });
         }
     }
     
-    selectTheme(theme) {
-        this.currentTheme = theme;
-        this.applyTheme(theme);
-        this.updateThemeUI();
-        this.updateDifficultyUI(); // Update difficulty UI to apply theme-specific styling
-        this.saveSettings();
+    setupEventListeners() {
+        this.setupThemeListeners();
+        this.setupDifficultyListeners();
+        this.setupNavigationListeners();
+        this.setupSoundListeners();
+        this.setupShareListeners();
+        this.setupViewLastGameListener();
     }
     
-    applyTheme(theme) {
-        let themeLink = document.getElementById('theme-css');
-        if (!themeLink) {
-            // Create a resilient theme link if missing (e.g., after build transforms)
-            themeLink = document.createElement('link');
-            themeLink.rel = 'stylesheet';
-            themeLink.id = 'theme-css';
-            document.head.appendChild(themeLink);
-        }
-        themeLink.href = `css/themes/${theme}.css`;
-
-		// If Vite injected a wood stylesheet into built HTML, disable it when switching away
-		try {
-			const builtWoodLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
-				.filter(l => (l.getAttribute('href') || '').includes('/assets/wood-') || (l.href || '').includes('/assets/wood-'));
-			builtWoodLinks.forEach(l => {
-				l.disabled = theme !== 'wood';
-			});
-		} catch (e) {
-			// no-op
-		}
-        // Warm up other theme links (helps after build)
-        const light = document.getElementById('theme-css-light');
-        const dark = document.getElementById('theme-css-dark');
-        if (light) light.media = 'all';
-        if (dark) dark.media = 'all';
-        
-        // Set data-theme attribute for CSS selectors
-        document.documentElement.setAttribute('data-theme', theme);
-        
-        // Also add class to body as fallback
-        document.body.className = document.body.className.replace(/light-theme|dark-theme|wood-theme/g, '');
-        document.body.classList.add(`${theme}-theme`);
+    setupThemeListeners() {
+        const themeButtons = document.querySelectorAll('.theme-option');
+        themeButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const theme = button.dataset.theme;
+                this.selectTheme(theme);
+            });
+        });
     }
     
-    async selectDifficulty(difficulty) {
-        // Check if there's a game in progress by looking at localStorage
-        const gameState = localStorage.getItem(this.storage?.storageKey || 'blockdoku_game_data');
-        let gameInProgress = false;
-        
-        if (gameState) {
-            try {
-                const state = JSON.parse(gameState);
-                gameInProgress = state.score > 0 || state.board.some(row => row.some(cell => cell === 1));
-            } catch (e) {
-                // If we can't parse the game state, assume no game in progress
-                gameInProgress = false;
-            }
-        }
-        
-        if (gameInProgress) {
-            // Show confirmation dialog
-            const confirmed = await this.confirmationDialog.show(
-                `Changing difficulty to ${difficulty.toUpperCase()} will reset your current game and you'll lose your progress. Are you sure you want to continue?`
-            );
+    setupDifficultyListeners() {
+        const difficultyButtons = document.querySelectorAll('.difficulty-option');
+        console.log('Setting up difficulty listeners for', difficultyButtons.length, 'buttons');
+        difficultyButtons.forEach((button, index) => {
+            console.log(`Setting up listener for button ${index}:`, button.dataset.difficulty);
+            button.addEventListener('click', async (e) => {
+                console.log('Difficulty button clicked:', button.dataset.difficulty);
+                e.preventDefault();
+                const difficulty = button.dataset.difficulty;
+                await this.selectDifficulty(difficulty);
+            });
             
-            if (!confirmed) {
-                // User cancelled, revert the UI selection
-                this.updateDifficultyUI();
-                return;
-            }
-        }
-        
-        this.currentDifficulty = difficulty;
-        this.updateDifficultyUI();
-        this.saveSettings();
-        
-        // Also update the main game's difficulty if we're on the settings page
-        // This ensures the difficulty change takes effect immediately
-        if (window.parent && window.parent !== window) {
-            // If we're in an iframe, communicate with parent
-            window.parent.postMessage({
-                type: 'difficultyChanged',
-                difficulty: difficulty
-            }, '*');
-        } else {
-            // If we're on the settings page directly, store the change for the main game to pick up
-            localStorage.setItem('blockdoku_pending_difficulty', difficulty);
-        }
-    }
-    
-    updateSetting(key, value) {
-        this.settings[key] = value;
-        this.saveSettings();
-    }
-    
-    updateUI() {
-        this.updateThemeUI();
-        this.updateDifficultyUI();
-        this.updateGameSettingsUI();
-    }
-    
-    updateThemeUI() {
-        document.querySelectorAll('.theme-option').forEach(option => {
-            option.classList.remove('selected');
-            if (option.dataset.theme === this.currentTheme) {
-                option.classList.add('selected');
-            }
-        });
-    }
-    
-    updateDifficultyUI() {
-        document.querySelectorAll('.difficulty-option').forEach(option => {
-            option.classList.remove('selected');
-            if (option.dataset.difficulty === this.currentDifficulty) {
-                option.classList.add('selected');
-                
-                // Force white text for light theme
-                if (this.currentTheme === 'light') {
-                    option.style.color = 'white';
-                    option.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.7)';
-                    
-                    // Also style child elements
-                    const h4 = option.querySelector('h4');
-                    if (h4) {
-                        h4.style.color = 'white';
-                        h4.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.7)';
-                    }
-                    
-                    const p = option.querySelector('p');
-                    if (p) {
-                        p.style.color = 'white';
-                        p.style.textShadow = '0 1px 2px rgba(0, 0, 0, 0.7)';
-                    }
-                } else {
-                    // Reset styles for other themes
-                    option.style.color = '';
-                    option.style.textShadow = '';
-                    const h4 = option.querySelector('h4');
-                    if (h4) {
-                        h4.style.color = '';
-                        h4.style.textShadow = '';
-                    }
-                    const p = option.querySelector('p');
-                    if (p) {
-                        p.style.color = '';
-                        p.style.textShadow = '';
-                    }
-                }
-            }
-        });
-    }
-    
-    updateGameSettingsUI() {
-        document.getElementById('enable-hints').checked = this.settings.enableHints || false;
-        document.getElementById('enable-timer').checked = this.settings.enableTimer || false;
-        document.getElementById('auto-save').checked = this.settings.autoSave !== false;
-        document.getElementById('show-points').checked = this.settings.showPoints || false;
-        
-        // Effects settings are handled by loadEffectsSettings()
-        this.loadEffectsSettings();
-    }
-    
-    updateBlockPointsDisplay() {
-        const showPoints = this.settings.showPoints || false;
-        const blockInfos = document.querySelectorAll('.block-info');
-        
-        blockInfos.forEach(info => {
-            if (showPoints) {
-                info.classList.add('show-points');
-            } else {
-                info.classList.remove('show-points');
-            }
-        });
-    }
-    
-    cycleSpeedMode() {
-        // Cycle to next mode
-        this.currentSpeedModeIndex = (this.currentSpeedModeIndex + 1) % this.speedModeOrder.length;
-        const newMode = this.speedModeOrder[this.currentSpeedModeIndex];
-        
-        // Update setting
-        this.updateSetting('speedMode', newMode);
-        
-        // Update display
-        this.updateSpeedModeDisplay();
-    }
-    
-    updateSpeedModeDisplay() {
-        const speedModeToggle = document.getElementById('speed-mode-toggle');
-        const speedModeTitle = document.getElementById('speed-mode-title');
-        const speedModeDescription = document.getElementById('speed-mode-description');
-        
-        if (!speedModeToggle || !speedModeTitle || !speedModeDescription) return;
-        
-        const mode = this.speedModeOrder[this.currentSpeedModeIndex];
-        
-        const modeData = {
-            bonus: {
-                title: 'Bonus',
-                description: 'Faster = more points'
-            },
-            punishment: {
-                title: 'Punishment',
-                description: 'Faster = less points (scales with level)'
-            },
-            ignored: {
-                title: 'Ignored',
-                description: 'Speed doesn\'t affect score'
-            }
-        };
-        
-        const data = modeData[mode];
-        speedModeTitle.textContent = data.title;
-        speedModeDescription.textContent = data.description;
-    }
-    
-    updateBuildInfo() {
-        // NOTE: This UI depends on build-info.json being generated during build.
-        // Ensure the generate-build-info script runs (npm prebuild/postbuild).
-        // Wait for build info to load, then update display
-        const checkBuildInfo = () => {
-            if (buildInfo.isLoaded()) {
-                const versionDisplay = document.getElementById('version-display');
-                const buildInfoDisplay = document.getElementById('build-info');
-                
-                if (versionDisplay) {
-                    versionDisplay.textContent = buildInfo.getDisplayVersion();
-                }
-                
-                if (buildInfoDisplay) {
-                    buildInfoDisplay.textContent = `Build: ${buildInfo.getBuildId()} (${buildInfo.getFormattedBuildDate()})`;
-                }
-            } else {
-                // Check again in 100ms
-                setTimeout(checkBuildInfo, 100);
-            }
-        };
-        
-        checkBuildInfo();
-    }
-    
-    loadHighScores() {
-        const scoresList = document.getElementById('high-scores-list');
-        const statsDisplay = document.getElementById('statistics-display');
-        
-        if (!scoresList || !statsDisplay) {
-            console.error('High scores elements not found');
-            return;
-        }
-        
-        const highScores = this.storage.getHighScores();
-        const stats = this.storage.loadStatistics();
-        
-        console.log('Loading statistics:', stats); // Debug log
-        
-        // Display high scores
-        if (highScores.length === 0) {
-            scoresList.innerHTML = '<p>No high scores yet. Play a game to set your first record!</p>';
-        } else {
-            scoresList.innerHTML = highScores.map((score, index) => `
-                <div class="score-item">
-                    <div class="rank">#${index + 1}</div>
-                    <div class="score-value">${score.score}</div>
-                    <div class="score-details">${(score.difficulty||'normal').toUpperCase()} • Level ${score.level} • ${new Date(score.date).toLocaleDateString()}</div>
-                </div>
-            `).join('');
-        }
-        
-        // Display statistics
-        statsDisplay.innerHTML = `
-            <div class="stat-item">
-                <span class="stat-label">Games Played:</span>
-                <span class="stat-value">${stats.gamesPlayed || 0}</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Total Score:</span>
-                <span class="stat-value">${stats.totalScore || 0}</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Best Score:</span>
-                <span class="stat-value">${stats.bestScore || 0}</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Total Lines:</span>
-                <span class="stat-value">${stats.totalLinesCleared || 0}</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Max Streak:</span>
-                <span class="stat-value">${stats.maxCombo || 0}</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Total Combos:</span>
-                <span class="stat-value">${stats.totalCombos || 0}</span>
-            </div>
-        `;
-    }
-    
-    // Add method to refresh statistics display
-    refreshStatistics() {
-        console.log('Refreshing statistics display...');
-        this.loadHighScores();
-    }
-    
-    saveSettings() {
-        const settings = {
-            ...this.settings,
-            theme: this.currentTheme,
-            difficulty: this.currentDifficulty
-        };
-        this.storage.saveSettings(settings);
-    }
-    
-    shareGame() {
-        const url = 'https://blockdoku.523.life';
-        const title = 'Blockdoku - A Progressive Web App Puzzle Game';
-        const text = 'Check out this awesome Blockdoku puzzle game!';
-        
-        if (navigator.share) {
-            // Use native Web Share API if available
-            navigator.share({
-                title: title,
-                text: text,
-                url: url
-            }).catch(err => {
-                console.log('Error sharing:', err);
-                this.fallbackShare(url, title);
+            // Also add mousedown and touchstart for debugging
+            button.addEventListener('mousedown', (e) => {
+                console.log('Difficulty button mousedown:', button.dataset.difficulty);
             });
-        } else {
-            // Fallback to clipboard and notification
-            this.fallbackShare(url, title);
-        }
-    }
-    
-    fallbackShare(url, title) {
-        // Copy to clipboard
-        navigator.clipboard.writeText(url).then(() => {
-            // Show a temporary notification
-            this.showNotification('Game URL copied to clipboard!');
-        }).catch(() => {
-            // If clipboard fails, show URL in alert
-            alert(`Share this game: ${url}`);
-        });
-    }
-
-    shareHighScores() {
-        const highScores = this.storage.getHighScores();
-        const stats = this.storage.loadStatistics();
-        
-        if (highScores.length === 0) {
-            this.showNotification('No high scores to share yet!');
-            return;
-        }
-
-        // Format high scores for sharing
-        let scoresText = '🏆 Blockdoku High Scores\n\n';
-        
-        highScores.slice(0, 5).forEach((score, index) => {
-            const difficulty = (score.difficulty || 'normal').toUpperCase();
-            const date = new Date(score.date).toLocaleDateString();
-            scoresText += `#${index + 1} ${score.score.toLocaleString()} (${difficulty}) - Level ${score.level} - ${date}\n`;
-        });
-        
-        // Add statistics
-        scoresText += `\n📊 Statistics:\n`;
-        scoresText += `Games Played: ${stats.gamesPlayed}\n`;
-        scoresText += `Total Score: ${stats.totalScore.toLocaleString()}\n`;
-        scoresText += `Best Score: ${stats.bestScore.toLocaleString()}\n`;
-        scoresText += `Max Combo: ${stats.maxCombo}\n`;
-        
-        const url = 'https://blockdoku.523.life';
-        const title = 'My Blockdoku High Scores';
-        
-        if (navigator.share) {
-            // Use native Web Share API if available
-            navigator.share({
-                title: title,
-                text: scoresText,
-                url: url
-            }).catch(err => {
-                console.log('Error sharing scores:', err);
-                this.fallbackShareScores(scoresText, url, title);
+            
+            button.addEventListener('touchstart', (e) => {
+                console.log('Difficulty button touchstart:', button.dataset.difficulty);
             });
-        } else {
-            // Fallback to clipboard and notification
-            this.fallbackShareScores(scoresText, url, title);
-        }
-    }
-
-    fallbackShareScores(scoresText, url, title) {
-        // Copy to clipboard
-        navigator.clipboard.writeText(`${scoresText}\n\nPlay Blockdoku: ${url}`).then(() => {
-            // Show a temporary notification
-            this.showNotification('High scores copied to clipboard!');
-        }).catch(() => {
-            // If clipboard fails, show scores in alert
-            alert(`${scoresText}\n\nPlay Blockdoku: ${url}`);
         });
     }
     
-    showNotification(message) {
-        // Create a temporary notification
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--primary-color, #007bff);
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-            font-weight: 500;
-            animation: slideIn 0.3s ease;
-        `;
-        notification.textContent = message;
-        
-        // Add animation keyframes
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-        `;
-        document.head.appendChild(style);
-        
-        document.body.appendChild(notification);
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-            notification.remove();
-            style.remove();
-        }, 3000);
+    setupNavigationListeners() {
+        const navItems = document.querySelectorAll('.nav-item[data-section]');
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = item.dataset.section;
+                this.showSection(section);
+            });
+        });
+    }
+    
+    setupSoundListeners() {
+        // Sound toggle in sounds section
+        const soundEnabledSounds = document.getElementById('sound-enabled-sounds-section');
+        if (soundEnabledSounds) {
+            soundEnabledSounds.addEventListener('change', (e) => {
+                this.updateSetting('soundEnabled', e.target.checked);
+            });
+        }
+    }
+    
+    setupShareListeners() {
+        const shareButton = document.getElementById('share-button');
+        if (shareButton) {
+            shareButton.addEventListener('click', () => {
+                this.shareApp();
+            });
+        }
+
+        const shareScoresButton = document.getElementById('share-scores-button');
+        if (shareScoresButton) {
+            shareScoresButton.addEventListener('click', () => {
+                this.shareScores();
+            });
+        }
+        }
+
+    setupViewLastGameListener() {
+        const viewLastGameBtn = document.getElementById('view-last-game-btn');
+        if (viewLastGameBtn) {
+            viewLastGameBtn.addEventListener('click', () => {
+                this.viewLastGame();
+            });
+        }
     }
     
     viewLastGame() {
@@ -1469,28 +615,246 @@ export class SettingsManager {
         }
     }
     
-    fixSectionPlacement() {
-        // Ensure About and Sound Effects sections are outside the game-section
-        const aboutSection = document.getElementById('about-section');
-        const soundSection = document.getElementById('sounds-section');
-        const gameSection = document.getElementById('game-section');
+    showNotification(message) {
+        // Create a simple notification
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            font-weight: 500;
+            max-width: 300px;
+        `;
+        notification.textContent = message;
         
-        if (aboutSection && gameSection && aboutSection.parentElement === gameSection) {
-            // Move About section outside game-section
-            aboutSection.remove();
-            gameSection.insertAdjacentElement('afterend', aboutSection);
+        document.body.appendChild(notification);
+        
+        // Remove after 3 seconds
+                    setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
+    }
+    
+    // Method to reset difficulty to normal (for debugging)
+    resetDifficultyToNormal() {
+        console.log('Resetting difficulty to normal');
+        this.currentDifficulty = 'normal';
+        this.updateSetting('difficulty', 'normal');
+        this.updateDifficultyUI();
+        this.showNotification('Difficulty reset to Normal');
+    }
+    
+    setupCrossPageCommunication() {
+        // Listen for storage changes from other pages (like game-settings.html)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'blockdoku-settings' || e.key === 'blockdoku_settings') {
+                console.log('Settings changed in another page, reloading...');
+                this.settings = this.storage.loadSettings();
+                this.loadSettings();
+                this.updateUI();
+            }
+        });
+        
+        // Listen for custom events from the same page
+        window.addEventListener('settingsChanged', (e) => {
+            console.log('Settings changed in same page, updating...');
+            this.settings = this.storage.loadSettings();
+            this.loadSettings();
+            this.updateUI();
+        });
+    }
+    
+    selectTheme(theme) {
+        this.currentTheme = theme;
+        this.updateSetting('theme', theme);
+        this.applyTheme(theme);
+        this.updateThemeUI();
+    }
+    
+    async selectDifficulty(difficulty) {
+        console.log('selectDifficulty called with:', difficulty);
+        
+        // Check if there's a game in progress by looking at localStorage
+        const gameState = this.storage.loadGameState();
+        let gameInProgress = false;
+        
+        if (gameState) {
+            gameInProgress = gameState.score > 0 || (gameState.board && gameState.board.some(row => row.some(cell => cell === 1)));
         }
         
-        if (soundSection && gameSection && soundSection.parentElement === gameSection) {
-            // Move Sound Effects section outside game-section
-            soundSection.remove();
-            gameSection.insertAdjacentElement('afterend', soundSection);
+        if (gameInProgress) {
+            // Show confirmation dialog
+            const confirmed = await this.confirmationDialog.show(
+                `Changing difficulty to ${difficulty.toUpperCase()} will reset your current game and you'll lose your progress. Are you sure you want to continue?`
+            );
+            
+            if (!confirmed) {
+                // User cancelled, revert the UI selection
+                this.updateDifficultyUI();
+                return;
+            }
         }
+        
+        this.currentDifficulty = difficulty;
+        this.updateSetting('difficulty', difficulty);
+        this.updateDifficultyUI();
+        console.log('Difficulty selection completed');
+    }
+    
+    applyTheme(theme) {
+        console.log('Settings applyTheme called with:', theme);
+        const themeLink = document.getElementById('theme-css');
+        if (themeLink) {
+            themeLink.href = `css/themes/${theme}.css`;
+            console.log('Theme link updated to:', themeLink.href);
+            } else {
+            console.log('Theme link not found!');
+        }
+        
+        // Update body class for theme-specific styling
+        document.body.className = document.body.className.replace(/theme-\w+/g, '');
+        document.body.classList.add(`theme-${theme}`);
+    }
+    
+    updateThemeUI() {
+        const themeButtons = document.querySelectorAll('.theme-option');
+        console.log('Updating theme UI, found', themeButtons.length, 'theme buttons, current theme:', this.currentTheme);
+        themeButtons.forEach(button => {
+            button.classList.remove('selected');
+            if (button.dataset.theme === this.currentTheme) {
+                button.classList.add('selected');
+                console.log('Selected theme button:', button.dataset.theme);
+            }
+        });
+    }
+    
+    updateDifficultyUI() {
+        const difficultyButtons = document.querySelectorAll('.difficulty-option');
+        console.log('Updating difficulty UI, found', difficultyButtons.length, 'buttons, current difficulty:', this.currentDifficulty);
+        difficultyButtons.forEach(button => {
+            button.classList.remove('selected');
+            if (button.dataset.difficulty === this.currentDifficulty) {
+                button.classList.add('selected');
+                console.log('Selected difficulty button:', button.dataset.difficulty);
+            }
+        });
+    }
+    
+    showSection(sectionName) {
+        // Hide all sections
+        const sections = document.querySelectorAll('.settings-section');
+        sections.forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Show selected section
+        const targetSection = document.getElementById(`${sectionName}-section`);
+        if (targetSection) {
+            targetSection.classList.add('active');
+        }
+        
+        // Update navigation
+        const navItems = document.querySelectorAll('.nav-item[data-section]');
+        navItems.forEach(item => {
+            item.classList.remove('active');
+            if (item.dataset.section === sectionName) {
+                item.classList.add('active');
+            }
+        });
+    }
+    
+    updateSetting(key, value) {
+        this.settings[key] = value;
+        this.storage.saveSettings(this.settings);
+        console.log(`Setting saved: ${key} = ${value}`);
+        
+        // Dispatch custom event to notify other components on the same page
+        window.dispatchEvent(new CustomEvent('settingsChanged', {
+            detail: { key, value }
+        }));
+    }
+    
+    shareApp() {
+        if (navigator.share) {
+            navigator.share({
+                title: 'Blockdoku',
+                text: 'Check out this awesome block puzzle game!',
+                url: window.location.origin
+            });
+        } else {
+            // Fallback: copy to clipboard
+            navigator.clipboard.writeText(window.location.origin).then(() => {
+                alert('Game URL copied to clipboard!');
+            });
+        }
+    }
+    
+    shareScores() {
+        const statistics = this.storage.loadStatistics();
+        const highScores = statistics.highScores || {};
+        
+        let shareText = 'My Blockdoku High Scores:\n\n';
+        
+        Object.entries(highScores).forEach(([difficulty, score]) => {
+            shareText += `${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}: ${score.toLocaleString()}\n`;
+        });
+        
+        shareText += '\nPlay Blockdoku: ' + window.location.origin;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: 'My Blockdoku Scores',
+                text: shareText
+            });
+        } else {
+            navigator.clipboard.writeText(shareText).then(() => {
+                alert('Scores copied to clipboard!');
+            });
+        }
+    }
+    
+    formatPlayTime(milliseconds) {
+        const hours = Math.floor(milliseconds / (1000 * 60 * 60));
+        const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
+        
+        if (hours > 0) {
+            return `${hours}h ${minutes}m`;
+        } else {
+            return `${minutes}m`;
+        }
+    }
+    
+    updateBuildInfo() {
+        const versionDisplay = document.getElementById('version-display');
+        const buildInfoDisplay = document.getElementById('build-info');
+        
+        if (versionDisplay) {
+            versionDisplay.textContent = buildInfo.version || '1.5.0';
+        }
+        
+        if (buildInfoDisplay) {
+            const buildDate = buildInfo.buildDate ? new Date(buildInfo.buildDate).toLocaleDateString() : 'Unknown';
+            buildInfoDisplay.textContent = `Build: ${buildDate}`;
+        }
+    }
+    
+    updateUI() {
+        this.updateThemeUI();
+        this.updateDifficultyUI();
+        this.loadHighScores();
+        this.loadStatistics();
     }
 }
 
-// Initialize settings when page loads
-// For ES modules, we can instantiate immediately since the script loads after DOM is ready
+// Initialize when page loads
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         window.settingsManager = new SettingsManager();

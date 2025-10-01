@@ -15,6 +15,11 @@ export class BlockPalette {
         this.lastTapTime = null; // For double-tap detection on mobile
         this._petrificationUpdateInterval = null;
         
+        // Mouse drag state for desktop
+        this.mouseStart = null;
+        this.mouseStartTime = null;
+        this.mouseStartBlockId = null;
+        
         // Piece timeout tracking
         this.pieceTimeouts = new Map(); // blockId -> { startTime, warningShown, timedOut }
         this.timeoutCheckInterval = null;
@@ -22,6 +27,7 @@ export class BlockPalette {
         this.TIMEOUT_TIME = 30000; // 30 seconds
         this.onPieceTimeout = null; // Callback for when a piece times out
         this.timeoutPaused = false; // Pause timeout when game is over or not active
+        this.pieceTimeoutEnabled = false; // Whether piece timeout is enabled
         
         // Animation settings
         this.animationSettings = {
@@ -94,13 +100,22 @@ export class BlockPalette {
         `;
     }
     
-    updateBlocks(blocks) {
+    updateBlocks(blocks, retryCount = 0) {
         console.log('BlockPalette.updateBlocks called with blocks:', blocks);
         const container = document.getElementById('blocks-container');
         console.log('blocks-container found:', !!container);
         if (!container) {
-            console.error('blocks-container not found! BlockPalette may not be rendered yet.');
-            return;
+            if (retryCount < 5) {
+                console.warn(`blocks-container not found! BlockPalette may not be rendered yet. Retrying in 50ms... (attempt ${retryCount + 1}/5)`);
+                // Retry after a short delay to allow DOM to be ready
+                setTimeout(() => {
+                    this.updateBlocks(blocks, retryCount + 1);
+                }, 50);
+                return;
+            } else {
+                console.error('blocks-container not found after 5 retries! BlockPalette may not be properly initialized.');
+                return;
+            }
         }
         
         container.innerHTML = '';
@@ -139,6 +154,10 @@ export class BlockPalette {
         blockDiv.dataset.blockId = block.id;
         blockDiv.title = `Click to select, double-click to rotate: ${block.name} (${block.points} pts)`;
         
+        // Create block info container
+        const blockInfo = document.createElement('div');
+        blockInfo.className = 'block-info';
+        
         // Create block shape container
         const shapeContainer = document.createElement('div');
         shapeContainer.className = 'block-shape';
@@ -174,7 +193,21 @@ export class BlockPalette {
         
         preview.appendChild(canvas);
         shapeContainer.appendChild(preview);
-        blockDiv.appendChild(shapeContainer);
+        blockInfo.appendChild(shapeContainer);
+        
+        // Create points display (circular badge)
+        const pointsBadge = document.createElement('div');
+        pointsBadge.className = 'block-points';
+        pointsBadge.textContent = block.points;
+        blockInfo.appendChild(pointsBadge);
+        
+        // Create points display (overlay text - alternative)
+        const pointsOverlay = document.createElement('div');
+        pointsOverlay.className = 'block-points-overlay';
+        pointsOverlay.textContent = `${block.points} pts`;
+        blockInfo.appendChild(pointsOverlay);
+        
+        blockDiv.appendChild(blockInfo);
         
         return blockDiv;
     }
@@ -202,6 +235,78 @@ export class BlockPalette {
                 const blockItem = e.target.closest('.block-item');
                 const blockId = blockItem.dataset.blockId;
                 this.rotateBlock(blockId);
+            }
+        });
+        
+        // Mouse events for desktop drag and drop
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.block-item')) {
+                const blockItem = e.target.closest('.block-item');
+                const blockId = blockItem.dataset.blockId;
+                
+                // Store the mouse for potential drag
+                this.mouseStart = { clientX: e.clientX, clientY: e.clientY };
+                this.mouseStartTime = Date.now();
+                this.mouseStartBlockId = blockId;
+                
+                // Add subtle visual feedback for mouse start
+                blockItem.style.transform = 'scale(0.95)';
+                blockItem.style.transition = 'transform 0.1s ease';
+            }
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (this.mouseStart && this.mouseStartBlockId) {
+                // Verify the block still exists before processing drag
+                const blockExists = this.blockManager.getBlockById(this.mouseStartBlockId);
+                if (!blockExists) {
+                    // Block was removed (likely placed), reset drag state
+                    this.resetMouseDragState();
+                    return;
+                }
+                
+                const deltaX = Math.abs(e.clientX - this.mouseStart.clientX);
+                const deltaY = Math.abs(e.clientY - this.mouseStart.clientY);
+                const deltaTime = Date.now() - this.mouseStartTime;
+                
+                // If moved more than 5px or 100ms has passed, consider it a drag
+                if (deltaX > 5 || deltaY > 5 || deltaTime > 100) {
+                    e.preventDefault();
+                    
+                    // Start drag operation
+                    if (!this.isDragging) {
+                        this.isDragging = true;
+                        this.startDragFromPalette({ clientX: e.clientX, clientY: e.clientY });
+                        
+                        // Add dragging visual feedback - this is the primary selection indication
+                        const blockItem = document.querySelector(`[data-block-id="${this.mouseStartBlockId}"]`);
+                        if (blockItem) {
+                            blockItem.classList.add('dragging');
+                        }
+                    }
+                }
+            }
+        });
+        
+        document.addEventListener('mouseup', (e) => {
+            if (this.mouseStart) {
+                // Verify the block still exists before processing
+                const blockExists = this.blockManager.getBlockById(this.mouseStartBlockId);
+                
+                const deltaTime = Date.now() - this.mouseStartTime;
+                const deltaX = Math.abs(e.clientX - this.mouseStart.clientX);
+                const deltaY = Math.abs(e.clientY - this.mouseStart.clientY);
+                
+                if (this.isDragging) {
+                    // End drag operation
+                    this.endDragFromPalette();
+                } else if (blockExists && deltaTime < 200 && deltaX < 5 && deltaY < 5) {
+                    // Single click - select the block (but no visual highlighting)
+                    this.selectBlock(this.mouseStartBlockId);
+                }
+                
+                // Reset drag state completely
+                this.resetMouseDragState();
             }
         });
         
@@ -266,8 +371,11 @@ export class BlockPalette {
                 const deltaX = Math.abs(touch.clientX - this.touchStart.clientX);
                 const deltaY = Math.abs(touch.clientY - this.touchStart.clientY);
                 
-                // Only handle tap events (not drags) and only if block still exists
-                if (blockExists && deltaX < 5 && deltaY < 5 && deltaTime < 200) {
+                if (this.isDragging) {
+                    // End drag operation
+                    this.endDragFromPalette();
+                } else if (blockExists && deltaX < 5 && deltaY < 5 && deltaTime < 200) {
+                    // Only handle tap events (not drags) and only if block still exists
                     // Handle double-tap detection for rotation
                     if (this.lastTapTime && (Date.now() - this.lastTapTime) < 300) {
                         // Double tap detected - rotate the block
@@ -317,23 +425,56 @@ export class BlockPalette {
         this.isDragging = false;
     }
     
-    startDragFromPalette(touch) {
-        // Get the block that's actually being dragged
-        const draggedBlock = this.blockManager.getBlockById(this.touchStartBlockId);
+    /**
+     * Reset all mouse drag-related state and visual feedback
+     */
+    resetMouseDragState() {
+        // Clean up visual feedback for the dragged block (if it still exists in DOM)
+        if (this.mouseStartBlockId) {
+            const blockItem = document.querySelector(`[data-block-id="${this.mouseStartBlockId}"]`);
+            if (blockItem) {
+                blockItem.classList.remove('dragging');
+                blockItem.style.transform = '';
+                blockItem.style.transition = '';
+            }
+        }
+        
+        // Reset all mouse drag state variables
+        this.mouseStart = null;
+        this.mouseStartTime = null;
+        this.mouseStartBlockId = null;
+        this.isDragging = false;
+    }
+    
+    startDragFromPalette(input) {
+        // Get the block that's actually being dragged (works for both touch and mouse)
+        const blockId = this.touchStartBlockId || this.mouseStartBlockId;
+        const draggedBlock = this.blockManager.getBlockById(blockId);
         if (!draggedBlock) {
             // Block doesn't exist, reset drag state
             this.resetDragState();
+            this.resetMouseDragState();
             return;
         }
         
         // Auto-select the block being dragged
-        this.selectBlock(this.touchStartBlockId);
+        this.selectBlock(blockId);
         
         // Notify the game that we're starting a drag from the palette
         const dragEvent = new CustomEvent('blockDragStart', {
             detail: {
                 block: draggedBlock,
-                touch: touch
+                input: input // Works for both touch and mouse
+            }
+        });
+        document.dispatchEvent(dragEvent);
+    }
+    
+    endDragFromPalette() {
+        // Notify the game that we're ending a drag from the palette
+        const dragEvent = new CustomEvent('blockDragEnd', {
+            detail: {
+                block: this.selectedBlock
             }
         });
         document.dispatchEvent(dragEvent);
@@ -456,8 +597,12 @@ export class BlockPalette {
     }
     
     clearSelection() {
+        // Remove 'selected' class from all blocks
+        this.blockElements.forEach((element) => {
+            element.classList.remove('selected');
+        });
+        
         this.selectedBlock = null;
-        // No need to remove 'selected' class since we're not using passive selection highlighting
         this.updateRotateButton();
     }
     
@@ -649,8 +794,8 @@ export class BlockPalette {
             });
         });
         
-        // Start timeout checking if not already running
-        if (!this.timeoutCheckInterval) {
+        // Start timeout checking if not already running and piece timeout is enabled
+        if (!this.timeoutCheckInterval && this.pieceTimeoutEnabled) {
             this.startTimeoutChecking();
         }
     }
@@ -737,8 +882,8 @@ export class BlockPalette {
      * Check all pieces for timeouts
      */
     checkPieceTimeouts() {
-        // Don't check if paused
-        if (this.timeoutPaused) return;
+        // Don't check if paused or if piece timeout is disabled
+        if (this.timeoutPaused || !this.pieceTimeoutEnabled) return;
         
         const now = Date.now();
         let anyTimedOut = false;
@@ -824,5 +969,20 @@ export class BlockPalette {
         });
         
         return allTimedOut;
+    }
+    
+    /**
+     * Set whether piece timeout is enabled
+     */
+    setPieceTimeoutEnabled(enabled) {
+        this.pieceTimeoutEnabled = enabled;
+        
+        if (!enabled) {
+            // Stop timeout checking if disabled
+            this.stopTimeoutChecking();
+        } else if (this.pieceTimeouts.size > 0) {
+            // Start timeout checking if enabled and we have pieces
+            this.startTimeoutChecking();
+        }
     }
 }

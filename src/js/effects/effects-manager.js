@@ -53,6 +53,23 @@ export class EffectsManager {
         }
     }
     
+    // Get theme color with fallback for common variables
+    getThemeColorWithFallback(varName) {
+        try {
+            return this.getThemeColor(varName);
+        } catch (error) {
+            console.warn(`CSS variable ${varName} not available, using fallback color`);
+            // Fallback colors for common theme variables
+            const fallbackColors = {
+                '--clear-glow-color': '#00aaff', // Default blue
+                '--primary-color': '#007bff',
+                '--text-color': '#333333',
+                '--bg-color': '#ffffff'
+            };
+            return fallbackColors[varName] || '#00aaff';
+        }
+    }
+    
     // Block placement effects
     onBlockPlace(x, y) {
         this.particles.createSparkles(x, y, 6);
@@ -85,7 +102,7 @@ export class EffectsManager {
     
     // Score gain effects
     onScoreGain(x, y, score) {
-        const themeColor = this.getThemeColor('--clear-glow-color');
+        const themeColor = this.getThemeColorWithFallback('--clear-glow-color');
         this.particles.createScoreNumber(x, y, score, themeColor);
         if (this.settings.sound) this.sound.play('scoreGain');
     }
@@ -119,7 +136,7 @@ export class EffectsManager {
     
     // Glow trail for block movement
     onBlockMove(x, y, color = null) {
-        const themeColor = color || this.getThemeColor('--clear-glow-color');
+        const themeColor = color || this.getThemeColorWithFallback('--clear-glow-color');
         this.particles.createGlowTrail(x, y, themeColor);
     }
     

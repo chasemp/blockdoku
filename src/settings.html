@@ -148,25 +148,7 @@
             to { width: 100%; }
         }
         
-        /* Press duration styles for theme and difficulty options */
-        .theme-option.pressing,
-        .difficulty-option.pressing {
-            transform: scale(0.98);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .theme-option.pressing::after,
-        .difficulty-option.pressing::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
-            animation: pressProgress 0.75s linear forwards;
-        }
+        /* Press duration styles removed - using simple click handlers */
         
         /* Override for light theme to ensure readability */
         [data-theme="light"] .nav-item.active,
@@ -686,6 +668,13 @@
         <div class="settings-header">
             <h1>Settings</h1>
             <p>Customize your Blockdoku experience</p>
+        </div>
+        
+        <!-- Back to Game Button -->
+        <div class="back-navigation" style="margin-bottom: 2rem; text-align: center;">
+            <a href="index.html" class="nav-item" style="display: inline-block;">
+                ← Back to Game
+            </a>
         </div>
         
         <div class="settings-nav">

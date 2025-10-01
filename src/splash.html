@@ -11,21 +11,29 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Blockdoku">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <link rel="stylesheet" href="css/themes/wood.css" id="theme-css">
+    <!-- Theme will be dynamically loaded by JavaScript -->
+    <link rel="stylesheet" href="" id="theme-css">
     <script>
         // Function to update theme
         function updateTheme() {
             const savedSettings = localStorage.getItem('blockdoku_settings') || localStorage.getItem('blockdoku-settings');
+            let theme = 'wood'; // Default to wood theme
+            
             if (savedSettings) {
                 try {
                     const settings = JSON.parse(savedSettings);
                     if (settings.theme) {
-                        const themeLink = document.getElementById('theme-css');
-                        themeLink.href = `css/themes/${settings.theme}.css`;
+                        theme = settings.theme;
                     }
                 } catch (e) {
-                    console.log('No saved theme found, using default');
+                    console.log('Error parsing settings:', e);
                 }
+            }
+            
+            // Apply the theme
+            const themeLink = document.getElementById('theme-css');
+            if (themeLink) {
+                themeLink.href = `css/themes/${theme}.css`;
             }
         }
         
