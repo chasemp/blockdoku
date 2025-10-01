@@ -6,9 +6,106 @@
     <title>Game Settings - Blockdoku</title>
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/themes/wood.css" id="theme-css">
+    <link rel="stylesheet" href="../css/themes/light.css" id="theme-css-light" media="not all">
+    <link rel="stylesheet" href="../css/themes/dark.css" id="theme-css-dark" media="not all">
     <link rel="icon" type="image/x-icon" href="../favicon.ico">
     <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#8B4513">
+    <script>
+        // Function to update theme
+        function updateTheme() {
+            const savedSettings = localStorage.getItem('blockdoku_settings') || localStorage.getItem('blockdoku-settings');
+            let theme = 'wood'; // Default to wood theme
+            
+            if (savedSettings) {
+                try {
+                    const settings = JSON.parse(savedSettings);
+                    if (settings.theme) {
+                        theme = settings.theme;
+                    }
+                } catch (e) {
+                    console.log('Error parsing settings:', e);
+                }
+            }
+            
+            // Check if theme is already correctly applied to avoid redundant updates
+            const currentThemeLink = document.getElementById('theme-css');
+            const currentTheme = currentThemeLink ? currentThemeLink.href : '';
+            const expectedThemeUrl = `../css/themes/${theme}.css`;
+            
+            if (currentTheme.includes(expectedThemeUrl)) {
+                // Theme is already correctly applied, just ensure other themes are disabled
+                const lightLink = document.getElementById('theme-css-light');
+                const darkLink = document.getElementById('theme-css-dark');
+                
+                if (lightLink) lightLink.disabled = true;
+                if (darkLink) darkLink.disabled = true;
+                
+                // Set data-theme attribute for CSS selectors
+                document.documentElement.setAttribute('data-theme', theme);
+                document.body.className = document.body.className.replace(/light-theme|dark-theme|wood-theme/g, '');
+                document.body.classList.add(`${theme}-theme`);
+                return;
+            }
+            
+            // Apply the theme
+            let themeLink = document.getElementById('theme-css');
+            if (!themeLink) {
+                themeLink = document.createElement('link');
+                themeLink.rel = 'stylesheet';
+                themeLink.id = 'theme-css';
+                document.head.appendChild(themeLink);
+            }
+            const themeUrl = `../css/themes/${theme}.css`;
+            console.log('Client-side theme update:', theme);
+            themeLink.href = themeUrl;
+            
+            // Disable other theme CSS files
+            const lightLink = document.getElementById('theme-css-light');
+            const darkLink = document.getElementById('theme-css-dark');
+            
+            if (lightLink) {
+                lightLink.disabled = true;
+            }
+            if (darkLink) {
+                darkLink.disabled = true;
+            }
+
+            // If Vite injected a wood stylesheet into built HTML, disable it when switching away
+            try {
+                const builtWoodLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+                    .filter(l => (l.getAttribute('href') || '').includes('/assets/wood-') || (l.href || '').includes('/assets/wood-'));
+                builtWoodLinks.forEach(l => {
+                    l.disabled = theme !== 'wood';
+                });
+            } catch (e) {}
+            
+            // Set data-theme attribute for CSS selectors
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            // Add theme class to body
+            document.body.className = document.body.className.replace(/light-theme|dark-theme|wood-theme/g, '');
+            document.body.classList.add(`${theme}-theme`);
+        }
+        
+        // Load current theme from localStorage on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add a small delay to ensure everything is loaded
+            setTimeout(updateTheme, 100);
+        });
+        
+        // Listen for theme changes from other pages
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'blockdoku-settings' || e.key === 'blockdoku_settings') {
+                updateTheme();
+            }
+        });
+        
+        // Also listen for focus events (when returning from main page)
+        window.addEventListener('focus', function() {
+            updateTheme();
+        });
+    </script>
     <meta name="description" content="Blockdoku - A modern take on the classic block puzzle game">
     <meta name="keywords" content="blockdoku, puzzle, game, blocks, tetris, mobile, pwa">
     <meta name="author" content="Chase Pettet">
@@ -35,6 +132,9 @@
         </header>
         
         <div class="settings-nav">
+            <a href="../index.html" class="nav-item back-button">
+                ← Back to Game
+            </a>
             <a href="../settings.html" class="nav-item">
                 ← Back to Settings
             </a>
@@ -60,6 +160,44 @@
                             <span class="combo-label">Cumulative</span>
                             <span class="combo-description">Show total combo points earned</span>
                         </label>
+                    </div>
+                </div>
+                
+                <!-- Utility Bar Settings -->
+                <div class="utility-bar-settings">
+                    <h3 style="margin: 1.5rem 0 1rem 0; color: var(--text-color); font-size: 1.1rem; text-align: center;">Utility Bar Settings</h3>
+                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Configure what appears in the utility bar during gameplay</p>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="enable-hints" />
+                            Enable hints
+                        </label>
+                        <p class="setting-description">Show placement suggestions for blocks when you're stuck</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="enable-timer" />
+                            Enable timer
+                        </label>
+                        <p class="setting-description">Add time pressure to increase difficulty and excitement</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="show-personal-bests" />
+                            Enable Personal Best
+                        </label>
+                        <p class="setting-description">Display your personal best score and level in the utility bar</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="show-speed-timer" />
+                            Enable Speed Timer
+                        </label>
+                        <p class="setting-description">Display speed timer in the utility bar when speed mode is active</p>
                     </div>
                 </div>
                 
@@ -100,21 +238,24 @@
                                 <input type="radio" name="speed-mode" value="bonus" id="speed-mode-bonus" checked />
                                 <span class="speed-mode-label">
                                     <strong>Bonus</strong>
-                                    <small>Faster = more points</small>
+                                    <br>
+                                    <small>Faster = more points. Earn bonus points for quick placements.</small>
                                 </span>
                             </label>
                             <label class="speed-mode-option">
                                 <input type="radio" name="speed-mode" value="punishment" id="speed-mode-punishment" />
                                 <span class="speed-mode-label">
                                     <strong>Punishment</strong>
-                                    <small>Faster = less points (scales with level)</small>
+                                    <br>
+                                    <small>Slower = less points. Any second past 1 second subtracts a point per second down to 0.</small>
                                 </span>
                             </label>
                             <label class="speed-mode-option">
                                 <input type="radio" name="speed-mode" value="ignored" id="speed-mode-ignored" />
                                 <span class="speed-mode-label">
                                     <strong>Ignored</strong>
-                                    <small>Speed doesn't affect score</small>
+                                    <br>
+                                    <small>Speed doesn't affect score. Play at your own pace.</small>
                                 </span>
                             </label>
                         </div>
@@ -270,44 +411,6 @@
                     </div>
                 </div>
                 
-                <!-- Utility Bar Settings -->
-                <div class="utility-bar-settings">
-                    <h3 style="margin: 1.5rem 0 1rem 0; color: var(--text-color); font-size: 1.1rem;">Utility Bar Settings</h3>
-                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Configure what appears in the utility bar during gameplay</p>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="enable-hints" />
-                            Enable hints
-                        </label>
-                        <p class="setting-description">Show placement suggestions for blocks when you're stuck</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="enable-timer" />
-                            Enable timer
-                        </label>
-                        <p class="setting-description">Add time pressure to increase difficulty and excitement</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="show-personal-bests" />
-                            Show personal bests in utility bar
-                        </label>
-                        <p class="setting-description">Display your personal best score and level in the utility bar</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="show-speed-timer" />
-                            Show speed timer in utility bar
-                        </label>
-                        <p class="setting-description">Display speed timer in the utility bar when speed mode is active</p>
-                    </div>
-                </div>
-                
                 <!-- PWA Install Button -->
                 <div class="setting-item pwa-install-item">
                     <button id="pwa-install-button" class="pwa-install-button">
@@ -323,6 +426,12 @@
                     </button>
                 </div>
             </div>
+        </div>
+        
+        <div class="settings-nav">
+            <a href="../index.html" class="nav-item back-button">
+                ← Back to Game
+            </a>
         </div>
         
         <footer class="settings-footer">

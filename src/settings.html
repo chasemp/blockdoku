@@ -19,32 +19,77 @@
         // Function to update theme
         function updateTheme() {
             const savedSettings = localStorage.getItem('blockdoku_settings') || localStorage.getItem('blockdoku-settings');
+            let theme = 'wood'; // Default to wood theme
+            
             if (savedSettings) {
                 try {
                     const settings = JSON.parse(savedSettings);
                     if (settings.theme) {
-                        let themeLink = document.getElementById('theme-css');
-                        if (!themeLink) {
-                            themeLink = document.createElement('link');
-                            themeLink.rel = 'stylesheet';
-                            themeLink.id = 'theme-css';
-                            document.head.appendChild(themeLink);
-                        }
-                        themeLink.href = `css/themes/${settings.theme}.css`;
-
-                        // If Vite injected a wood stylesheet into built HTML, disable it when switching away
-                        try {
-                            const builtWoodLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
-                                .filter(l => (l.getAttribute('href') || '').includes('/assets/wood-') || (l.href || '').includes('/assets/wood-'));
-                            builtWoodLinks.forEach(l => {
-                                l.disabled = settings.theme !== 'wood';
-                            });
-                        } catch (e) {}
+                        theme = settings.theme;
                     }
                 } catch (e) {
                     console.log('Error parsing settings:', e);
                 }
             }
+            
+            // Check if theme is already correctly applied to avoid redundant updates
+            const currentThemeLink = document.getElementById('theme-css');
+            const currentTheme = currentThemeLink ? currentThemeLink.href : '';
+            const expectedThemeUrl = `css/themes/${theme}.css`;
+            
+            if (currentTheme.includes(expectedThemeUrl)) {
+                // Theme is already correctly applied, just ensure other themes are disabled
+                const lightLink = document.getElementById('theme-css-light');
+                const darkLink = document.getElementById('theme-css-dark');
+                
+                if (lightLink) lightLink.disabled = true;
+                if (darkLink) darkLink.disabled = true;
+                
+                // Set data-theme attribute for CSS selectors
+                document.documentElement.setAttribute('data-theme', theme);
+                document.body.className = document.body.className.replace(/light-theme|dark-theme|wood-theme/g, '');
+                document.body.classList.add(`${theme}-theme`);
+                return;
+            }
+            
+            // Apply the theme
+            let themeLink = document.getElementById('theme-css');
+            if (!themeLink) {
+                themeLink = document.createElement('link');
+                themeLink.rel = 'stylesheet';
+                themeLink.id = 'theme-css';
+                document.head.appendChild(themeLink);
+            }
+            const themeUrl = `css/themes/${theme}.css`;
+            console.log('Setting theme URL:', themeUrl);
+            themeLink.href = themeUrl;
+            
+            // Disable other theme CSS files
+            const lightLink = document.getElementById('theme-css-light');
+            const darkLink = document.getElementById('theme-css-dark');
+            
+            if (lightLink) {
+                lightLink.disabled = true;
+            }
+            if (darkLink) {
+                darkLink.disabled = true;
+            }
+
+            // If Vite injected a wood stylesheet into built HTML, disable it when switching away
+            try {
+                const builtWoodLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+                    .filter(l => (l.getAttribute('href') || '').includes('/assets/wood-') || (l.href || '').includes('/assets/wood-'));
+                builtWoodLinks.forEach(l => {
+                    l.disabled = theme !== 'wood';
+                });
+            } catch (e) {}
+            
+            // Set data-theme attribute for CSS selectors
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            // Add theme class to body
+            document.body.className = document.body.className.replace(/light-theme|dark-theme|wood-theme/g, '');
+            document.body.classList.add(`${theme}-theme`);
         }
         
         // Load current theme from localStorage on page load
@@ -63,6 +108,20 @@
         // Also listen for focus events (when returning from main page)
         window.addEventListener('focus', function() {
             updateTheme();
+        });
+        
+        // Test back button functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const backButton = document.querySelector('.back-button');
+            if (backButton) {
+                console.log('Back button found:', backButton);
+                backButton.addEventListener('click', function(e) {
+                    console.log('Back button clicked');
+                    // Let the default behavior happen
+                });
+            } else {
+                console.log('Back button not found');
+            }
         });
     </script>
     <style>
@@ -681,7 +740,7 @@
             <a href="#" class="nav-item active" data-section="theme">🎨 Theme</a>
             <a href="#" class="nav-item" data-section="difficulty">⚡ Difficulty</a>
             <a href="#" class="nav-item" data-section="scores">🏆 High Scores</a>
-            <a href="src/gamesettings.html" class="nav-item">🎮 Game Settings</a>
+            <a href="gamesettings.html" class="nav-item">🎮 Game Settings</a>
             <a href="#" class="nav-item" data-section="sounds">🔊 Sound Effects</a>
             <a href="#" class="nav-item" data-section="about">ℹ️ About</a>
         </div>
@@ -838,5 +897,6 @@
     
     <script type="module" src="js/settings.js"></script>
     <script type="module" src="js/pwa/install.js"></script>
+    
 </body>
 </html>
