@@ -37,6 +37,23 @@ export class ParticleSystem {
         }
     }
     
+    // Get theme color with fallback for common variables
+    getThemeColorWithFallback(varName) {
+        try {
+            return this.getThemeColor(varName);
+        } catch (error) {
+            console.warn(`CSS variable ${varName} not available, using fallback color`);
+            // Fallback colors for common theme variables
+            const fallbackColors = {
+                '--clear-glow-color': '#00aaff', // Default blue
+                '--primary-color': '#007bff',
+                '--text-color': '#333333',
+                '--bg-color': '#ffffff'
+            };
+            return fallbackColors[varName] || '#00aaff';
+        }
+    }
+    
     // Create sparkle effect for block placement
     createSparkles(x, y, count = 8) {
         if (!this.isEnabled) return;
@@ -60,7 +77,7 @@ export class ParticleSystem {
         if (!this.isEnabled) return;
         
         // Use theme color if no color specified
-        const themeColor = color || this.getThemeColor('--clear-glow-color');
+        const themeColor = color || this.getThemeColorWithFallback('--clear-glow-color');
         this.particles.push(new GlowTrailParticle(x, y, themeColor));
     }
     
@@ -69,7 +86,7 @@ export class ParticleSystem {
         if (!this.isEnabled) return;
         
         // Use theme color if no color specified
-        const themeColor = color || this.getThemeColor('--clear-glow-color');
+        const themeColor = color || this.getThemeColorWithFallback('--clear-glow-color');
         
         this.particles.push(new ScoreNumberParticle(x, y, score, themeColor));
     }

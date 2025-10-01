@@ -25,6 +25,23 @@ export class EffectsSystem {
         }
     }
     
+    // Get theme color with fallback for common variables
+    getThemeColorWithFallback(varName) {
+        try {
+            return this.getThemeColor(varName);
+        } catch (error) {
+            console.warn(`CSS variable ${varName} not available, using fallback color`);
+            // Fallback colors for common theme variables
+            const fallbackColors = {
+                '--clear-glow-color': '#00aaff', // Default blue
+                '--primary-color': '#007bff',
+                '--text-color': '#333333',
+                '--bg-color': '#ffffff'
+            };
+            return fallbackColors[varName] || '#00aaff';
+        }
+    }
+    
     // Create line clear animation
     createLineClearEffect(clearedLines, duration = 500) {
         const animation = {
@@ -112,7 +129,7 @@ export class EffectsSystem {
         
         ctx.save();
         ctx.globalAlpha = alpha;
-        ctx.fillStyle = this.getThemeColor('--clear-glow-color'); // Theme-based flash
+        ctx.fillStyle = this.getThemeColorWithFallback('--clear-glow-color'); // Theme-based flash
         
         // Flash cleared rows
         animation.clearedLines.rows.forEach(row => {
@@ -144,7 +161,7 @@ export class EffectsSystem {
         
         ctx.save();
         ctx.globalAlpha = alpha;
-        ctx.fillStyle = this.getThemeColor('--clear-glow-color');
+        ctx.fillStyle = this.getThemeColorWithFallback('--clear-glow-color');
         ctx.font = 'bold 24px Arial';
         ctx.textAlign = 'center';
         ctx.fillText(`+${animation.score}`, animation.x, y);

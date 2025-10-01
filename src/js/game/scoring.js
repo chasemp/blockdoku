@@ -475,28 +475,40 @@ export class ScoringSystem {
         // Skip calculation if mode is ignored or invalid interval
         if (this.speedConfig.mode === 'ignored' || intervalMs <= 0) return 0;
         
-        // Find the appropriate threshold
-        for (const threshold of this.speedConfig.thresholds) {
-            if (intervalMs <= threshold.maxTime) {
-                let bonus = threshold.bonus;
-                
-                // Apply streak multiplier for consecutive fast placements
-                const recentFastPlacements = this.getRecentFastPlacements();
-                if (recentFastPlacements >= 2) {
-                    bonus = Math.floor(bonus * this.speedConfig.streakMultiplier);
+        if (this.speedConfig.mode === 'bonus') {
+            // Bonus mode: give points for fast placements
+            for (const threshold of this.speedConfig.thresholds) {
+                if (intervalMs <= threshold.maxTime) {
+                    let bonus = threshold.bonus;
+                    
+                    // Apply streak multiplier for consecutive fast placements
+                    const recentFastPlacements = this.getRecentFastPlacements();
+                    if (recentFastPlacements >= 2) {
+                        bonus = Math.floor(bonus * this.speedConfig.streakMultiplier);
+                    }
+                    
+                    // Cap the bonus
+                    return Math.min(bonus, this.speedConfig.maxBonus);
                 }
-                
-                // In punishment mode, scale penalty with level (small but noticeable)
-                // Each level adds ~3% to the penalty
-                if (this.speedConfig.mode === 'punishment') {
-                    const levelMultiplier = 1 + (this.level - 1) * 0.03;
-                    bonus = Math.floor(bonus * levelMultiplier);
-                }
-                
-                // Cap the bonus (doubled for punishment mode)
-                const maxCap = this.speedConfig.maxBonus * (this.speedConfig.mode === 'punishment' ? 2 : 1);
-                return Math.min(bonus, maxCap);
             }
+            return 0;
+        } else if (this.speedConfig.mode === 'punishment') {
+            // Punishment mode: subtract points for slow placements
+            // Any second in excess of 1 subtracts a point per second
+            const oneSecond = 1000; // 1 second in milliseconds
+            if (intervalMs > oneSecond) {
+                const excessSeconds = (intervalMs - oneSecond) / 1000; // Convert to seconds
+                let penalty = Math.floor(excessSeconds); // 1 point per second in excess
+                
+                // Scale penalty with level (each level adds ~3% to the penalty)
+                const levelMultiplier = 1 + (this.level - 1) * 0.03;
+                penalty = Math.floor(penalty * levelMultiplier);
+                
+                // Cap the penalty (doubled for punishment mode)
+                const maxPenalty = this.speedConfig.maxBonus * 2;
+                return Math.min(penalty, maxPenalty);
+            }
+            return 0;
         }
         
         return 0;

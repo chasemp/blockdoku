@@ -1,10 +1,13 @@
 import { GameStorage } from './storage/game-storage.js';
 import { ConfirmationDialog } from './ui/confirmation-dialog.js';
+import { DifficultySettingsManager } from './difficulty/difficulty-settings-manager.js';
 
 export class GameSettingsManager {
     constructor() {
         this.storage = new GameStorage();
+        this.difficultySettings = new DifficultySettingsManager(this.storage);
         this.settings = this.storage.loadSettings();
+        this.currentDifficulty = this.settings.difficulty || 'normal';
         this.confirmationDialog = new ConfirmationDialog();
         
         this.init();
@@ -13,12 +16,21 @@ export class GameSettingsManager {
     init() {
         this.loadSettings();
         this.setupEventListeners();
+        this.setupResetListeners();
+        this.setupCrossPageCommunication();
         this.updateUI();
     }
     
     loadSettings() {
-        // Load all settings from storage
-        this.settings = this.storage.loadSettings();
+        // Load base settings from storage
+        const baseSettings = this.storage.loadSettings();
+        this.currentDifficulty = baseSettings.difficulty || 'normal';
+        
+        // Get difficulty-specific settings (defaults + overrides)
+        const difficultySettings = this.difficultySettings.getSettingsForDifficulty(this.currentDifficulty);
+        
+        // Merge base settings with difficulty-specific settings
+        this.settings = { ...baseSettings, ...difficultySettings };
         
         // Load combo display settings
         this.loadComboDisplaySettings();
@@ -37,6 +49,9 @@ export class GameSettingsManager {
         
         // Load utility bar settings
         this.loadUtilityBarSettings();
+        
+        // Update difficulty notes in UI
+        this.updateDifficultyNotes();
     }
     
     loadComboDisplaySettings() {
@@ -96,15 +111,22 @@ export class GameSettingsManager {
                 bonusRadio.checked = true;
             }
         }
+        
+        // Speed display mode
+        const speedDisplayMode = this.settings.speedDisplayMode || 'timer';
+        const timerRadio = document.getElementById('speed-display-timer');
+        const pointsRadio = document.getElementById('speed-display-points');
+        
+        if (timerRadio && pointsRadio) {
+            if (speedDisplayMode === 'points') {
+                pointsRadio.checked = true;
+            } else {
+                timerRadio.checked = true;
+            }
+        }
     }
     
     loadBasicSettings() {
-        // High score in header
-        const showHighScoreCheckbox = document.getElementById('show-high-score');
-        if (showHighScoreCheckbox) {
-            showHighScoreCheckbox.checked = this.settings.showHighScore === true;
-        }
-        
         // Sound effects
         const soundCheckbox = document.getElementById('sound-enabled');
         if (soundCheckbox) {
@@ -115,6 +137,12 @@ export class GameSettingsManager {
         const animationsCheckbox = document.getElementById('animations-enabled');
         if (animationsCheckbox) {
             animationsCheckbox.checked = this.settings.animationsEnabled !== false; // Default to true
+        }
+        
+        // Piece timeout
+        const pieceTimeoutCheckbox = document.getElementById('piece-timeout-enabled');
+        if (pieceTimeoutCheckbox) {
+            pieceTimeoutCheckbox.checked = this.settings.pieceTimeoutEnabled === true;
         }
     }
     
@@ -290,17 +318,29 @@ export class GameSettingsManager {
                 }
             });
         }
-    }
-    
-    setupBasicSettingsListeners() {
-        // High score in header
-        const showHighScoreCheckbox = document.getElementById('show-high-score');
-        if (showHighScoreCheckbox) {
-            showHighScoreCheckbox.addEventListener('change', () => {
-                this.saveSetting('showHighScore', showHighScoreCheckbox.checked);
+        
+        // Speed display mode
+        const timerRadio = document.getElementById('speed-display-timer');
+        const pointsRadio = document.getElementById('speed-display-points');
+        
+        if (timerRadio) {
+            timerRadio.addEventListener('change', () => {
+                if (timerRadio.checked) {
+                    this.saveSetting('speedDisplayMode', 'timer');
+                }
             });
         }
         
+        if (pointsRadio) {
+            pointsRadio.addEventListener('change', () => {
+                if (pointsRadio.checked) {
+                    this.saveSetting('speedDisplayMode', 'points');
+                }
+            });
+        }
+    }
+    
+    setupBasicSettingsListeners() {
         // Sound effects
         const soundCheckbox = document.getElementById('sound-enabled');
         if (soundCheckbox) {
@@ -314,6 +354,14 @@ export class GameSettingsManager {
         if (animationsCheckbox) {
             animationsCheckbox.addEventListener('change', () => {
                 this.saveSetting('animationsEnabled', animationsCheckbox.checked);
+            });
+        }
+        
+        // Piece timeout
+        const pieceTimeoutCheckbox = document.getElementById('piece-timeout-enabled');
+        if (pieceTimeoutCheckbox) {
+            pieceTimeoutCheckbox.addEventListener('change', () => {
+                this.saveSetting('pieceTimeoutEnabled', pieceTimeoutCheckbox.checked);
             });
         }
     }
@@ -364,6 +412,11 @@ export class GameSettingsManager {
             if (checkbox) {
                 checkbox.addEventListener('change', () => {
                     this.saveSetting(settingId, checkbox.checked);
+                    
+                    // Special handling for show-points setting
+                    if (settingId === 'show-points') {
+                        this.updateBlockPointsDisplay();
+                    }
                 });
             }
         });
@@ -402,10 +455,52 @@ export class GameSettingsManager {
         }
     }
     
+    setupCrossPageCommunication() {
+        // Listen for storage changes from other pages (like settings.html)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'blockdoku-settings' || e.key === 'blockdoku_settings') {
+                console.log('Settings changed in another page, reloading...');
+                this.settings = this.storage.loadSettings();
+                this.loadSettings();
+                this.updateUI();
+            }
+        });
+        
+        // Listen for custom events from the same page
+        window.addEventListener('settingsChanged', (e) => {
+            console.log('Settings changed in same page, updating...');
+            this.settings = this.storage.loadSettings();
+            this.loadSettings();
+            this.updateUI();
+        });
+    }
+    
     saveSetting(key, value) {
+        // Check if this is a difficulty-specific setting
+        const difficultySpecificSettings = [
+            'enableHints', 'showPoints', 'enableTimer', 'enablePetrification', 
+            'enableDeadPixels', 'showPersonalBests', 'showSpeedTimer', 'speedMode',
+            'animationsEnabled', 'soundEnabled'
+        ];
+        
+        if (difficultySpecificSettings.includes(key)) {
+            // Save as difficulty-specific override
+            this.difficultySettings.saveSettingOverride(this.currentDifficulty, key, value);
+            console.log(`Difficulty-specific setting saved: ${key} = ${value} for ${this.currentDifficulty}`);
+        } else {
+            // Save as global setting
+            this.settings[key] = value;
+            this.storage.saveSettings(this.settings);
+            console.log(`Global setting saved: ${key} = ${value}`);
+        }
+        
+        // Update local settings
         this.settings[key] = value;
-        this.storage.saveSettings(this.settings);
-        console.log(`Setting saved: ${key} = ${value}`);
+        
+        // Dispatch custom event to notify other components on the same page
+        window.dispatchEvent(new CustomEvent('settingsChanged', {
+            detail: { key, value }
+        }));
     }
     
     resetStatistics() {
@@ -458,6 +553,234 @@ export class GameSettingsManager {
     updateUI() {
         // Update any UI elements that need refreshing
         this.loadSettings();
+    }
+    
+    updateBlockPointsDisplay() {
+        const showPoints = this.settings.showPoints || false;
+        const blockInfos = document.querySelectorAll('.block-info');
+        
+        blockInfos.forEach(info => {
+            if (showPoints) {
+                info.classList.add('show-points');
+            } else {
+                info.classList.remove('show-points');
+            }
+        });
+    }
+    
+    updateDifficultyNotes() {
+        const difficultyNotes = {
+            'enable-hints': this.difficultySettings.getSettingNote('enableHints'),
+            'show-points': this.difficultySettings.getSettingNote('showPoints'),
+            'enable-timer': this.difficultySettings.getSettingNote('enableTimer'),
+            'enable-petrification': this.difficultySettings.getSettingNote('enablePetrification'),
+            'enable-dead-pixels': this.difficultySettings.getSettingNote('enableDeadPixels'),
+            'show-personal-bests': this.difficultySettings.getSettingNote('showPersonalBests'),
+            'show-speed-timer': this.difficultySettings.getSettingNote('showSpeedTimer'),
+            'speed-mode-bonus': this.difficultySettings.getSettingNote('speedMode'),
+            'speed-mode-punishment': this.difficultySettings.getSettingNote('speedMode'),
+            'speed-mode-ignored': this.difficultySettings.getSettingNote('speedMode')
+        };
+        
+        Object.entries(difficultyNotes).forEach(([settingId, notes]) => {
+            const settingItem = document.querySelector(`#${settingId}`)?.closest('.setting-item');
+            if (settingItem) {
+                // Remove existing note
+                const existingNote = settingItem.querySelector('.difficulty-note');
+                if (existingNote) {
+                    existingNote.remove();
+                }
+                
+                // Add new note
+                const currentNote = notes[this.currentDifficulty];
+                if (currentNote) {
+                    const noteElement = document.createElement('div');
+                    noteElement.className = 'difficulty-note';
+                    noteElement.textContent = currentNote;
+                    noteElement.style.fontSize = '0.8rem';
+                    noteElement.style.color = 'var(--text-muted)';
+                    noteElement.style.fontStyle = 'italic';
+                    noteElement.style.marginTop = '0.25rem';
+                    
+                    const description = settingItem.querySelector('.setting-description');
+                    if (description) {
+                        description.appendChild(noteElement);
+                    }
+                }
+            }
+        });
+        
+        // Update the current difficulty text in the reset button
+        this.updateCurrentDifficultyText();
+    }
+    
+    updateCurrentDifficultyText() {
+        const currentDifficultyText = document.getElementById('current-difficulty-text');
+        if (currentDifficultyText) {
+            // Capitalize the first letter of the difficulty
+            const capitalizedDifficulty = this.currentDifficulty.charAt(0).toUpperCase() + this.currentDifficulty.slice(1);
+            currentDifficultyText.textContent = capitalizedDifficulty;
+        }
+    }
+    
+    setupResetListeners() {
+        // Reset to defaults for current difficulty
+        const resetCurrentDifficultyBtn = document.getElementById('reset-current-difficulty');
+        if (resetCurrentDifficultyBtn) {
+            resetCurrentDifficultyBtn.addEventListener('click', () => {
+                const capitalizedDifficulty = this.currentDifficulty.charAt(0).toUpperCase() + this.currentDifficulty.slice(1);
+                this.confirmationDialog.show(
+                    `Reset ${capitalizedDifficulty} settings to defaults?`,
+                    'This will reset all settings for the current difficulty level to their default values. Your customizations will be lost.',
+                    () => {
+                        this.difficultySettings.resetToDefaults(this.currentDifficulty);
+                        this.loadSettings();
+                        this.updateUI();
+                        this.showNotification(`Settings reset to defaults for ${capitalizedDifficulty} difficulty`);
+                    }
+                );
+            });
+        }
+        
+        // Reset all difficulties to defaults
+        const resetAllDifficultiesBtn = document.getElementById('reset-all-difficulties');
+        if (resetAllDifficultiesBtn) {
+            resetAllDifficultiesBtn.addEventListener('click', () => {
+                this.confirmationDialog.show(
+                    'Reset ALL difficulty settings to defaults?',
+                    'This will reset all settings for ALL difficulty levels to their default values. All your customizations will be lost.',
+                    () => {
+                        this.difficultySettings.resetAllToDefaults();
+                        this.loadSettings();
+                        this.updateUI();
+                        this.showNotification('All difficulty settings reset to defaults');
+                    }
+                );
+            });
+        }
+        
+        // Toggle difficulty defaults table
+        const toggleDefaultsBtn = document.getElementById('toggle-difficulty-defaults');
+        const defaultsTable = document.getElementById('difficulty-defaults-table');
+        const toggleText = document.getElementById('toggle-text');
+        const toggleArrow = document.getElementById('toggle-arrow');
+        
+        if (toggleDefaultsBtn && defaultsTable && toggleText && toggleArrow) {
+            toggleDefaultsBtn.addEventListener('click', () => {
+                const isVisible = defaultsTable.style.display !== 'none';
+                
+                if (isVisible) {
+                    defaultsTable.style.display = 'none';
+                    toggleText.textContent = '📋 Show Defaults by Difficulty';
+                    toggleArrow.style.transform = 'rotate(0deg)';
+                } else {
+                    defaultsTable.style.display = 'block';
+                    toggleText.textContent = '📋 Hide Defaults by Difficulty';
+                    toggleArrow.style.transform = 'rotate(180deg)';
+                    
+                    // Populate the table if it's empty
+                    this.populateDifficultyDefaultsTable();
+                }
+            });
+        }
+    }
+    
+    populateDifficultyDefaultsTable() {
+        const tableBody = document.getElementById('defaults-table-body');
+        if (!tableBody) return;
+        
+        // Clear existing rows
+        tableBody.innerHTML = '';
+        
+        // Define the settings to display
+        const settingsToShow = [
+            { key: 'enableHints', name: 'Enable Hints', description: 'Show placement suggestions' },
+            { key: 'showPoints', name: 'Show Block Points', description: 'Display point values on blocks' },
+            { key: 'enableTimer', name: 'Enable Timer', description: 'Add time pressure' },
+            { key: 'enablePetrification', name: 'Enable Petrification', description: 'Blocks petrify over time' },
+            { key: 'enableDeadPixels', name: 'Enable Dead Pixels', description: 'Add visual interference' },
+            { key: 'showPersonalBests', name: 'Show Personal Bests', description: 'Display progress in utility bar' },
+            { key: 'showSpeedTimer', name: 'Show Speed Timer', description: 'Track placement speed' },
+            { key: 'speedMode', name: 'Speed Tracking Mode', description: 'How speed affects scoring' },
+            { key: 'pieceTimeoutEnabled', name: 'Enable Piece Timeout', description: 'Auto-end game when pieces timeout' },
+            { key: 'animationsEnabled', name: 'Animations', description: 'Visual effects and transitions' },
+            { key: 'soundEnabled', name: 'Sound Effects', description: 'Audio feedback' }
+        ];
+        
+        const difficulties = ['easy', 'normal', 'hard', 'expert'];
+        
+        settingsToShow.forEach(setting => {
+            const row = document.createElement('tr');
+            row.style.borderBottom = '1px solid var(--border-color)';
+            
+            // Setting name and description
+            const nameCell = document.createElement('td');
+            nameCell.style.padding = '0.75rem';
+            nameCell.style.border = '1px solid var(--border-color)';
+            nameCell.innerHTML = `
+                <div style="font-weight: 600; color: var(--text-color);">${setting.name}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">${setting.description}</div>
+            `;
+            row.appendChild(nameCell);
+            
+            // Difficulty columns
+            difficulties.forEach(difficulty => {
+                const cell = document.createElement('td');
+                cell.style.padding = '0.75rem';
+                cell.style.border = '1px solid var(--border-color)';
+                cell.style.textAlign = 'center';
+                
+                const defaultValue = this.difficultySettings.difficultyDefaults[difficulty][setting.key];
+                
+                // Handle different value types
+                let displayValue, backgroundColor;
+                if (setting.key === 'speedMode') {
+                    // Speed mode values
+                    const modeColors = {
+                        'bonus': 'var(--success-color, #28a745)',
+                        'punishment': 'var(--warning-color, #ff6b35)',
+                        'ignored': 'var(--muted-color, #6c757d)'
+                    };
+                    displayValue = defaultValue.toUpperCase();
+                    backgroundColor = modeColors[defaultValue] || 'var(--muted-color, #6c757d)';
+                } else {
+                    // Boolean values
+                    const isEnabled = defaultValue === true;
+                    displayValue = isEnabled ? 'ON' : 'OFF';
+                    backgroundColor = isEnabled ? 'var(--success-color, #28a745)' : 'var(--muted-color, #6c757d)';
+                }
+                
+                cell.innerHTML = `
+                    <div style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 4px; font-weight: 600; font-size: 0.8rem; 
+                                background: ${backgroundColor}; 
+                                color: white;">
+                        ${displayValue}
+                    </div>
+                `;
+                row.appendChild(cell);
+            });
+            
+            tableBody.appendChild(row);
+        });
+    }
+    
+    setupCrossPageCommunication() {
+        // Listen for difficulty changes from other pages
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'blockdoku-settings' || e.key === 'blockdoku_settings') {
+                // Reload settings when difficulty changes
+                this.loadSettings();
+                this.updateUI();
+                this.updateCurrentDifficultyText();
+            }
+        });
+        
+        // Listen for focus events (when returning from other pages)
+        window.addEventListener('focus', () => {
+            this.loadSettings();
+            this.updateUI();
+            this.updateCurrentDifficultyText();
+        });
     }
 }
 

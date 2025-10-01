@@ -13,10 +13,12 @@
     <meta name="apple-mobile-web-app-title" content="Blockdoku">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/themes/wood.css" id="theme-css">
+    <!-- Theme will be dynamically loaded by JavaScript -->
+    <link rel="stylesheet" href="" id="theme-css">
     <!-- Preload other themes so we can switch reliably after build -->
     <link rel="stylesheet" href="css/themes/light.css" id="theme-css-light" media="not all">
     <link rel="stylesheet" href="css/themes/dark.css" id="theme-css-dark" media="not all">
+    <link rel="stylesheet" href="css/themes/wood.css" id="theme-css-wood" media="not all">
 </head>
 <body>
     <div id="app">
@@ -302,6 +304,100 @@
     <div class="copyright-notice">
         <p>&copy; Chase Pettet, <a href="http://523.life" target="_blank" rel="noopener noreferrer">523.life</a></p>
     </div>
+    
+    <script>
+        // Function to update theme
+        function updateTheme() {
+            const savedSettings = localStorage.getItem('blockdoku_settings') || localStorage.getItem('blockdoku-settings');
+            let theme = 'wood'; // Default to wood theme
+            
+            if (savedSettings) {
+                try {
+                    const settings = JSON.parse(savedSettings);
+                    if (settings.theme) {
+                        theme = settings.theme;
+                    }
+                } catch (e) {
+                    console.log('Error parsing settings:', e);
+                }
+            }
+            
+            console.log('Client-side theme update:', theme);
+            
+            // Handle Vite-injected theme links
+            try {
+                const builtWoodLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+                    .filter(l => (l.getAttribute('href') || '').includes('/assets/wood-') || (l.href || '').includes('/assets/wood-'));
+                const builtLightLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+                    .filter(l => (l.getAttribute('href') || '').includes('/assets/light-') || (l.href || '').includes('/assets/light-'));
+                const builtDarkLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+                    .filter(l => (l.getAttribute('href') || '').includes('/assets/dark-') || (l.href || '').includes('/assets/dark-'));
+                
+                // Disable all built theme links first
+                [...builtWoodLinks, ...builtLightLinks, ...builtDarkLinks].forEach(l => {
+                    l.disabled = true;
+                });
+                
+                // Enable the correct built theme link
+                if (theme === 'wood' && builtWoodLinks.length > 0) {
+                    builtWoodLinks[0].disabled = false;
+                    console.log('Enabled built wood theme');
+                } else if (theme === 'light' && builtLightLinks.length > 0) {
+                    builtLightLinks[0].disabled = false;
+                    console.log('Enabled built light theme');
+                } else if (theme === 'dark' && builtDarkLinks.length > 0) {
+                    builtDarkLinks[0].disabled = false;
+                    console.log('Enabled built dark theme');
+                }
+            } catch (e) {
+                console.log('Error managing built theme links:', e);
+            }
+            
+            // Manage preloaded theme links
+            const preloadedThemes = ['light', 'dark', 'wood'];
+            preloadedThemes.forEach(themeName => {
+                const link = document.getElementById(`theme-css-${themeName}`);
+                if (link) {
+                    link.disabled = themeName !== theme;
+                }
+            });
+            
+            // Set the main theme-css link as fallback
+            let themeLink = document.getElementById('theme-css');
+            if (!themeLink) {
+                themeLink = document.createElement('link');
+                themeLink.rel = 'stylesheet';
+                themeLink.id = 'theme-css';
+                document.head.appendChild(themeLink);
+            }
+            themeLink.href = `css/themes/${theme}.css`;
+            
+            // Set data-theme attribute for CSS selectors
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            // Add theme class to body
+            document.body.className = document.body.className.replace(/light-theme|dark-theme|wood-theme/g, '');
+            document.body.classList.add(`${theme}-theme`);
+        }
+        
+        // Load current theme from localStorage on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add a small delay to ensure everything is loaded
+            setTimeout(updateTheme, 100);
+        });
+        
+        // Listen for theme changes from other pages
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'blockdoku-settings' || e.key === 'blockdoku-settings') {
+                updateTheme();
+            }
+        });
+        
+        // Also listen for focus events (when returning from main page)
+        window.addEventListener('focus', function() {
+            updateTheme();
+        });
+    </script>
     
     <script type="module" src="js/app.js"></script>
 </body>

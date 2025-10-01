@@ -140,7 +140,7 @@ export class DifficultySelector {
         option.appendChild(icon);
         option.appendChild(content);
         
-        // Add press-and-hold handlers (1.5 second hold time)
+        // Add press-and-hold handlers (3ms hold time, same as settings page)
         let pressStartTime = null;
         let pressTimeout = null;
         let isPressed = false;
@@ -160,13 +160,13 @@ export class DifficultySelector {
             // Add visual feedback
             option.classList.add('pressing');
             
-            // Set timeout for 1.5 seconds
+            // Set timeout for 3ms (same as settings page)
             pressTimeout = setTimeout(() => {
                 if (isPressed) {
                     handleDifficultyActivation(e);
                     this.resetPressState(option, pressTimeout, isPressed);
                 }
-            }, 1500);
+            }, 3);
         };
         
         const cancelPress = (e) => {
@@ -209,28 +209,14 @@ export class DifficultySelector {
     }
     
     async selectDifficulty(difficulty) {
-        // Check if game is in progress (has blocks placed or score > 0)
-        const gameInProgress = this.game.score > 0 || this.game.board.some(row => row.some(cell => cell === 1));
-        
-        if (gameInProgress) {
-            // Show confirmation dialog
-            const confirmed = await this.confirmationDialog.show(
-                `Changing difficulty to ${difficulty.toUpperCase()} will reset your current game and you'll lose your progress. Are you sure you want to continue?`
-            );
-            
-            if (!confirmed) {
-                return; // User cancelled
-            }
-        }
-        
         // Update difficulty manager
         this.difficultyManager.setDifficulty(difficulty);
         
         // Update UI
         this.updateSelection(difficulty);
         
-        // Restart game with new difficulty
-        this.game.restartWithDifficulty(difficulty);
+        // Apply difficulty settings to current game (no reset needed)
+        this.game.selectDifficulty(difficulty);
         
         // Hide selector
         this.hide();
