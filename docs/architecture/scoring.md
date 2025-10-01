@@ -10,7 +10,7 @@ The Blockdoku game features a comprehensive scoring system that rewards strategi
 
 | Action | Base Points | Description |
 |--------|-------------|-------------|
-| Single block placement | 1 | Points for placing any block |
+| Single block placement | 0.5 | Points for placing any block (reduced to slow progression) |
 | Line clear (row or column) | 15 | Points for completing a full row or column |
 | 3x3 square clear | 20 | Points for completing a 3x3 square |
 | Combo bonus | 5 | Additional points per extra clear in a combo |
@@ -143,6 +143,23 @@ The scoring system tracks comprehensive statistics:
 - Points from square clears
 - Points from combo bonuses
 
+## Speed Bonus System
+
+### Speed Bonus Thresholds
+
+| Speed Category | Time Threshold | Bonus Points | Description |
+|----------------|----------------|--------------|-------------|
+| Lightning Fast | < 0.5s | 2 points | Extremely fast placement |
+| Very Fast | < 1.0s | 1 point | Very quick placement |
+| Fast | < 2.0s | 0.5 points | Quick placement |
+| Quick | < 3.0s | 0.25 points | Moderately quick placement |
+
+### Speed Bonus Features
+
+- **Maximum bonus per placement**: 5 points (capped to prevent excessive accumulation)
+- **Streak multiplier**: 1.2x for consecutive fast placements
+- **Mode options**: 'bonus' (adds points), 'punishment' (subtracts points), 'ignored' (no speed tracking)
+
 ## Strategic Considerations
 
 ### Maximizing Score
@@ -151,6 +168,7 @@ The scoring system tracks comprehensive statistics:
 2. **Consistent play**: Focus on steady progress to reach higher levels
 3. **Difficulty choice matters**: Easy gives more points but may feel less challenging
 4. **Square clears are valuable**: 20 base points vs 15 for lines
+5. **Speed bonuses are modest**: Focus on strategic placement over speed
 
 ### Combo Strategies
 
