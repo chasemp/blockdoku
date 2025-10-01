@@ -2,6 +2,10 @@
 
 ## 🚀 Key Insights from Blockdoku PWA Development
 
+> **📚 For comprehensive lessons learned including theme management, navigation, and regression testing, see [PWA_LESSONS_LEARNED.md](./PWA_LESSONS_LEARNED.md)**
+
+## 🎯 Quick Reference
+
 ### 📚 **Module Loading: Static vs Dynamic Imports**
 
 #### **The Problem**
