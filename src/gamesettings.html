@@ -228,37 +228,37 @@
                         <input type="range" id="dead-pixels-intensity" min="0" max="5" value="0" step="1" style="width: 100%; max-width: 300px; margin-top: 0.5rem;" />
                         <p class="setting-description" style="font-size: 0.85rem; margin-top: 0.5rem;">0 = Off, 5 = Maximum dead pixels (~15-20)</p>
                     </div>
-                    
-                    <!-- Speed Mode Settings -->
-                    <div class="speed-mode-settings">
-                        <h4>Speed Tracking Mode</h4>
-                        <p class="setting-description" style="margin-bottom: 0.5rem; margin-left: 0;">Choose how placement speed affects your score</p>
-                        <div class="speed-mode-options">
-                            <label class="speed-mode-option">
-                                <input type="radio" name="speed-mode" value="bonus" id="speed-mode-bonus" checked />
-                                <span class="speed-mode-label">
-                                    <strong>Bonus</strong>
-                                    <br>
-                                    <small>Faster = more points. Earn bonus points for quick placements.</small>
-                                </span>
-                            </label>
-                            <label class="speed-mode-option">
-                                <input type="radio" name="speed-mode" value="punishment" id="speed-mode-punishment" />
-                                <span class="speed-mode-label">
-                                    <strong>Punishment</strong>
-                                    <br>
-                                    <small>Slower = less points. Any second past 1 second subtracts a point per second down to 0.</small>
-                                </span>
-                            </label>
-                            <label class="speed-mode-option">
-                                <input type="radio" name="speed-mode" value="ignored" id="speed-mode-ignored" />
-                                <span class="speed-mode-label">
-                                    <strong>Ignored</strong>
-                                    <br>
-                                    <small>Speed doesn't affect score. Play at your own pace.</small>
-                                </span>
-                            </label>
-                        </div>
+                </div>
+                
+                <!-- Speed Tracking Mode Section -->
+                <div class="speed-tracking-mode-settings">
+                    <h3>Speed Tracking Mode</h3>
+                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Choose how placement speed affects your score</p>
+                    <div class="speed-mode-options">
+                        <label class="speed-mode-option">
+                            <input type="radio" name="speed-mode" value="bonus" id="speed-mode-bonus" checked />
+                            <span class="speed-mode-label">
+                                <strong>Bonus</strong>
+                                <br>
+                                <small>Faster = more points. Earn bonus points for quick placements.</small>
+                            </span>
+                        </label>
+                        <label class="speed-mode-option">
+                            <input type="radio" name="speed-mode" value="punishment" id="speed-mode-punishment" />
+                            <span class="speed-mode-label">
+                                <strong>Punishment</strong>
+                                <br>
+                                <small>Slower = less points. Any second past 1 second subtracts a point per second down to 0.</small>
+                            </span>
+                        </label>
+                        <label class="speed-mode-option">
+                            <input type="radio" name="speed-mode" value="ignored" id="speed-mode-ignored" />
+                            <span class="speed-mode-label">
+                                <strong>Ignored</strong>
+                                <br>
+                                <small>Speed doesn't affect score. Play at your own pace.</small>
+                            </span>
+                        </label>
                     </div>
                 </div>
                 
@@ -410,7 +410,15 @@
                         <p class="setting-description">Show enhanced success animations and effects when achieving combos</p>
                     </div>
                 </div>
-                
+            </div>
+        </div>
+        
+        <!-- App Management Section -->
+        <div class="app-management-section">
+            <h3>App Management</h3>
+            <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Manage your Blockdoku app installation and data.</p>
+            
+            <div class="app-management-buttons">
                 <!-- PWA Install Button -->
                 <div class="setting-item pwa-install-item">
                     <button id="pwa-install-button" class="pwa-install-button">
@@ -425,6 +433,48 @@
                         <span class="reset-text">Reset Statistics</span>
                     </button>
                 </div>
+            </div>
+        </div>
+        
+        <!-- Difficulty Defaults Section -->
+        <div class="difficulty-defaults-section">
+            <h3>Difficulty Defaults</h3>
+            <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Reset difficulty defaults for current or all levels.</p>
+            
+            <div class="reset-buttons-container">
+                <button id="reset-current-difficulty" class="reset-button">
+                    <span id="current-difficulty-text">Reset Normal</span>
+                </button>
+                <button id="reset-all-difficulties" class="reset-button">
+                    Reset All
+                </button>
+            </div>
+            
+            <!-- Toggle for difficulty defaults table -->
+            <div class="toggle-container">
+                <button id="toggle-difficulty-defaults" class="toggle-button">
+                    <span id="toggle-text">📋 Show Defaults by Difficulty</span>
+                    <span id="toggle-arrow" class="toggle-arrow">▼</span>
+                </button>
+            </div>
+            
+            <!-- Difficulty defaults table -->
+            <div id="difficulty-defaults-table" class="difficulty-defaults-table" style="display: none;">
+                <h4>Default Settings by Difficulty Level</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Setting</th>
+                            <th>Easy</th>
+                            <th>Normal</th>
+                            <th>Hard</th>
+                            <th>Expert</th>
+                        </tr>
+                    </thead>
+                    <tbody id="defaults-table-body">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
             </div>
         </div>
         
