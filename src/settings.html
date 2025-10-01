@@ -738,7 +738,6 @@
         
         <div class="settings-nav">
             <a href="#" class="nav-item active" data-section="theme">🎨 Theme</a>
-            <a href="#" class="nav-item" data-section="difficulty">⚡ Difficulty</a>
             <a href="#" class="nav-item" data-section="scores">🏆 High Scores</a>
             <a href="gamesettings.html" class="nav-item">🎮 Game Settings</a>
             <a href="#" class="nav-item" data-section="app-management">📱 App Management</a>
@@ -747,10 +746,6 @@
         </div>
         
         <div class="settings-content">
-            <a href="index.html" class="back-button">
-                ← Back to Game
-            </a>
-            
             <!-- Theme Section -->
             <div class="settings-section active" id="theme-section">
                 <h2 class="section-title">Theme</h2>
@@ -768,41 +763,9 @@
                         <span>Dark</span>
                     </button>
                 </div>
-            </div>
-            
-            <!-- Difficulty Section -->
-            <div class="settings-section" id="difficulty-section">
-                <h2 class="section-title">Difficulty</h2>
-                <div class="difficulty-options">
-                    <button class="difficulty-option" data-difficulty="easy">
-                        <div class="difficulty-header">
-                            <h4>Easy</h4>
-                            <span class="difficulty-badge easy">EASY</span>
-                        </div>
-                        <p>Larger blocks, slower pace, hints available</p>
-                    </button>
-                    <button class="difficulty-option" data-difficulty="normal">
-                        <div class="difficulty-header">
-                            <h4>Normal</h4>
-                            <span class="difficulty-badge normal">NORMAL</span>
-                        </div>
-                        <p>Standard block variety, moderate pace</p>
-                    </button>
-                    <button class="difficulty-option" data-difficulty="hard">
-                        <div class="difficulty-header">
-                            <h4>Hard</h4>
-                            <span class="difficulty-badge hard">HARD</span>
-                        </div>
-                        <p>Smaller blocks, faster pace, no hints</p>
-                    </button>
-                    <button class="difficulty-option" data-difficulty="expert">
-                        <div class="difficulty-header">
-                            <h4>Expert</h4>
-                            <span class="difficulty-badge expert">EXPERT</span>
-                        </div>
-                        <p>Complex shapes, time pressure, limited moves</p>
-                    </button>
-                </div>
+                <a href="index.html" class="back-button" style="margin-top: 1.5rem; display: block; text-align: center;">
+                    ← Back to Game
+                </a>
             </div>
             
             <!-- High Scores Section -->
