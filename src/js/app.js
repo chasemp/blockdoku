@@ -1969,11 +1969,14 @@ class BlockdokuGame {
                 return;
             }
             const best = this.storage.getBestScoresByDifficulty();
+            const currentDifficultyBest = best[this.difficulty] || 0;
+            const difficultyLabel = this.difficulty.charAt(0).toUpperCase() + this.difficulty.slice(1);
+            
             container.innerHTML = `
-                <span class="pb-item"><span class="pb-label">Easy</span><span class="pb-value">${(best.easy||0).toLocaleString()}</span></span>
-                <span class="pb-item"><span class="pb-label">Normal</span><span class="pb-value">${(best.normal||0).toLocaleString()}</span></span>
-                <span class="pb-item"><span class="pb-label">Hard</span><span class="pb-value">${(best.hard||0).toLocaleString()}</span></span>
-                <span class="pb-item"><span class="pb-label">Expert</span><span class="pb-value">${(best.expert||0).toLocaleString()}</span></span>
+                <span class="pb-item">
+                    <span class="pb-label">BEST</span>
+                    <span class="pb-value">${currentDifficultyBest.toLocaleString()}</span>
+                </span>
             `;
             container.style.display = 'inline-flex';
         } catch (e) {
