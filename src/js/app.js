@@ -71,7 +71,7 @@ class BlockdokuGame {
         this.deadPixelsManager = new DeadPixelsManager();
         
         this.blockPalette = new BlockPalette('block-palette', this.blockManager, this);
-        this.scoringSystem = new ScoringSystem(this.petrificationManager);
+        this.scoringSystem = new ScoringSystem(this.petrificationManager, this.difficultyManager);
         this.storage = new GameStorage();
         this.difficultySettings = new DifficultySettingsManager(this.storage);
         // this.effectsSystem = new EffectsSystem(this.canvas, this.ctx);

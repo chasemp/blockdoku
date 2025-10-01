@@ -10,7 +10,7 @@ The Blockdoku game features a comprehensive scoring system that rewards strategi
 
 | Action | Base Points | Description |
 |--------|-------------|-------------|
-| Single block placement | 1 | Points for placing any block |
+| Single block placement | 0.5 | Points for placing any block (reduced to slow progression) |
 | Line clear (row or column) | 15 | Points for completing a full row or column |
 | 3x3 square clear | 20 | Points for completing a 3x3 square |
 | Combo bonus | 5 | Additional points per extra clear in a combo |
@@ -50,10 +50,20 @@ Combo Bonus = 5 × (Total Clears - 1)
 
 ## Level Progression System
 
-### Compounding Level Thresholds
+### Difficulty-Aware Compounding Level Thresholds
 
-The game uses a compounding progression where each level's point range increases by 5%:
+The game uses difficulty-specific compounding progression where each level's point range increases by 5%, but the base ranges are adjusted for each difficulty to account for different point earning rates:
 
+#### Easy Difficulty (1.5x multiplier)
+| Level | Point Range | Range Size |
+|-------|-------------|------------|
+| 1 | 0-150 | 150 |
+| 2 | 151-308 | 157 |
+| 3 | 309-472 | 164 |
+| 4 | 473-642 | 170 |
+| 5 | 643-818 | 176 |
+
+#### Normal Difficulty (1.0x multiplier)
 | Level | Point Range | Range Size |
 |-------|-------------|------------|
 | 1 | 0-100 | 100 |
@@ -61,10 +71,27 @@ The game uses a compounding progression where each level's point range increases
 | 3 | 207-317 | 110 |
 | 4 | 318-433 | 116 |
 | 5 | 434-554 | 121 |
-| 6 | 555-680 | 127 |
+
+#### Hard Difficulty (0.8x multiplier)
+| Level | Point Range | Range Size |
+|-------|-------------|------------|
+| 1 | 0-80 | 80 |
+| 2 | 81-164 | 84 |
+| 3 | 165-252 | 88 |
+| 4 | 253-344 | 92 |
+| 5 | 345-440 | 96 |
+
+#### Expert Difficulty (0.5x multiplier)
+| Level | Point Range | Range Size |
+|-------|-------------|------------|
+| 1 | 0-60 | 60 |
+| 2 | 61-123 | 63 |
+| 3 | 124-189 | 66 |
+| 4 | 190-258 | 69 |
+| 5 | 259-330 | 72 |
 
 **Formula:**
-- Level 1 range: 100 points
+- Level 1 range: Difficulty-specific base range
 - Each subsequent level: Previous range × 1.05 (rounded)
 
 ### Fixed Point Awards
@@ -143,6 +170,23 @@ The scoring system tracks comprehensive statistics:
 - Points from square clears
 - Points from combo bonuses
 
+## Speed Bonus System
+
+### Speed Bonus Thresholds
+
+| Speed Category | Time Threshold | Bonus Points | Description |
+|----------------|----------------|--------------|-------------|
+| Lightning Fast | < 0.5s | 2 points | Extremely fast placement |
+| Very Fast | < 1.0s | 1 point | Very quick placement |
+| Fast | < 2.0s | 0.5 points | Quick placement |
+| Quick | < 3.0s | 0.25 points | Moderately quick placement |
+
+### Speed Bonus Features
+
+- **Maximum bonus per placement**: 5 points (capped to prevent excessive accumulation)
+- **Streak multiplier**: 1.2x for consecutive fast placements
+- **Mode options**: 'bonus' (adds points), 'punishment' (subtracts points), 'ignored' (no speed tracking)
+
 ## Strategic Considerations
 
 ### Maximizing Score
@@ -151,6 +195,7 @@ The scoring system tracks comprehensive statistics:
 2. **Consistent play**: Focus on steady progress to reach higher levels
 3. **Difficulty choice matters**: Easy gives more points but may feel less challenging
 4. **Square clears are valuable**: 20 base points vs 15 for lines
+5. **Speed bonuses are modest**: Focus on strategic placement over speed
 
 ### Combo Strategies
 
