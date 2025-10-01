@@ -1963,8 +1963,7 @@ class BlockdokuGame {
         try {
             const container = document.getElementById('personal-bests');
             if (!container) return;
-            const settings = this.storage.loadSettings();
-            const show = settings.showPersonalBests === true;
+            const show = this.showPersonalBests === true;
             if (!show) {
                 container.style.display = 'none';
                 return;
@@ -3404,6 +3403,9 @@ class BlockdokuGame {
         
         console.log(`🎮 App.js: calling updateHintControls()...`);
         this.updateHintControls();
+        
+        console.log(`🎮 App.js: calling renderPersonalBests()...`);
+        this.renderPersonalBests();
         
         console.log(`🎮 App.js: selectDifficulty completed. Final difficulty: ${this.difficulty}`);
         
