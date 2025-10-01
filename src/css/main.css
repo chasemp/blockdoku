@@ -2588,6 +2588,24 @@ html.light-theme .difficulty-option.selected {
     margin-bottom: 0;
 }
 
+/* Settings Section Container - for flattened structure */
+.settings-section-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.settings-section-container h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-align: center;
+}
+
 .settings-section h3 {
     margin-bottom: 1rem;
     color: var(--text-color);
