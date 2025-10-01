@@ -640,23 +640,38 @@ export class SettingsManager {
     
     
     showSection(sectionName) {
+        console.log('Switching to section:', sectionName);
+        
         // Update navigation
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
         });
-        document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
+        const navItem = document.querySelector(`[data-section="${sectionName}"]`);
+        if (navItem) {
+            navItem.classList.add('active');
+        } else {
+            console.error('Navigation item not found for section:', sectionName);
+        }
         
         // Update content
         document.querySelectorAll('.settings-section').forEach(section => {
             section.classList.remove('active');
         });
-        document.getElementById(`${sectionName}-section`).classList.add('active');
+        const targetSection = document.getElementById(`${sectionName}-section`);
+        if (targetSection) {
+            targetSection.classList.add('active');
+            console.log('Section activated:', sectionName);
+        } else {
+            console.error('Section not found:', `${sectionName}-section`);
+        }
         
         // Load section-specific data
         if (sectionName === 'scores') {
             this.loadHighScores();
         } else if (sectionName === 'sounds') {
             this.loadSoundCustomization();
+        } else if (sectionName === 'about') {
+            console.log('About section loaded');
         }
     }
     
@@ -1475,16 +1490,25 @@ export class SettingsManager {
         const soundSection = document.getElementById('sounds-section');
         const gameSection = document.getElementById('game-section');
         
+        console.log('About section parent:', aboutSection?.parentElement?.id);
+        console.log('Game section:', gameSection?.id);
+        
         if (aboutSection && gameSection && aboutSection.parentElement === gameSection) {
+            console.log('Moving about section outside game-section');
             // Move About section outside game-section
             aboutSection.remove();
             gameSection.insertAdjacentElement('afterend', aboutSection);
+        } else {
+            console.log('About section is already outside game-section');
         }
         
         if (soundSection && gameSection && soundSection.parentElement === gameSection) {
+            console.log('Moving sound section outside game-section');
             // Move Sound Effects section outside game-section
             soundSection.remove();
             gameSection.insertAdjacentElement('afterend', soundSection);
+        } else {
+            console.log('Sound section is already outside game-section');
         }
     }
 }

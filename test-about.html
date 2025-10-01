@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test About Section</title>
+    <style>
+        .settings-section {
+            display: none;
+        }
+        
+        .settings-section.active {
+            display: block;
+        }
+        
+        .nav-item {
+            padding: 1rem 2rem;
+            background: #f0f0f0;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #333;
+            margin: 0.5rem;
+            display: inline-block;
+        }
+        
+        .nav-item.active {
+            background: #007bff;
+            color: white;
+        }
+        
+        .about-content {
+            display: grid;
+            gap: 2rem;
+        }
+        
+        .about-item {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="settings-nav">
+            <a href="#" class="nav-item active" data-section="theme">🎨 Theme</a>
+            <a href="#" class="nav-item" data-section="about">ℹ️ About</a>
+        </div>
+        
+        <div class="settings-content">
+            <!-- Theme Section -->
+            <div class="settings-section active" id="theme-section">
+                <h2>Theme</h2>
+                <p>Theme content here</p>
+            </div>
+            
+            <!-- About Section -->
+            <div class="settings-section" id="about-section">
+                <h2>About Blockdoku</h2>
+                <div class="about-content">
+                    <div class="about-item">
+                        <h3>Author</h3>
+                        <p>Chase Pettet, <a href="https://523.life" target="_blank" rel="noopener noreferrer">523.life</a></p>
+                    </div>
+                    
+                    <div class="about-item">
+                        <h3>Source Code</h3>
+                        <p>This is a Progressive Web App (PWA) built with modern web technologies including Vite, vanilla JavaScript, and CSS3.</p>
+                        <p>The source code is available and open for contribution under the <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener noreferrer">AGPL-3.0 license</a>.</p>
+                        <p><a href="https://github.com/chasepettet/blockdoku" target="_blank" rel="noopener noreferrer">View on GitHub</a></p>
+                    </div>
+                    
+                    <div class="about-item">
+                        <h3>Version</h3>
+                        <p>Version 1.0.0</p>
+                        <p>Build: Test</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showSection(sectionName) {
+            console.log('Switching to section:', sectionName);
+            
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
+            
+            // Update content
+            document.querySelectorAll('.settings-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            const targetSection = document.getElementById(`${sectionName}-section`);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                console.log('About section activated');
+            } else {
+                console.error('Section not found:', `${sectionName}-section`);
+            }
+        }
+        
+        // Add click listeners
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection(item.dataset.section);
+            });
+        });
+        
+        console.log('Test page loaded');
+    </script>
+</body>
+</html>
