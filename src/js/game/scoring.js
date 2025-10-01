@@ -50,7 +50,7 @@ export class ScoringSystem {
         
         // Scoring multipliers
         this.basePoints = {
-            single: 1,
+            single: 0.5,  // Reduced from 1 to slow down point growth
             line: 15,
             square: 20,
             combo: 5
@@ -61,13 +61,13 @@ export class ScoringSystem {
         this.speedConfig = {
             mode: 'bonus',  // 'bonus', 'punishment', or 'ignored'
             thresholds: [
-                { maxTime: 500, bonus: 10, label: 'Lightning Fast' },    // < 0.5s
-                { maxTime: 1000, bonus: 5, label: 'Very Fast' },         // < 1.0s
-                { maxTime: 2000, bonus: 2, label: 'Fast' },              // < 2.0s
-                { maxTime: 3000, bonus: 1, label: 'Quick' }               // < 3.0s
+                { maxTime: 500, bonus: 2, label: 'Lightning Fast' },     // < 0.5s - reduced from 10 to 2
+                { maxTime: 1000, bonus: 1, label: 'Very Fast' },         // < 1.0s - reduced from 5 to 1
+                { maxTime: 2000, bonus: 0.5, label: 'Fast' },            // < 2.0s - reduced from 2 to 0.5
+                { maxTime: 3000, bonus: 0.25, label: 'Quick' }           // < 3.0s - reduced from 1 to 0.25
             ],
-            maxBonus: 50,           // Maximum speed bonus per placement
-            streakMultiplier: 1.5   // Multiplier for consecutive fast placements
+            maxBonus: 5,            // Maximum speed bonus per placement - reduced from 50 to 5
+            streakMultiplier: 1.2   // Multiplier for consecutive fast placements - reduced from 1.5 to 1.2
         };
 
         // Compounding level progression settings
