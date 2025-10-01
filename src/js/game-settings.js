@@ -209,6 +209,9 @@ export class GameSettingsManager {
     }
     
     setupEventListeners() {
+        // Difficulty selection
+        this.setupDifficultyListeners();
+        
         // Combo display settings
         this.setupComboDisplayListeners();
         
@@ -229,6 +232,83 @@ export class GameSettingsManager {
         
         // Reset statistics button
         this.setupResetStatisticsListener();
+    }
+    
+    setupDifficultyListeners() {
+        const difficultyOptions = document.querySelectorAll('.difficulty-option');
+        
+        difficultyOptions.forEach(option => {
+            option.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const difficulty = option.dataset.difficulty;
+                
+                if (difficulty === this.currentDifficulty) {
+                    return; // Already selected
+                }
+                
+                // Check if there's a game in progress
+                const gameState = localStorage.getItem(this.storage?.storageKey || 'blockdoku_game_data');
+                let gameInProgress = false;
+                
+                if (gameState) {
+                    try {
+                        const state = JSON.parse(gameState);
+                        gameInProgress = state.score > 0 || state.board.some(row => row.some(cell => cell === 1));
+                    } catch (e) {
+                        gameInProgress = false;
+                    }
+                }
+                
+                if (gameInProgress) {
+                    // Show confirmation dialog
+                    const confirmed = await this.confirmationDialog.show(
+                        `Changing difficulty to ${difficulty.toUpperCase()} will reset your current game and you'll lose your progress. Are you sure you want to continue?`,
+                        'Confirm Difficulty Change'
+                    );
+                    
+                    if (!confirmed) {
+                        return;
+                    }
+                }
+                
+                console.log(`🎮 Game Settings: Changing difficulty to ${difficulty.toUpperCase()}`);
+                
+                // Update difficulty
+                this.currentDifficulty = difficulty;
+                this.settings.difficulty = difficulty;
+                
+                // Apply difficulty-specific settings
+                const difficultySettings = this.difficultySettings.getSettingsForDifficulty(difficulty);
+                Object.assign(this.settings, difficultySettings);
+                
+                // Save settings
+                this.storage.saveSettings(this.settings);
+                
+                // Update UI
+                this.updateDifficultySelection();
+                this.loadSettings(); // Reload to apply new difficulty settings
+                this.updateUI();
+                
+                // Notify other pages
+                window.postMessage({
+                    type: 'difficultyChanged',
+                    difficulty: difficulty
+                }, '*');
+            });
+        });
+    }
+    
+    updateDifficultySelection() {
+        const difficultyOptions = document.querySelectorAll('.difficulty-option');
+        
+        difficultyOptions.forEach(option => {
+            const difficulty = option.dataset.difficulty;
+            if (difficulty === this.currentDifficulty) {
+                option.classList.add('selected');
+            } else {
+                option.classList.remove('selected');
+            }
+        });
     }
     
     setupComboDisplayListeners() {
@@ -553,6 +633,7 @@ export class GameSettingsManager {
     updateUI() {
         // Update any UI elements that need refreshing
         this.loadSettings();
+        this.updateDifficultySelection();
     }
     
     updateBlockPointsDisplay() {
@@ -619,7 +700,7 @@ export class GameSettingsManager {
         if (currentDifficultyText) {
             // Capitalize the first letter of the difficulty
             const capitalizedDifficulty = this.currentDifficulty.charAt(0).toUpperCase() + this.currentDifficulty.slice(1);
-            currentDifficultyText.textContent = capitalizedDifficulty;
+            currentDifficultyText.textContent = `Reset ${capitalizedDifficulty}`;
         }
     }
     
