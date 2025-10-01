@@ -50,10 +50,20 @@ Combo Bonus = 5 × (Total Clears - 1)
 
 ## Level Progression System
 
-### Compounding Level Thresholds
+### Difficulty-Aware Compounding Level Thresholds
 
-The game uses a compounding progression where each level's point range increases by 5%:
+The game uses difficulty-specific compounding progression where each level's point range increases by 5%, but the base ranges are adjusted for each difficulty to account for different point earning rates:
 
+#### Easy Difficulty (1.5x multiplier)
+| Level | Point Range | Range Size |
+|-------|-------------|------------|
+| 1 | 0-150 | 150 |
+| 2 | 151-308 | 157 |
+| 3 | 309-472 | 164 |
+| 4 | 473-642 | 170 |
+| 5 | 643-818 | 176 |
+
+#### Normal Difficulty (1.0x multiplier)
 | Level | Point Range | Range Size |
 |-------|-------------|------------|
 | 1 | 0-100 | 100 |
@@ -61,10 +71,27 @@ The game uses a compounding progression where each level's point range increases
 | 3 | 207-317 | 110 |
 | 4 | 318-433 | 116 |
 | 5 | 434-554 | 121 |
-| 6 | 555-680 | 127 |
+
+#### Hard Difficulty (0.8x multiplier)
+| Level | Point Range | Range Size |
+|-------|-------------|------------|
+| 1 | 0-80 | 80 |
+| 2 | 81-164 | 84 |
+| 3 | 165-252 | 88 |
+| 4 | 253-344 | 92 |
+| 5 | 345-440 | 96 |
+
+#### Expert Difficulty (0.5x multiplier)
+| Level | Point Range | Range Size |
+|-------|-------------|------------|
+| 1 | 0-60 | 60 |
+| 2 | 61-123 | 63 |
+| 3 | 124-189 | 66 |
+| 4 | 190-258 | 69 |
+| 5 | 259-330 | 72 |
 
 **Formula:**
-- Level 1 range: 100 points
+- Level 1 range: Difficulty-specific base range
 - Each subsequent level: Previous range × 1.05 (rounded)
 
 ### Fixed Point Awards

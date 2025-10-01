@@ -4,13 +4,16 @@
  */
 
 export class ScoringSystem {
-    constructor(petrificationManager = null) {
+    constructor(petrificationManager = null, difficultyManager = null) {
         this.score = 0;
         this.level = 1;
         this.linesCleared = 0;
         
         // Petrification manager (optional)
         this.petrificationManager = petrificationManager;
+        
+        // Difficulty manager (optional)
+        this.difficultyManager = difficultyManager;
         
         // Dual combo tracking system
         this.combo = 0;                    // Current streak combo
@@ -70,19 +73,48 @@ export class ScoringSystem {
             streakMultiplier: 1.2   // Multiplier for consecutive fast placements - reduced from 1.5 to 1.2
         };
 
-        // Compounding level progression settings
-        // Each level has a range of points, with ranges increasing by 5% each level
-        // Level 1: 0-100, Level 2: 101-206, Level 3: 207-317, etc.
+        // Difficulty-aware level progression settings
+        // Each difficulty has different base ranges to account for point multipliers
         this.levelProgression = {
-            baseRange: 100,        // Points range for level 1
-            stepIncrease: 0.05,    // 5% increase in range per level
-            roundingMode: 'round'  // Round ranges to nearest integer
+            easy: {
+                baseRange: 150,        // Higher threshold due to 1.5x multiplier
+                stepIncrease: 0.05,    // 5% increase in range per level
+                roundingMode: 'round'
+            },
+            normal: {
+                baseRange: 100,        // Baseline threshold
+                stepIncrease: 0.05,    // 5% increase in range per level
+                roundingMode: 'round'
+            },
+            hard: {
+                baseRange: 80,         // Lower threshold due to 0.8x multiplier
+                stepIncrease: 0.05,    // 5% increase in range per level
+                roundingMode: 'round'
+            },
+            expert: {
+                baseRange: 60,         // Much lower threshold due to 0.5x multiplier
+                stepIncrease: 0.05,    // 5% increase in range per level
+                roundingMode: 'round'
+            }
         };
     }
     
     // Set petrification manager
     setPetrificationManager(petrificationManager) {
         this.petrificationManager = petrificationManager;
+    }
+    
+    // Set difficulty manager
+    setDifficultyManager(difficultyManager) {
+        this.difficultyManager = difficultyManager;
+    }
+    
+    // Get current difficulty for level progression
+    getCurrentDifficulty() {
+        if (this.difficultyManager) {
+            return this.difficultyManager.getCurrentDifficulty();
+        }
+        return 'normal'; // Default to normal if no difficulty manager
     }
     
     // Check for completed lines without clearing them
@@ -659,17 +691,19 @@ export class ScoringSystem {
         }
     }
 
-    // Compute threshold to reach a given level using compounding ranges
-    // Level 1: 0-100, Level 2: 101-205, Level 3: 206-315, etc.
+    // Compute threshold to reach a given level using difficulty-specific compounding ranges
     getLevelThreshold(level) {
         if (level <= 1) return 0; // Level 1 starts at 0
         
-        const baseRange = this.levelProgression.baseRange; // 100
-        const stepIncrease = this.levelProgression.stepIncrease; // 0.05
-        const rounding = this.levelProgression.roundingMode;
+        const difficulty = this.getCurrentDifficulty();
+        const progression = this.levelProgression[difficulty] || this.levelProgression.normal;
         
-        let threshold = 101; // Level 2 starts at 101
-        let currentRange = baseRange; // 100
+        const baseRange = progression.baseRange;
+        const stepIncrease = progression.stepIncrease;
+        const rounding = progression.roundingMode;
+        
+        let threshold = baseRange + 1; // Level 2 starts at baseRange + 1
+        let currentRange = baseRange;
         
         // Calculate threshold for each level by accumulating ranges
         for (let lvl = 2; lvl < level; lvl++) {
