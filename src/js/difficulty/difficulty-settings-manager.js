@@ -156,16 +156,16 @@ export class DifficultySettingsManager {
                 expert: "ON for expert (adds time challenge)"
             },
             enablePetrification: {
-                easy: "OFF for easy (simpler gameplay)",
+                easy: "OFF for easy",
                 normal: "OFF for normal",
-                hard: "OFF for hard (optional challenge)",
-                expert: "OFF for expert (optional challenge)"
+                hard: "OFF for hard",
+                expert: "OFF for expert"
             },
             enableDeadPixels: {
-                easy: "OFF for easy (simpler gameplay)",
+                easy: "OFF for easy",
                 normal: "OFF for normal",
-                hard: "OFF for hard (optional challenge)",
-                expert: "OFF for expert (optional challenge)"
+                hard: "OFF for hard",
+                expert: "OFF for expert"
             },
             showPersonalBests: {
                 easy: "ON for easy (shows progress)",
