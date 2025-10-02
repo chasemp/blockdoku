@@ -2741,13 +2741,15 @@ html.wood-theme .theme-option:hover {
 
 @media (max-width: 768px) {
     .navigation-buttons {
-        flex-direction: column;
+        flex-direction: row;
         gap: 0.5rem;
+        justify-content: center;
     }
     
     .navigation-buttons .back-button {
         width: auto;
         min-width: 44px;
+        flex: 0 1 auto;
     }
 }
 
