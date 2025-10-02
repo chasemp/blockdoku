@@ -260,7 +260,7 @@
                 
             <!-- Basic Game Settings -->
             <div class="basic-game-settings settings-section-container">
-                    <h3 style="text-align: center;">Basic Settings</h3>
+                    <h3 style="text-align: center;">Basics</h3>
                 <div class="setting-item">
                     <label>
                         <input type="checkbox" id="sound-enabled" />
@@ -275,6 +275,55 @@
                     </label>
                     <p class="setting-description">Enable smooth transitions and visual effects during gameplay</p>
                 </div>
+                
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="haptic-enabled" />
+                        Haptic feedback
+                    </label>
+                    <p class="setting-description">Vibrate device for tactile feedback on supported devices</p>
+                </div>
+                
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="auto-save" />
+                        Auto-save game
+                    </label>
+                    <p class="setting-description">Automatically save your progress so you can resume later</p>
+                </div>
+                
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="show-points" />
+                        Show block points
+                    </label>
+                    <p class="setting-description">Display point values on each block to help with scoring strategy</p>
+                </div>
+                
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="show-placement-points" />
+                        Show placement points
+                    </label>
+                    <p class="setting-description">Show floating point notifications when placing blocks (can be noisy if enabled)</p>
+                </div>
+                
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="enable-prize-recognition" checked />
+                        Enable prize recognition
+                    </label>
+                    <p class="setting-description">Automatically detect and highlight special prize patterns for bonus points</p>
+                </div>
+                
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="success-mode-enabled" />
+                        Enable success mode
+                    </label>
+                    <p class="setting-description">Show enhanced success animations and effects when achieving combos</p>
+                </div>
+            </div>
                 
             <!-- Enhanced Animation Controls -->
             <div class="animation-settings settings-section-container" id="animation-settings">
@@ -354,59 +403,6 @@
                     </div>
                 </div>
                 
-            <!-- Additional Game Settings -->
-            <div class="additional-game-settings settings-section-container">
-                    <h3 style="margin: 1.5rem 0 1rem 0; color: var(--text-color); font-size: 1.1rem; text-align: center;">Additional Settings</h3>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="haptic-enabled" />
-                            Haptic feedback
-                        </label>
-                        <p class="setting-description">Vibrate device for tactile feedback on supported devices</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="auto-save" />
-                            Auto-save game
-                        </label>
-                        <p class="setting-description">Automatically save your progress so you can resume later</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="show-points" />
-                            Show block points
-                        </label>
-                        <p class="setting-description">Display point values on each block to help with scoring strategy</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="show-placement-points" />
-                            Show placement points
-                        </label>
-                        <p class="setting-description">Show floating point notifications when placing blocks (can be noisy if enabled)</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="enable-prize-recognition" checked />
-                            Enable prize recognition
-                        </label>
-                        <p class="setting-description">Automatically detect and highlight special prize patterns for bonus points</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="success-mode-enabled" />
-                            Enable success mode
-                        </label>
-                        <p class="setting-description">Show enhanced success animations and effects when achieving combos</p>
-                    </div>
-                </div>
-            </div>
         
         <!-- Difficulty Selector Section -->
         <div class="difficulty-selector-section settings-section-container">
