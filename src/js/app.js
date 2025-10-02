@@ -1641,6 +1641,7 @@ class BlockdokuGame {
         console.log('completeLineClear called with:', clearedLines);
         let result;
         let combo;
+        let storedResult; // Declare storedResult in the method scope
         
         try {
             // Actually clear the lines from the board FIRST (without updating score)
@@ -1673,7 +1674,7 @@ class BlockdokuGame {
             this.petrificationManager.updateBoardTracking(this.board);
             
             // Retrieve the score info that was already calculated and applied
-            const storedResult = this.pendingClearResult;
+            storedResult = this.pendingClearResult;
             if (!storedResult) {
                 console.warn('No pendingClearResult found - score was not pre-calculated!');
                 // Fallback: shouldn't happen but handle gracefully
