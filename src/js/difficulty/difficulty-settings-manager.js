@@ -163,7 +163,7 @@ export class DifficultySettingsManager {
             },
             enableDeadPixels: {
                 easy: "OFF for easy (simpler gameplay)",
-                normal: "OFF for normal (no visual interference)",
+                normal: "OFF for normal",
                 hard: "OFF for hard (optional challenge)",
                 expert: "OFF for expert (optional challenge)"
             },
