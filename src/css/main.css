@@ -1239,6 +1239,29 @@ body {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
+/* Individual Setting Bubbles */
+.individual-setting-bubble {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    font-size: 0.7rem;
+    padding: 0.15rem 0.35rem;
+    border-radius: 10px;
+}
+
+.individual-setting-bubble:hover {
+    transform: none; /* Disable hover transform for individual bubbles */
+    cursor: default;
+}
+
+/* Setting item layout adjustments for bubbles */
+.setting-item {
+    position: relative;
+}
+
+.setting-item .individual-setting-bubble {
+    margin-bottom: 0.3rem;
+}
+
 /* Difficulty Defaults Table */
 .difficulty-defaults-table {
     text-align: center;
