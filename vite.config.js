@@ -44,6 +44,7 @@ export default defineConfig({
         main: resolve(__dirname, 'src/index.html'),
         splash: resolve(__dirname, 'src/splash.html'),
         settings: resolve(__dirname, 'src/settings.html'),
+        gamesettings: resolve(__dirname, 'src/gamesettings.html'),
         lastgame: resolve(__dirname, 'src/lastgame.html')
       }
     }

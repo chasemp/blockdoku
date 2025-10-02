@@ -13,6 +13,10 @@
     --secondary-hover: #545b62;
     --error-color: #dc3545;
     --error-hover: #c82333;
+    --success-color: #28a745;
+    --success-hover: #218838;
+    --neutral-color: #6c757d;
+    --neutral-hover: #5a6268;
     --cell-bg: #ffffff;
     --cell-border: #dee2e6;
     --cell-hover: #e9ecef;
