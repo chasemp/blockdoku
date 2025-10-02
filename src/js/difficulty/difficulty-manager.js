@@ -69,12 +69,16 @@ export class DifficultyManager {
      * Generate detailed description with dynamic defaults for game settings page
      */
     getDetailedDescription(difficulty, difficultySettingsManager) {
-        const difficultyInfo = this.difficulties[difficulty];
+        const difficultyInfo = this.difficultySettings[difficulty];
         if (!difficultyInfo) return '';
         
         const shortDesc = difficultyInfo.shortDescription;
         
         // Get the actual defaults for this difficulty from the settings manager
+        if (!difficultySettingsManager || !difficultySettingsManager.difficultyDefaults) {
+            return shortDesc;
+        }
+        
         const defaults = difficultySettingsManager.difficultyDefaults[difficulty];
         if (!defaults) return shortDesc;
         
