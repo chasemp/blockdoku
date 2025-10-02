@@ -131,17 +131,18 @@
             <p>Customize your Blockdoku gameplay experience</p>
         </header>
         
-        <div class="settings-nav">
-            <a href="../index.html" class="nav-item back-button">
-                ← Game
-            </a>
-            <a href="../settings.html" class="nav-item">
+        <!-- Navigation Buttons -->
+        <div class="navigation-buttons" style="margin-bottom: 2rem;">
+            <a href="../settings.html" class="back-button">
                 ← Settings
+            </a>
+            <a href="../index.html" class="back-button">
+                Game →
             </a>
         </div>
         
         <div class="settings-content">
-            <!-- Combo Display Settings -->
+                <!-- Combo Display Settings -->
             <div class="combo-display-settings settings-section-container">
                     <h3>Combo Display</h3>
                     <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Choose how combo points are displayed during gameplay</p>
@@ -184,10 +185,10 @@
                         <label>
                             <input type="checkbox" id="show-personal-bests" />
                             Enable Personal Best
-                        </label>
+                            </label>
                         <p class="setting-description">Display your personal best score for the current difficulty level in the utility bar</p>
-                    </div>
-                    
+                </div>
+                
                     <div class="setting-item">
                         <label>
                             <input type="checkbox" id="show-speed-timer" />
@@ -214,55 +215,55 @@
                     </label>
                     <p class="setting-description">Enable smooth transitions and visual effects during gameplay</p>
                 </div>
-                
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="haptic-enabled" />
-                        Haptic feedback
-                    </label>
-                    <p class="setting-description">Vibrate device for tactile feedback on supported devices</p>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="haptic-enabled" />
+                            Haptic feedback
+                        </label>
+                        <p class="setting-description">Vibrate device for tactile feedback on supported devices</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="auto-save" />
+                            Auto-save game
+                        </label>
+                        <p class="setting-description">Automatically save your progress so you can resume later</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="show-points" />
+                            Show block points
+                        </label>
+                        <p class="setting-description">Display point values on each block to help with scoring strategy</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="show-placement-points" />
+                            Show placement points
+                        </label>
+                        <p class="setting-description">Show floating point notifications when placing blocks (can be noisy if enabled)</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="enable-prize-recognition" checked />
+                            Enable prize recognition
+                        </label>
+                        <p class="setting-description">Automatically detect and highlight special prize patterns for bonus points</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="success-mode-enabled" />
+                            Enable success mode
+                        </label>
+                        <p class="setting-description">Show enhanced success animations and effects when achieving combos</p>
+                    </div>
                 </div>
-                
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="auto-save" />
-                        Auto-save game
-                    </label>
-                    <p class="setting-description">Automatically save your progress so you can resume later</p>
-                </div>
-                
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="show-points" />
-                        Show block points
-                    </label>
-                    <p class="setting-description">Display point values on each block to help with scoring strategy</p>
-                </div>
-                
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="show-placement-points" />
-                        Show placement points
-                    </label>
-                    <p class="setting-description">Show floating point notifications when placing blocks (can be noisy if enabled)</p>
-                </div>
-                
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="enable-prize-recognition" checked />
-                        Enable prize recognition
-                    </label>
-                    <p class="setting-description">Automatically detect and highlight special prize patterns for bonus points</p>
-                </div>
-                
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="success-mode-enabled" />
-                        Enable success mode
-                    </label>
-                    <p class="setting-description">Show enhanced success animations and effects when achieving combos</p>
-                </div>
-            </div>
                 
             <!-- Game Modes Section -->
             <div class="game-modes-settings settings-section-container">
@@ -451,16 +452,16 @@
                 </button>
                 <button id="reset-all-difficulties" class="reset-button">
                     Reset All
-                </button>
-            </div>
-            
+                    </button>
+                </div>
+                
             <!-- Toggle for difficulty defaults table -->
             <div class="toggle-container">
                 <button id="toggle-difficulty-defaults" class="toggle-button">
                     <span id="toggle-text">📋 Show Defaults by Difficulty</span>
                     <span id="toggle-arrow" class="toggle-arrow">▼</span>
-                </button>
-            </div>
+                    </button>
+                </div>
             
             <!-- Difficulty defaults table -->
             <div id="difficulty-defaults-table" class="difficulty-defaults-table" style="display: none;">
@@ -482,9 +483,13 @@
             </div>
         </div>
         
-        <div class="settings-nav">
-            <a href="../index.html" class="nav-item back-button">
-                ← Game
+        <!-- Bottom Navigation Buttons -->
+        <div class="navigation-buttons" style="margin-top: 2rem;">
+            <a href="../settings.html" class="back-button">
+                ← Settings
+            </a>
+            <a href="../index.html" class="back-button">
+                Game →
             </a>
         </div>
         
