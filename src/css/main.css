@@ -1046,37 +1046,55 @@ body {
 }
 
 .speed-mode-options {
-    display: grid;
-    gap: 0.75rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .speed-mode-option {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    cursor: pointer;
     padding: 1rem;
-    background: var(--bg-color);
     border: 2px solid var(--border-color);
     border-radius: 8px;
-    cursor: pointer;
+    background: var(--bg-color);
     transition: all 0.3s ease;
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
 }
 
 .speed-mode-option:hover {
     border-color: var(--primary-color);
-    transform: translateX(4px);
+    background: var(--cell-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .speed-mode-option input[type="radio"] {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-    accent-color: var(--primary-color);
+    display: none;
 }
 
-.speed-mode-option input[type="radio"]:checked ~ .speed-mode-label {
-    color: var(--primary-color);
+.speed-mode-option:has(input:checked) {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.speed-mode-option:has(input:checked) .speed-mode-label {
+    color: white;
+}
+
+.speed-mode-option:has(input:checked) .speed-mode-label strong {
+    color: white;
     font-weight: 600;
+}
+
+.speed-mode-option:has(input:checked) .speed-mode-label small {
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .speed-mode-label {
@@ -1090,11 +1108,15 @@ body {
     color: var(--text-color);
     font-size: 1rem;
     transition: color 0.3s ease;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
 }
 
 .speed-mode-label small {
     color: var(--text-muted);
     font-size: 0.85rem;
+    line-height: 1.4;
+    text-align: center;
 }
 
 /* App Management Section */
@@ -2919,11 +2941,13 @@ html.light-theme .settings-section .difficulty-option.selected {
 }
 
 @media (max-width: 768px) {
-    .combo-options {
+    .combo-options,
+    .speed-mode-options {
         flex-direction: column;
     }
     
-    .combo-option {
+    .combo-option,
+    .speed-mode-option {
         min-width: auto;
         padding: 1.25rem;
     }
