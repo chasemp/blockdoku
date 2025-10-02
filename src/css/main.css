@@ -3138,6 +3138,10 @@ html.light-theme .settings-section .difficulty-option.selected {
     font-weight: 600;
 }
 
+.combo-option:has(input:checked) .combo-description {
+    color: rgba(255, 255, 255, 0.9);
+}
+
 .combo-label {
     font-weight: 600;
     color: var(--text-color);
