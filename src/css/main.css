@@ -866,9 +866,10 @@ body {
     font-weight: 600;
 }
 
-/* Settings button styling to match other buttons */
-#settings-toggle {
-    min-width: 50px; /* Narrower to fit gear icon better */
+/* Settings and Game Settings button styling to match other buttons */
+#settings-toggle,
+#game-settings-toggle {
+    min-width: 50px; /* Narrower to fit icons better */
     text-align: center;
     font-weight: 600;
     font-size: 1.2rem;
@@ -3210,7 +3211,8 @@ html.light-theme .settings-section .difficulty-option.selected {
         font-size: 0.8rem;
     }
     
-    #settings-toggle {
+    #settings-toggle,
+    #game-settings-toggle {
         min-width: 40px; /* Narrower for mobile */
         font-size: 1rem;
         padding: 0.4rem;
@@ -3228,7 +3230,8 @@ html.light-theme .settings-section .difficulty-option.selected {
         font-size: 0.85rem;
     }
     
-    #settings-toggle {
+    #settings-toggle,
+    #game-settings-toggle {
         min-width: 45px; /* Narrower for tablet */
         font-size: 1.1rem;
         padding: 0.45rem;
