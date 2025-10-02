@@ -399,12 +399,31 @@
                     </div>
                     
                     <div class="setting-item">
-                        <label for="animation-speed">Animation speed:</label>
-                        <select id="animation-speed" style="margin-left: 0.5rem; padding: 0.25rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color);">
-                            <option value="slow">Slow</option>
-                            <option value="normal" selected>Normal</option>
-                            <option value="fast">Fast</option>
-                        </select>
+                        <h4 style="text-align: center; margin-bottom: 0.5rem;">Animation Speed</h4>
+                        <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0; text-align: center;">Control the speed of visual effects and transitions throughout the game.</p>
+                        <div class="animation-speed-options">
+                            <label class="animation-speed-option">
+                                <input type="radio" name="animation-speed" value="slow" id="animation-speed-slow" />
+                                <span class="animation-speed-label">
+                                    <strong>Slow</strong>
+                                    <small>Relaxed pace for detailed viewing</small>
+                                </span>
+                            </label>
+                            <label class="animation-speed-option">
+                                <input type="radio" name="animation-speed" value="normal" id="animation-speed-normal" checked />
+                                <span class="animation-speed-label">
+                                    <strong>Normal</strong>
+                                    <small>Balanced speed for most players</small>
+                                </span>
+                            </label>
+                            <label class="animation-speed-option">
+                                <input type="radio" name="animation-speed" value="fast" id="animation-speed-fast" />
+                                <span class="animation-speed-label">
+                                    <strong>Fast</strong>
+                                    <small>Quick animations for faster gameplay</small>
+                                </span>
+                            </label>
+                        </div>
                     </div>
                 </div>
                 

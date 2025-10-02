@@ -1119,6 +1119,81 @@ body {
     text-align: center;
 }
 
+/* Animation Speed Options - match speed mode styling */
+.animation-speed-options {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.animation-speed-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    padding: 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-color);
+    transition: all 0.3s ease;
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+}
+
+.animation-speed-option:hover {
+    border-color: var(--primary-color);
+    background: var(--cell-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.animation-speed-option input[type="radio"] {
+    display: none;
+}
+
+.animation-speed-option:has(input:checked) {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.animation-speed-option:has(input:checked) .animation-speed-label {
+    color: white;
+}
+
+.animation-speed-option:has(input:checked) .animation-speed-label strong {
+    color: white;
+    font-weight: 600;
+}
+
+.animation-speed-option:has(input:checked) .animation-speed-label small {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.animation-speed-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    flex: 1;
+}
+
+.animation-speed-label strong {
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: color 0.3s ease;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.animation-speed-label small {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    text-align: center;
+}
+
 /* App Management Section */
 .app-management-section {
     background: var(--card-bg);
@@ -3003,12 +3078,14 @@ html.light-theme .settings-section .difficulty-option.selected {
 
 @media (max-width: 768px) {
     .combo-options,
-    .speed-mode-options {
+    .speed-mode-options,
+    .animation-speed-options {
         flex-direction: column;
     }
     
     .combo-option,
-    .speed-mode-option {
+    .speed-mode-option,
+    .animation-speed-option {
         min-width: auto;
         padding: 1.25rem;
     }
