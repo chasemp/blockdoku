@@ -155,18 +155,6 @@ export class DifficultySettingsManager {
                 hard: "ON for hard",
                 expert: "ON for expert"
             },
-            enablePetrification: {
-                easy: "OFF for easy",
-                normal: "OFF for normal",
-                hard: "OFF for hard",
-                expert: "OFF for expert"
-            },
-            enableDeadPixels: {
-                easy: "OFF for easy",
-                normal: "OFF for normal",
-                hard: "OFF for hard",
-                expert: "OFF for expert"
-            },
             showPersonalBests: {
                 easy: "ON for easy",
                 normal: "OFF for normal",
