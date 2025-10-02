@@ -285,10 +285,15 @@ export class GameSettingsManager {
                 // Save settings
                 this.storage.saveSettings(this.settings);
                 
-                // Update UI
-                this.updateDifficultySelection();
-                this.loadSettings(); // Reload to apply new difficulty settings
-                this.updateUI();
+                    // Update UI
+                    this.updateDifficultySelection();
+                    this.loadSettings(); // Reload to apply new difficulty settings
+                    this.updateUI();
+                    
+                    // Update individual setting bubbles for new difficulty
+                    setTimeout(() => {
+                        this.updateIndividualSettingBubbles();
+                    }, 150);
                 
                 // Notify other pages
                 window.postMessage({
@@ -644,6 +649,107 @@ export class GameSettingsManager {
             const difficulty = option.dataset.difficulty;
             this.updateDifficultyDescription(option, difficulty);
         });
+        
+        // Update individual setting bubbles
+        this.updateIndividualSettingBubbles();
+    }
+    
+    updateIndividualSettingBubbles() {
+        if (!this.difficultyManager) return;
+        
+        // Get comparison bubbles for current difficulty
+        const bubbles = this.difficultyManager.getComparisonBubbles(this.currentDifficulty, this.difficultySettings);
+        
+        // Map setting keys to their HTML element IDs
+        const settingElementMap = {
+            'enableHints': 'enable-hints',
+            'showPoints': 'show-points', 
+            'enableTimer': 'enable-timer',
+            'showPersonalBests': 'show-personal-bests',
+            'showSpeedTimer': 'show-speed-timer',
+            'enablePrizeRecognition': 'enable-prize-recognition',
+            'pieceTimeoutEnabled': 'piece-timeout-enabled'
+        };
+        
+        // Clear existing individual bubbles
+        document.querySelectorAll('.individual-setting-bubble').forEach(bubble => {
+            bubble.remove();
+        });
+        
+        // Add bubbles to individual settings
+        Object.entries(settingElementMap).forEach(([settingKey, elementId]) => {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            // Find the bubble for this setting
+            const bubble = bubbles.find(b => {
+                // Match by setting key or label
+                return this.getSettingKeyForBubble(b.label, b.emoji) === settingKey;
+            });
+            
+            if (bubble) {
+                this.addBubbleToSetting(element, bubble);
+            }
+        });
+        
+        // Handle speed mode separately (it's radio buttons, not checkbox)
+        const speedBubble = bubbles.find(b => b.emoji === '🏃');
+        if (speedBubble) {
+            const speedSection = document.querySelector('#speed-tracking-settings');
+            if (speedSection) {
+                this.addBubbleToSection(speedSection, speedBubble);
+            }
+        }
+    }
+    
+    getSettingKeyForBubble(label, emoji) {
+        const labelMap = {
+            'Hints': 'enableHints',
+            'Points': 'showPoints',
+            'Timer': 'enableTimer', 
+            'Best': 'showPersonalBests',
+            'Speed': 'showSpeedTimer',
+            'Prizes': 'enablePrizeRecognition',
+            'Timeout': 'pieceTimeoutEnabled'
+        };
+        return labelMap[label];
+    }
+    
+    addBubbleToSetting(element, bubble) {
+        // Find the setting item container
+        const settingItem = element.closest('.setting-item');
+        if (!settingItem) return;
+        
+        // Create bubble element
+        const bubbleElement = document.createElement('div');
+        bubbleElement.className = `individual-setting-bubble difficulty-bubble ${bubble.type === 'enabled' ? 'bubble-enabled' : 'bubble-disabled'}`;
+        bubbleElement.innerHTML = `${bubble.emoji} ${bubble.label}`;
+        bubbleElement.style.marginBottom = '0.5rem';
+        bubbleElement.style.alignSelf = 'flex-start';
+        
+        // Insert at the beginning of the setting item
+        settingItem.insertBefore(bubbleElement, settingItem.firstChild);
+    }
+    
+    addBubbleToSection(section, bubble) {
+        // Remove existing section bubble
+        const existingBubble = section.querySelector('.individual-setting-bubble');
+        if (existingBubble) {
+            existingBubble.remove();
+        }
+        
+        // Create bubble element
+        const bubbleElement = document.createElement('div');
+        bubbleElement.className = `individual-setting-bubble difficulty-bubble ${bubble.type === 'enabled' ? 'bubble-enabled' : 'bubble-disabled'}`;
+        bubbleElement.innerHTML = `${bubble.emoji} ${bubble.label}`;
+        bubbleElement.style.marginBottom = '1rem';
+        bubbleElement.style.alignSelf = 'flex-start';
+        
+        // Insert after the heading
+        const heading = section.querySelector('h3');
+        if (heading) {
+            heading.insertAdjacentElement('afterend', bubbleElement);
+        }
     }
     
     resetStatistics() {
@@ -686,6 +792,11 @@ export class GameSettingsManager {
         // Update any UI elements that need refreshing
         this.loadSettings();
         this.updateDifficultySelection();
+        
+        // Update individual setting bubbles
+        setTimeout(() => {
+            this.updateIndividualSettingBubbles();
+        }, 100); // Small delay to ensure difficulty manager is loaded
     }
     
     updateBlockPointsDisplay() {
