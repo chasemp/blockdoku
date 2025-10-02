@@ -235,6 +235,12 @@ body {
     gap: 1rem;
 }
 
+.game-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .app-logo {
     height: 72px; /* 20% bigger than 60px (60 * 1.2 = 72) */
     width: auto;
@@ -1741,6 +1747,10 @@ body {
         gap: 0.75rem;
     }
     
+    .game-controls {
+        gap: 0.4rem;
+    }
+    
     .header h1 {
         font-size: 1.5rem;
     }
@@ -2028,6 +2038,10 @@ body {
     
     .logo-container {
         gap: 0.5rem;
+    }
+    
+    .game-controls {
+        gap: 0.3rem;
     }
     
     .controls {
