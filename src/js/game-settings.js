@@ -327,17 +327,38 @@ export class GameSettingsManager {
                 const DifficultyManager = module.DifficultyManager;
                 this.difficultyManager = new DifficultyManager();
                 
-                // Generate detailed description
-                const detailedDescription = this.difficultyManager.getDetailedDescription(difficulty, this.difficultySettings);
-                descriptionP.innerHTML = detailedDescription.replace(/\n/g, '<br>');
+                // Generate description with bubbles
+                this.renderDifficultyWithBubbles(descriptionP, difficulty);
             }).catch(error => {
                 console.warn('Could not load difficulty manager for descriptions:', error);
             });
         } else {
-            // Generate detailed description
-            const detailedDescription = this.difficultyManager.getDetailedDescription(difficulty, this.difficultySettings);
-            descriptionP.innerHTML = detailedDescription.replace(/\n/g, '<br>');
+            // Generate description with bubbles
+            this.renderDifficultyWithBubbles(descriptionP, difficulty);
         }
+    }
+    
+    renderDifficultyWithBubbles(container, difficulty) {
+        // Get short description
+        const difficultyInfo = this.difficultyManager.difficultySettings[difficulty];
+        const shortDesc = difficultyInfo ? difficultyInfo.shortDescription : '';
+        
+        // Get comparison bubbles
+        const bubbles = this.difficultyManager.getComparisonBubbles(difficulty, this.difficultySettings);
+        
+        // Create HTML with short description and bubbles
+        let html = `<span class="difficulty-short-desc">${shortDesc}</span>`;
+        
+        if (bubbles.length > 0) {
+            html += '<div class="difficulty-bubbles">';
+            bubbles.forEach(bubble => {
+                const bubbleClass = bubble.type === 'enabled' ? 'bubble-enabled' : 'bubble-disabled';
+                html += `<span class="difficulty-bubble ${bubbleClass}">${bubble.emoji} ${bubble.label}</span>`;
+            });
+            html += '</div>';
+        }
+        
+        container.innerHTML = html;
     }
     
     setupComboDisplayListeners() {
@@ -611,6 +632,18 @@ export class GameSettingsManager {
         window.dispatchEvent(new CustomEvent('settingsChanged', {
             detail: { key, value }
         }));
+        
+        // Update difficulty bubbles to reflect user changes
+        this.updateDifficultyBubbles();
+    }
+    
+    updateDifficultyBubbles() {
+        // Refresh all difficulty option bubbles
+        const difficultyOptions = document.querySelectorAll('.difficulty-option');
+        difficultyOptions.forEach(option => {
+            const difficulty = option.dataset.difficulty;
+            this.updateDifficultyDescription(option, difficulty);
+        });
     }
     
     resetStatistics() {
