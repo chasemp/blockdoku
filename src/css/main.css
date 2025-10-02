@@ -2861,6 +2861,37 @@ html.wood-theme .theme-option:hover {
     text-align: center;
     min-height: 44px;
     min-width: 44px;
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-hover) 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+    touch-action: manipulation !important;
+}
+
+.navigation-buttons .back-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.navigation-buttons .back-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    color: white !important;
+    text-decoration: none;
+}
+
+.navigation-buttons .back-button:hover::before {
+    left: 100%;
+}
+
+.navigation-buttons .back-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 768px) {
