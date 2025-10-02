@@ -138,10 +138,10 @@ export class DifficultySettingsManager {
     getSettingNote(settingKey) {
         const notes = {
             enableHints: {
-                easy: "ON for easy (helps beginners learn)",
-                normal: "OFF for normal (no assistance)",
-                hard: "OFF for hard (no assistance)",
-                expert: "OFF for expert (no assistance)"
+                easy: "ON for easy",
+                normal: "OFF for normal",
+                hard: "OFF for hard",
+                expert: "OFF for expert"
             },
             showPoints: {
                 easy: "ON for easy",
@@ -150,10 +150,10 @@ export class DifficultySettingsManager {
                 expert: "OFF for expert (clean interface)"
             },
             enableTimer: {
-                easy: "OFF for easy (no time pressure)",
-                normal: "OFF for normal (no time pressure)",
-                hard: "ON for hard (adds time challenge)",
-                expert: "ON for expert (adds time challenge)"
+                easy: "OFF for easy",
+                normal: "OFF for normal",
+                hard: "ON for hard",
+                expert: "ON for expert"
             },
             enablePetrification: {
                 easy: "OFF for easy",
@@ -168,22 +168,22 @@ export class DifficultySettingsManager {
                 expert: "OFF for expert"
             },
             showPersonalBests: {
-                easy: "ON for easy (shows progress)",
-                normal: "ON for normal (shows progress)",
-                hard: "ON for hard (shows progress)",
-                expert: "ON for expert (shows progress)"
+                easy: "ON for easy",
+                normal: "OFF for normal",
+                hard: "ON for hard",
+                expert: "ON for expert"
             },
             showSpeedTimer: {
-                easy: "OFF for easy (no speed tracking)",
-                normal: "OFF for normal (no speed tracking)",
-                hard: "ON for hard (tracks placement speed)",
-                expert: "ON for expert (tracks placement speed)"
+                easy: "OFF for easy",
+                normal: "OFF for normal",
+                hard: "ON for hard",
+                expert: "ON for expert"
             },
             speedMode: {
-                easy: "BONUS for easy (rewards fast play)",
-                normal: "IGNORED for normal (no speed effects)",
-                hard: "IGNORED for hard (no speed effects)",
-                expert: "PUNISHMENT for expert (penalizes slow play)"
+                easy: "BONUS for easy",
+                normal: "IGNORED for normal",
+                hard: "IGNORED for hard",
+                expert: "PUNISHMENT for expert"
             }
         };
         
