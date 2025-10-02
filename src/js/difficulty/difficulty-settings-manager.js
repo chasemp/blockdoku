@@ -157,7 +157,7 @@ export class DifficultySettingsManager {
             },
             enablePetrification: {
                 easy: "OFF for easy (simpler gameplay)",
-                normal: "OFF for normal (optional challenge)",
+                normal: "OFF for normal",
                 hard: "OFF for hard (optional challenge)",
                 expert: "OFF for expert (optional challenge)"
             },
