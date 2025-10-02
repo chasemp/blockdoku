@@ -309,7 +309,35 @@ export class GameSettingsManager {
             } else {
                 option.classList.remove('selected');
             }
+            
+            // Update description with dynamic defaults
+            this.updateDifficultyDescription(option, difficulty);
         });
+    }
+    
+    updateDifficultyDescription(option, difficulty) {
+        // Find the description paragraph in the option
+        const descriptionP = option.querySelector('p');
+        if (!descriptionP) return;
+        
+        // Get the difficulty manager (we need to create one if it doesn't exist)
+        if (!this.difficultyManager) {
+            // Import and create difficulty manager
+            import('./difficulty/difficulty-manager.js').then(module => {
+                const DifficultyManager = module.DifficultyManager;
+                this.difficultyManager = new DifficultyManager();
+                
+                // Generate detailed description
+                const detailedDescription = this.difficultyManager.getDetailedDescription(difficulty, this.difficultySettings);
+                descriptionP.innerHTML = detailedDescription.replace(/\n/g, '<br>');
+            }).catch(error => {
+                console.warn('Could not load difficulty manager for descriptions:', error);
+            });
+        } else {
+            // Generate detailed description
+            const detailedDescription = this.difficultyManager.getDetailedDescription(difficulty, this.difficultySettings);
+            descriptionP.innerHTML = detailedDescription.replace(/\n/g, '<br>');
+        }
     }
     
     setupComboDisplayListeners() {

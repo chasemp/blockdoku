@@ -100,7 +100,7 @@ export class DifficultySelector {
         name.textContent = difficulty.name;
         
         const description = document.createElement('p');
-        description.textContent = difficulty.description;
+        description.textContent = difficulty.shortDescription || difficulty.description;
         
         const features = document.createElement('div');
         features.className = 'difficulty-features';

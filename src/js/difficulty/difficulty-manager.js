@@ -15,6 +15,7 @@ export class DifficultyManager {
         return {
             easy: {
                 name: 'Easy',
+                shortDescription: 'Larger blocks, slower pace',
                 description: 'Larger blocks, slower pace, hints available',
                 blockSizeRange: [2, 4], // Only 2x2 to 4x4 blocks
                 allowedShapes: ['square2x2', 'square3x3', 'l2x2', 'line2', 'line3'],
@@ -26,6 +27,7 @@ export class DifficultyManager {
             },
             normal: {
                 name: 'Normal',
+                shortDescription: 'Standard block variety, moderate pace',
                 description: 'Standard block variety, moderate pace',
                 blockSizeRange: [1, 5], // 1x1 to 5x5 blocks
                 allowedShapes: 'all', // All available shapes
@@ -37,6 +39,7 @@ export class DifficultyManager {
             },
             hard: {
                 name: 'Hard',
+                shortDescription: 'Smaller blocks, faster pace',
                 description: 'Smaller blocks, faster pace, no hints',
                 blockSizeRange: [1, 3], // 1x1 to 3x3 blocks
                 allowedShapes: ['single', 'line2', 'line3', 'l2x2', 't3x2', 'z3x2'],
@@ -48,6 +51,7 @@ export class DifficultyManager {
             },
             expert: {
                 name: 'Expert',
+                shortDescription: 'Complex shapes, time pressure',
                 description: 'Complex shapes, time pressure, limited moves',
                 blockSizeRange: [1, 4], // 1x1 to 4x4 blocks
                 allowedShapes: 'all', // All available shapes
@@ -59,6 +63,46 @@ export class DifficultyManager {
                 moveLimit: 50 // Limited moves
             }
         };
+    }
+    
+    /**
+     * Generate detailed description with dynamic defaults for game settings page
+     */
+    getDetailedDescription(difficulty, difficultySettingsManager) {
+        const difficultyInfo = this.difficulties[difficulty];
+        if (!difficultyInfo) return '';
+        
+        const shortDesc = difficultyInfo.shortDescription;
+        
+        // Get the actual defaults for this difficulty from the settings manager
+        const defaults = difficultySettingsManager.difficultyDefaults[difficulty];
+        if (!defaults) return shortDesc;
+        
+        // Build list of enabled features
+        const enabledFeatures = [];
+        
+        if (defaults.enableHints) enabledFeatures.push('Enable Hints');
+        if (defaults.showPoints) enabledFeatures.push('Show Block Points');
+        if (defaults.enableTimer) enabledFeatures.push('Enable Timer');
+        if (defaults.enablePetrification) enabledFeatures.push('Enable Petrification');
+        if (defaults.enableDeadPixels) enabledFeatures.push('Enable Dead Pixels');
+        if (defaults.showPersonalBests) enabledFeatures.push('Enable Personal Best');
+        if (defaults.showSpeedTimer) enabledFeatures.push('Show Speed Timer');
+        if (defaults.enablePrizeRecognition) enabledFeatures.push('Enable Prize Recognition');
+        if (defaults.pieceTimeoutEnabled) enabledFeatures.push('Enable Piece Timeout');
+        
+        // Add speed mode if not ignored
+        if (defaults.speedMode && defaults.speedMode !== 'ignored') {
+            const speedModeLabel = defaults.speedMode.charAt(0).toUpperCase() + defaults.speedMode.slice(1);
+            enabledFeatures.push(`Speed Tracking: ${speedModeLabel}`);
+        }
+        
+        // Combine short description with defaults
+        if (enabledFeatures.length > 0) {
+            return `${shortDesc}\nDefaults: ${enabledFeatures.join(', ')}`;
+        } else {
+            return `${shortDesc}\nDefaults: None`;
+        }
     }
     
     initializeGameRules() {
