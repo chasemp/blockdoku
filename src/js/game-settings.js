@@ -50,8 +50,6 @@ export class GameSettingsManager {
         // Load utility bar settings
         this.loadUtilityBarSettings();
         
-        // Update difficulty notes in UI
-        this.updateDifficultyNotes();
     }
     
     loadComboDisplaySettings() {
@@ -812,51 +810,6 @@ export class GameSettingsManager {
         });
     }
     
-    updateDifficultyNotes() {
-        const difficultyNotes = {
-            'enable-hints': this.difficultySettings.getSettingNote('enableHints'),
-            'show-points': this.difficultySettings.getSettingNote('showPoints'),
-            'enable-timer': this.difficultySettings.getSettingNote('enableTimer'),
-            'enable-petrification': this.difficultySettings.getSettingNote('enablePetrification'),
-            'enable-dead-pixels': this.difficultySettings.getSettingNote('enableDeadPixels'),
-            'show-personal-bests': this.difficultySettings.getSettingNote('showPersonalBests'),
-            'show-speed-timer': this.difficultySettings.getSettingNote('showSpeedTimer'),
-            'speed-mode-bonus': this.difficultySettings.getSettingNote('speedMode'),
-            'speed-mode-punishment': this.difficultySettings.getSettingNote('speedMode'),
-            'speed-mode-ignored': this.difficultySettings.getSettingNote('speedMode')
-        };
-        
-        Object.entries(difficultyNotes).forEach(([settingId, notes]) => {
-            const settingItem = document.querySelector(`#${settingId}`)?.closest('.setting-item');
-            if (settingItem) {
-                // Remove existing note
-                const existingNote = settingItem.querySelector('.difficulty-note');
-                if (existingNote) {
-                    existingNote.remove();
-                }
-                
-                // Add new note
-                const currentNote = notes[this.currentDifficulty];
-                if (currentNote) {
-                    const noteElement = document.createElement('div');
-                    noteElement.className = 'difficulty-note';
-                    noteElement.textContent = currentNote;
-                    noteElement.style.fontSize = '0.8rem';
-                    noteElement.style.color = 'var(--text-muted)';
-                    noteElement.style.fontStyle = 'italic';
-                    noteElement.style.marginTop = '0.25rem';
-                    
-                    const description = settingItem.querySelector('.setting-description');
-                    if (description) {
-                        description.appendChild(noteElement);
-                    }
-                }
-            }
-        });
-        
-        // Update the current difficulty text in the reset button
-        this.updateCurrentDifficultyText();
-    }
     
     updateCurrentDifficultyText() {
         const currentDifficultyText = document.getElementById('current-difficulty-text');
