@@ -802,6 +802,7 @@ export class GameSettingsManager {
             { key: 'showPersonalBests', name: 'Show Personal Bests', description: 'Display progress in utility bar' },
             { key: 'showSpeedTimer', name: 'Show Speed Timer', description: 'Track placement speed' },
             { key: 'speedMode', name: 'Speed Tracking Mode', description: 'How speed affects scoring' },
+            { key: 'enablePrizeRecognition', name: 'Enable Prize Recognition', description: 'Recognize and celebrate achievements' },
             { key: 'pieceTimeoutEnabled', name: 'Enable Piece Timeout', description: 'Auto-end game when pieces timeout' },
             { key: 'animationsEnabled', name: 'Animations', description: 'Visual effects and transitions' },
             { key: 'soundEnabled', name: 'Sound Effects', description: 'Audio feedback' }
