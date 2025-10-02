@@ -109,6 +109,64 @@ export class DifficultyManager {
         }
     }
     
+    /**
+     * Generate comparison bubbles showing differences from Normal difficulty
+     * Uses actual effective settings (defaults + user overrides)
+     */
+    getComparisonBubbles(difficulty, difficultySettingsManager) {
+        if (!difficultySettingsManager || !difficultySettingsManager.difficultyDefaults) {
+            return [];
+        }
+        
+        // Get effective settings (defaults + user overrides) for both difficulties
+        const normalSettings = difficultySettingsManager.getSettingsForDifficulty('normal');
+        const currentSettings = difficultySettingsManager.getSettingsForDifficulty(difficulty);
+        
+        if (!normalSettings || !currentSettings || difficulty === 'normal') {
+            return [];
+        }
+        
+        const bubbles = [];
+        
+        // Define the settings we want to show bubbles for (short labels)
+        const settingsToCompare = [
+            { key: 'enableHints', label: 'Hints', emoji: '💡' },
+            { key: 'showPoints', label: 'Points', emoji: '🔢' },
+            { key: 'enableTimer', label: 'Timer', emoji: '⏱️' },
+            { key: 'showPersonalBests', label: 'Best', emoji: '🏆' },
+            { key: 'showSpeedTimer', label: 'Speed', emoji: '⚡' },
+            { key: 'enablePrizeRecognition', label: 'Prizes', emoji: '🎉' },
+            { key: 'pieceTimeoutEnabled', label: 'Timeout', emoji: '⏰' }
+        ];
+        
+        // Special handling for speed mode
+        if (currentSettings.speedMode !== normalSettings.speedMode) {
+            const speedModeLabel = currentSettings.speedMode === 'bonus' ? 'Bonus' : 
+                                   currentSettings.speedMode === 'punishment' ? 'Punish' : 'Speed';
+            bubbles.push({
+                type: currentSettings.speedMode === 'ignored' ? 'disabled' : 'enabled',
+                label: speedModeLabel,
+                emoji: '🏃'
+            });
+        }
+        
+        // Compare each setting with normal
+        settingsToCompare.forEach(setting => {
+            const normalValue = normalSettings[setting.key];
+            const currentValue = currentSettings[setting.key];
+            
+            if (normalValue !== currentValue) {
+                bubbles.push({
+                    type: currentValue ? 'enabled' : 'disabled',
+                    label: setting.label,
+                    emoji: setting.emoji
+                });
+            }
+        });
+        
+        return bubbles;
+    }
+    
     initializeGameRules() {
         return {
             // Base scoring values

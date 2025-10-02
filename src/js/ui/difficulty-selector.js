@@ -105,25 +105,12 @@ export class DifficultySelector {
         const features = document.createElement('div');
         features.className = 'difficulty-features';
         
-        if (difficulty.hintsEnabled) {
+        // Only show hints bubble for Easy difficulty in modal
+        if (difficulty.key === 'easy' && difficulty.hintsEnabled) {
             const hintFeature = document.createElement('span');
             hintFeature.className = 'feature hint';
-            hintFeature.textContent = 'Hints';
+            hintFeature.textContent = '💡 Hints';
             features.appendChild(hintFeature);
-        }
-        
-        if (difficulty.undoEnabled) {
-            const undoFeature = document.createElement('span');
-            undoFeature.className = 'feature undo';
-            undoFeature.textContent = 'Undo';
-            features.appendChild(undoFeature);
-        }
-        
-        if (difficulty.timeLimit) {
-            const timerFeature = document.createElement('span');
-            timerFeature.className = 'feature timer';
-            timerFeature.textContent = 'Timer';
-            features.appendChild(timerFeature);
         }
         
         if (difficulty.moveLimit) {
