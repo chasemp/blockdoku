@@ -23,7 +23,8 @@ export class DifficultySettingsManager {
                 speedMode: 'bonus',
                 animationsEnabled: true,
                 soundEnabled: false,
-                pieceTimeoutEnabled: false
+                pieceTimeoutEnabled: false,
+                enablePrizeRecognition: true
             },
             normal: {
                 enableHints: false,
@@ -31,12 +32,13 @@ export class DifficultySettingsManager {
                 enableTimer: false,
                 enablePetrification: false,
                 enableDeadPixels: false,
-                showPersonalBests: true,
+                showPersonalBests: false,
                 showSpeedTimer: false,
                 speedMode: 'ignored',
                 animationsEnabled: true,
                 soundEnabled: false,
-                pieceTimeoutEnabled: false
+                pieceTimeoutEnabled: false,
+                enablePrizeRecognition: false
             },
             hard: {
                 enableHints: false,
@@ -49,7 +51,8 @@ export class DifficultySettingsManager {
                 speedMode: 'ignored',
                 animationsEnabled: true,
                 soundEnabled: false,
-                pieceTimeoutEnabled: false
+                pieceTimeoutEnabled: false,
+                enablePrizeRecognition: false
             },
             expert: {
                 enableHints: false,
@@ -62,7 +65,8 @@ export class DifficultySettingsManager {
                 speedMode: 'punishment',
                 animationsEnabled: true,
                 soundEnabled: false,
-                pieceTimeoutEnabled: false
+                pieceTimeoutEnabled: false,
+                enablePrizeRecognition: false
             }
         };
     }
