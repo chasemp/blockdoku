@@ -734,8 +734,11 @@ export class GameSettingsManager {
         const toggleText = document.getElementById('toggle-text');
         const toggleArrow = document.getElementById('toggle-arrow');
         
+        // Link from Utility Bar section to difficulty defaults
+        const viewDefaultsLink = document.getElementById('view-difficulty-defaults-link');
+        
         if (toggleDefaultsBtn && defaultsTable && toggleText && toggleArrow) {
-            toggleDefaultsBtn.addEventListener('click', () => {
+            const toggleTable = () => {
                 const isVisible = defaultsTable.style.display !== 'none';
                 
                 if (isVisible) {
@@ -749,8 +752,36 @@ export class GameSettingsManager {
                     
                     // Populate the table if it's empty
                     this.populateDifficultyDefaultsTable();
+                    
+                    // Scroll to the table
+                    setTimeout(() => {
+                        defaultsTable.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                    }, 100);
                 }
-            });
+            };
+            
+            toggleDefaultsBtn.addEventListener('click', toggleTable);
+            
+            // Add event listener for the utility bar link
+            if (viewDefaultsLink) {
+                viewDefaultsLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // If table is hidden, show it
+                    if (defaultsTable.style.display === 'none') {
+                        toggleTable();
+                    } else {
+                        // If already visible, just scroll to it
+                        defaultsTable.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                    }
+                });
+            }
         }
     }
     
