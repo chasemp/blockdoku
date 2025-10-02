@@ -144,7 +144,7 @@ export class DifficultySettingsManager {
                 expert: "OFF for expert (no assistance)"
             },
             showPoints: {
-                easy: "ON for easy (helps with strategy)",
+                easy: "ON for easy",
                 normal: "OFF for normal (clean interface)",
                 hard: "OFF for hard (clean interface)",
                 expert: "OFF for expert (clean interface)"
