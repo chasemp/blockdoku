@@ -235,6 +235,7 @@ class BlockdokuGame {
         
         // Initialize timer system for current difficulty
         this.timerSystem.initialize();
+        this.timerSystem.start();
         
         // Wait for DOM to be fully ready before sizing and drawing
         setTimeout(() => {
@@ -1820,6 +1821,11 @@ class BlockdokuGame {
         
         // Stop speed timer countdown
         this.stopSpeedTimerCountdown();
+        
+        // Reset and restart timer system for new game
+        this.timerSystem.reset();
+        this.timerSystem.start();
+        
         this.isInitialized = true;
         // Load combo display mode from settings
         const settings = this.storage.loadSettings();
