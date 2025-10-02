@@ -3341,9 +3341,9 @@ html.light-theme .settings-section .difficulty-option.selected {
 }
 
 .reset-stats-button {
-    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-hover) 100%);
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
     color: white;
-    border: 1px solid var(--border-color);
+    border: 1px solid #d4491f;
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
     font-size: 1rem;
@@ -3355,8 +3355,8 @@ html.light-theme .settings-section .difficulty-option.selected {
     justify-content: center;
     gap: 0.5rem;
     width: 100%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
     position: relative;
     overflow: hidden;
 }
@@ -3377,15 +3377,15 @@ html.light-theme .settings-section .difficulty-option.selected {
 }
 
 .reset-stats-button:hover {
-    background: linear-gradient(135deg, var(--secondary-hover) 0%, var(--secondary-color) 100%);
-    border-color: var(--primary-color);
+    background: linear-gradient(135deg, #e55a2b 0%, #cc4a1f 100%);
+    border-color: #b8401a;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
 
 .reset-stats-button:active {
     transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4);
 }
 
 .reset-text {

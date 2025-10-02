@@ -523,14 +523,13 @@ export class GameSettingsManager {
     setupResetStatisticsListener() {
         const resetStatsButton = document.getElementById('reset-stats');
         if (resetStatsButton) {
-            resetStatsButton.addEventListener('click', () => {
-                this.confirmationDialog.show(
-                    'Reset Statistics',
-                    'Are you sure you want to reset all your game statistics? This action cannot be undone.',
-                    () => {
-                        this.resetStatistics();
-                    }
+            resetStatsButton.addEventListener('click', async () => {
+                const confirmed = await this.confirmationDialog.show(
+                    '⚠️ PERMANENT DATA LOSS WARNING ⚠️\n\nThis will permanently delete ALL your game data:\n• All high scores for all difficulty levels\n• All game statistics (games played, totals, combos)\n• All personal best records\n• All play time data\n\nYour game settings and preferences will NOT be affected.\n\nThis action CANNOT be undone. Are you absolutely sure you want to continue?'
                 );
+                if (!confirmed) return;
+                
+                this.resetStatistics();
             });
         }
     }
@@ -584,23 +583,12 @@ export class GameSettingsManager {
     }
     
     resetStatistics() {
-        // Reset all statistics
-        const resetData = {
-            highScores: {},
-            personalBests: {},
-            totalGamesPlayed: 0,
-            totalScore: 0,
-            totalLinesCleared: 0,
-            totalCombos: 0,
-            maxComboStreak: 0,
-            totalPlayTime: 0
-        };
-        
-        // Save reset statistics
-        this.storage.saveStatistics(resetData);
+        // Clear all statistics and high scores
+        this.storage.clearStatistics();
+        this.storage.clearHighScores();
         
         // Show success message
-        this.showNotification('Statistics reset successfully!');
+        this.showNotification('All statistics and high scores have been permanently deleted');
     }
     
     showNotification(message) {

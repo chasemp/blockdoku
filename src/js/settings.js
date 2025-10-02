@@ -594,15 +594,20 @@ export class SettingsManager {
         if (resetStatsBtn) {
             resetStatsBtn.addEventListener('click', async () => {
                 const confirmed = await this.confirmationDialog.show(
-                    'This will permanently delete your game statistics (games played, totals, best score). Your high scores and settings will not be affected. Continue?'
+                    '⚠️ PERMANENT DATA LOSS WARNING ⚠️\n\nThis will permanently delete ALL your game data:\n• All high scores for all difficulty levels\n• All game statistics (games played, totals, combos)\n• All personal best records\n• All play time data\n\nYour game settings and preferences will NOT be affected.\n\nThis action CANNOT be undone. Are you absolutely sure you want to continue?'
                 );
                 if (!confirmed) return;
+                
+                // Clear all statistics and high scores
                 this.storage.clearStatistics();
+                this.storage.clearHighScores();
+                
                 // Refresh stats section if visible
                 try {
                     this.loadHighScores();
                 } catch {}
-                this.showNotification('Statistics reset');
+                
+                this.showNotification('All statistics and high scores have been permanently deleted');
             });
         }
     }
