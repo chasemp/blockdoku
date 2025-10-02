@@ -167,9 +167,10 @@ export class GameSettingsManager {
         });
         
         // Animation speed
-        const animationSpeedSelect = document.getElementById('animation-speed');
-        if (animationSpeedSelect) {
-            animationSpeedSelect.value = this.settings.animationSpeed || 'normal';
+        const animationSpeed = this.settings.animationSpeed || 'normal';
+        const animationSpeedRadio = document.getElementById(`animation-speed-${animationSpeed}`);
+        if (animationSpeedRadio) {
+            animationSpeedRadio.checked = true;
         }
     }
     
@@ -469,12 +470,14 @@ export class GameSettingsManager {
         });
         
         // Animation speed
-        const animationSpeedSelect = document.getElementById('animation-speed');
-        if (animationSpeedSelect) {
-            animationSpeedSelect.addEventListener('change', () => {
-                this.saveSetting('animationSpeed', animationSpeedSelect.value);
+        const animationSpeedRadios = document.querySelectorAll('input[name="animation-speed"]');
+        animationSpeedRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (radio.checked) {
+                    this.saveSetting('animationSpeed', radio.value);
+                }
             });
-        }
+        });
     }
     
     setupAdditionalSettingsListeners() {
