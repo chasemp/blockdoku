@@ -241,6 +241,16 @@ export class GameStorage {
         }
     }
 
+    clearHighScores() {
+        try {
+            localStorage.removeItem(this.highScoresKey);
+            return true;
+        } catch (error) {
+            console.error('Failed to clear high scores:', error);
+            return false;
+        }
+    }
+
     getStorageSize() {
         try {
             let totalSize = 0;
