@@ -409,6 +409,28 @@ class BlockdokuGame {
             console.error('Settings toggle button not found!');
         }
         
+        // Game Settings button
+        const gameSettingsToggle = document.getElementById('game-settings-toggle');
+        if (gameSettingsToggle) {
+            const handleGameSettingsClick = () => {
+                this.effectsManager.onButtonClick();
+                console.log('Game Settings button clicked - navigating to game settings page');
+                
+                // Navigate to game settings page
+                // The game settings page contains: utility bar settings, game modes,
+                // speed tracking, difficulty selector, animation controls, etc.
+                window.location.href = 'gamesettings.html';
+            };
+            
+            gameSettingsToggle.addEventListener('click', handleGameSettingsClick);
+            gameSettingsToggle.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                handleGameSettingsClick();
+            }, { passive: false });
+        } else {
+            console.error('Game Settings toggle button not found!');
+        }
+        
         const newGameBtn = document.getElementById('new-game');
         if (newGameBtn) {
             const handleNewGameClick = () => {
