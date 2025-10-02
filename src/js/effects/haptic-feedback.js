@@ -42,11 +42,20 @@ export class HapticFeedback {
             document.removeEventListener('click', enableHaptic);
             document.removeEventListener('touchstart', enableHaptic);
             document.removeEventListener('keydown', enableHaptic);
+            document.removeEventListener('pointerdown', enableHaptic);
         };
         
-        document.addEventListener('click', enableHaptic, { once: true });
-        document.addEventListener('touchstart', enableHaptic, { once: true });
-        document.addEventListener('keydown', enableHaptic, { once: true });
+        // Use multiple event types to catch user interaction
+        document.addEventListener('click', enableHaptic, { once: true, passive: true });
+        document.addEventListener('touchstart', enableHaptic, { once: true, passive: true });
+        document.addEventListener('keydown', enableHaptic, { once: true, passive: true });
+        document.addEventListener('pointerdown', enableHaptic, { once: true, passive: true });
+        
+        // Also check if user has already interacted (for late initialization)
+        if (document.visibilityState === 'visible' && document.hasFocus && document.hasFocus()) {
+            // If document has focus, user likely already interacted
+            // But we'll still wait for explicit interaction to be safe
+        }
     }
     
     // Enable/disable haptic feedback
@@ -61,7 +70,10 @@ export class HapticFeedback {
     
     // Trigger haptic feedback
     vibrate(pattern) {
-        if (!this.isEnabled || !this.isSupported || !this.userHasInteracted) return;
+        // Early return if not enabled, supported, or user hasn't interacted
+        if (!this.isEnabled || !this.isSupported || !this.userHasInteracted) {
+            return;
+        }
         
         // Throttle vibrations to prevent loops
         const now = Date.now();
@@ -74,10 +86,17 @@ export class HapticFeedback {
                 pattern = this.vibrationPatterns[pattern] || [10];
             }
             
-            navigator.vibrate(pattern);
-            this.lastVibrationTime = now;
+            // Additional check before calling navigator.vibrate to prevent browser warnings
+            if (navigator.vibrate && typeof navigator.vibrate === 'function') {
+                navigator.vibrate(pattern);
+                this.lastVibrationTime = now;
+            }
         } catch (error) {
-            console.warn('Haptic feedback error:', error);
+            // Silently handle errors to prevent console spam
+            // Only log if it's not the common user interaction error
+            if (!error.message.includes('user hasn\'t tapped') && !error.message.includes('user activation')) {
+                console.warn('Haptic feedback error:', error);
+            }
         }
     }
     

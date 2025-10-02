@@ -126,7 +126,10 @@ export class EffectsManager {
         if (this.settings.sound) this.sound.play('buttonClick');
         // Enable haptic feedback after first user interaction
         this.haptic.enableAfterInteraction();
-        this.haptic.onButtonClick();
+        // Small delay to ensure user interaction is registered
+        setTimeout(() => {
+            this.haptic.onButtonClick();
+        }, 10);
     }
     
     // Block rotation effects
