@@ -752,4 +752,313 @@ if (__DEV__) {
 
 ---
 
+### 🎯 **Dynamic Content Generation & Single Source of Truth**
+
+#### **The Problem: Static Descriptions vs Dynamic Reality**
+During development, we had static difficulty descriptions that didn't match the actual settings:
+```html
+<!-- ❌ STATIC: Gets out of sync with actual settings -->
+<p>Larger blocks, slower pace, hints available</p>
+```
+
+#### **The Solution: Dynamic Generation from Actual Configuration**
+```javascript
+// ✅ DYNAMIC: Always reflects actual settings
+getDetailedDescription(difficulty, difficultySettingsManager) {
+    const defaults = difficultySettingsManager.difficultyDefaults[difficulty];
+    const enabledFeatures = [];
+    
+    if (defaults.enableHints) enabledFeatures.push('Enable Hints');
+    if (defaults.showPoints) enabledFeatures.push('Show Block Points');
+    // ... build from actual configuration
+    
+    return `${shortDesc}\nDefaults: ${enabledFeatures.join(', ')}`;
+}
+```
+
+#### **Key Insights**
+1. **Never maintain duplicate lists** - generate from the authoritative source
+2. **Differentiate contexts** - modal (brief) vs settings page (detailed)
+3. **Dynamic updates** - descriptions change when configuration changes
+4. **Single source of truth** - all descriptions come from actual settings manager
+
+#### **Pattern for Future Projects**
+```javascript
+// Configuration-driven UI pattern
+class UIDescriptionGenerator {
+    generateDescription(context, configSource) {
+        const config = configSource.getActualConfig();
+        
+        switch(context) {
+            case 'modal': return this.generateBrief(config);
+            case 'settings': return this.generateDetailed(config);
+            case 'help': return this.generateExplanatory(config);
+        }
+    }
+}
+```
+
+---
+
+### 🔄 **Regression Testing & MCP Playwright Integration**
+
+#### **The Problem: Recurring Theme and Navigation Issues**
+We repeatedly fixed the same issues:
+- Theme not working on one page or another
+- Back buttons breaking between pages
+- Settings not syncing across pages
+- Default theme inconsistency
+
+#### **The Solution: Automated Regression Testing**
+```bash
+# Pre-commit regression tests prevent recurring issues
+npm run test:critical  # Runs before every commit
+npm run test:catalog   # View all available test scenarios
+npm run test:e2e       # Human-readable test instructions
+```
+
+#### **MCP Playwright Testing Strategy**
+**Catalog-Based Testing:**
+```javascript
+// tests/e2e/catalog.json
+{
+    "theme-switching": {
+        "description": "Test theme switching across all pages",
+        "steps": [
+            "Navigate to settings page",
+            "Change theme to light",
+            "Navigate to game settings",
+            "Verify light theme is active",
+            "Navigate back to main game",
+            "Verify light theme persists"
+        ]
+    }
+}
+```
+
+**Key Benefits:**
+- **Human-readable**: Anyone can understand and execute tests
+- **Comprehensive**: Covers all critical functionality
+- **Automated**: Runs on every commit
+- **Regression-focused**: Specifically tests previously broken scenarios
+
+#### **Testing Lessons**
+1. **Test user workflows, not implementation details**
+2. **Focus on previously broken scenarios** (regression tests)
+3. **Make tests human-readable** for team collaboration
+4. **Automate critical tests** to run pre-commit
+5. **Test cross-page interactions** explicitly
+
+---
+
+### 🏗️ **Container Structure & Page Architecture**
+
+#### **The Problem: Over-Nested Containers**
+```html
+<!-- ❌ TOO NESTED: Hard to read and style -->
+<div class="settings-section">
+    <div class="game-section">
+        <div class="speed-tracking-container">
+            <div class="speed-options">
+                <!-- Content buried 4 levels deep -->
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+#### **The Solution: Flattened Structure with Semantic Containers**
+```html
+<!-- ✅ FLATTENED: Each section is a top-level container -->
+<div class="settings-section-container" id="utility-bar-settings">
+    <h3>Utility Bar</h3>
+    <!-- Direct content, no unnecessary nesting -->
+</div>
+
+<div class="settings-section-container" id="speed-tracking-settings">
+    <h3>Speed Tracking</h3>
+    <!-- Each major section gets its own container -->
+</div>
+```
+
+#### **Container Architecture Principles**
+1. **Semantic containers**: Each major feature gets its own container
+2. **Minimal nesting**: Avoid containers inside containers unless necessary
+3. **Consistent styling**: Use `.settings-section-container` for uniform appearance
+4. **Readable structure**: HTML should be scannable and logical
+
+#### **CSS Strategy for Containers**
+```css
+/* Consistent container styling */
+.settings-section-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.settings-section-container h3 {
+    text-align: center;
+    margin: 0 0 1rem 0;
+}
+```
+
+---
+
+### 🎨 **Button Styling Consistency & Radio Button Patterns**
+
+#### **The Problem: Inconsistent Selection UI**
+Different sections used different patterns for selections:
+- Dropdowns for some options
+- Radio buttons (visible) for others  
+- Toggle buttons for others
+
+#### **The Solution: Consistent Button-Style Selection**
+```css
+/* Hide radio buttons, style labels as buttons */
+.speed-mode-option input[type="radio"] {
+    display: none;
+}
+
+.speed-mode-option {
+    cursor: pointer;
+    padding: 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.speed-mode-option:has(input:checked) {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    color: white;
+}
+```
+
+#### **Pattern for Consistent Selections**
+1. **Hide native form elements** (`display: none`)
+2. **Style containers as buttons** with hover/selected states
+3. **Use `:has()` pseudo-class** for modern selection styling
+4. **Consistent spacing and transitions** across all selection types
+5. **Theme-aware colors** using CSS custom properties
+
+#### **Benefits**
+- **Visual consistency** across all selection types
+- **Better mobile experience** with larger touch targets
+- **Theme integration** using CSS variables
+- **Modern styling** without JavaScript complexity
+
+---
+
+### 📱 **Navigation Button Standardization**
+
+#### **The Problem: Inconsistent Navigation Styling**
+Navigation buttons had different sizes, colors, and positioning across pages.
+
+#### **The Solution: Standardized Navigation System**
+```html
+<!-- Consistent navigation pattern -->
+<div class="navigation-buttons">
+    <a href="../settings.html" class="back-button">← Settings</a>
+    <a href="../index.html" class="back-button">Game →</a>
+</div>
+```
+
+```css
+/* Standardized navigation styling */
+.navigation-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 1.5rem 0;
+}
+
+.navigation-buttons .back-button {
+    min-width: 140px;
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-hover) 100%);
+    color: white;
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+```
+
+#### **Navigation Principles**
+1. **Consistent placement**: Top and/or bottom of pages
+2. **Standardized styling**: Same colors, sizes, spacing
+3. **Clear labeling**: "← Settings", "Game →" (directional and descriptive)
+4. **Responsive design**: Stack vertically on mobile
+5. **Theme integration**: Use CSS custom properties
+
+---
+
+### 🎯 **Settings Management & User Preferences**
+
+#### **The Problem: Difficulty-Based Defaults vs User Overrides**
+Users wanted different defaults per difficulty level, but also wanted their custom changes to persist.
+
+#### **The Solution: Layered Settings Architecture**
+```javascript
+class DifficultySettingsManager {
+    // Base defaults per difficulty
+    difficultyDefaults = {
+        easy: { enableHints: true, showPoints: true },
+        normal: { enableHints: false, showPoints: false }
+    };
+    
+    // User overrides per difficulty
+    getUserSettings(difficulty) {
+        const defaults = this.difficultyDefaults[difficulty];
+        const userOverrides = this.storage.getDifficultyOverrides(difficulty);
+        return { ...defaults, ...userOverrides };
+    }
+    
+    // Save user changes as overrides
+    saveUserSetting(difficulty, setting, value) {
+        const overrides = this.storage.getDifficultyOverrides(difficulty) || {};
+        overrides[setting] = value;
+        this.storage.saveDifficultyOverrides(difficulty, overrides);
+    }
+}
+```
+
+#### **Key Patterns**
+1. **Layered configuration**: Defaults + User Overrides
+2. **Per-difficulty persistence**: Each difficulty remembers user changes
+3. **Reset functionality**: Can reset to defaults per difficulty or globally
+4. **Transparent to UI**: Settings components don't need to know about layering
+
+---
+
+### 💡 **Key Takeaways from Recent Development**
+
+#### **Architecture Lessons**
+- **Single source of truth**: Generate UI from actual configuration, never maintain duplicates
+- **Flattened containers**: Avoid unnecessary nesting, use semantic containers
+- **Consistent patterns**: Standardize button styling, navigation, and selection UI
+- **Layered settings**: Support both defaults and user overrides elegantly
+
+#### **Testing Lessons**  
+- **Regression-focused**: Test previously broken scenarios explicitly
+- **Cross-page testing**: Theme and navigation issues span multiple pages
+- **Human-readable tests**: Make tests understandable to the whole team
+- **Pre-commit automation**: Catch issues before they reach production
+
+#### **UI/UX Lessons**
+- **Context-aware descriptions**: Brief for modals, detailed for settings
+- **Visual consistency**: Same styling patterns across all selection types
+- **Navigation clarity**: Clear, directional button labels
+- **Mobile-first**: Always consider touch targets and responsive design
+
+#### **Development Process Lessons**
+- **Dynamic generation**: Build UI from configuration, not static content
+- **Container architecture**: Plan page structure for readability and maintainability
+- **Theme integration**: Use CSS custom properties consistently
+- **User preference persistence**: Layer defaults and overrides thoughtfully
+
+---
+
 *This document was created during the development of Blockdoku PWA and should be updated with new lessons learned from future projects.*
