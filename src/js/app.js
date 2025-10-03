@@ -933,14 +933,18 @@ class BlockdokuGame {
         // Check if key CSS variables are available
         const testVar = getComputedStyle(document.documentElement).getPropertyValue('--clear-glow-color').trim();
         if (!testVar) {
-            console.warn(`Theme CSS not fully loaded for ${this.currentTheme}, using fallback colors`);
+            console.log(`Theme CSS still loading for ${this.currentTheme}, fallback colors active`);
             // Force a small delay and retry
             setTimeout(() => {
                 const retryVar = getComputedStyle(document.documentElement).getPropertyValue('--clear-glow-color').trim();
                 if (retryVar) {
-                    console.log(`Theme CSS loaded successfully after delay for ${this.currentTheme}`);
+                    console.log(`✅ Theme CSS fully loaded for ${this.currentTheme}`);
+                } else {
+                    console.warn(`⚠️ Theme CSS failed to load properly for ${this.currentTheme}`);
                 }
             }, 100);
+        } else {
+            console.log(`✅ Theme CSS ready for ${this.currentTheme}`);
         }
     }
     
@@ -1374,23 +1378,12 @@ class BlockdokuGame {
             this.scoringSystem.squaresClearedCount += clearedLines.squares.length;
             this.scoringSystem.linesCleared += totalClears;
             
-            // Update combo
-            if (scoreInfo.isComboEvent) {
-                this.scoringSystem.combo++;
-                this.scoringSystem.maxCombo = Math.max(this.scoringSystem.maxCombo, this.scoringSystem.combo);
-                this.scoringSystem.totalCombos++;
-                this.scoringSystem.maxTotalCombos = Math.max(this.scoringSystem.maxTotalCombos, this.scoringSystem.totalCombos);
-                this.scoringSystem.comboActivations++;
-                
-                // Update streak count for consecutive combos
-                this.scoringSystem.streakCount++;
-                this.scoringSystem.maxStreakCount = Math.max(this.scoringSystem.maxStreakCount, this.scoringSystem.streakCount);
-            } else {
-                this.scoringSystem.combo = 0;
-            }
-            
-            // Points breakdown is now handled by the ScoringSystem.calculateScore method
-            // No need to duplicate the logic here
+            // Combo tracking is already handled by ScoringSystem.applyClears()
+            // No need to duplicate the logic here - the scoring system maintains:
+            // - combo (streak counter, resets on non-combo)
+            // - totalCombos (cumulative, never resets during gameplay)
+            // - streakCount (consecutive combo streak)
+            // - maxCombo, maxTotalCombos, maxStreakCount, comboActivations
         }
         
         // Store the result for later use in completeLineClear
@@ -2875,16 +2868,13 @@ class BlockdokuGame {
                 localStorage.removeItem('blockdoku_pending_difficulty');
             }
             
-            // Apply loaded theme
+            // Apply loaded theme (verifyThemeLoaded is now called automatically within applyTheme)
             this.applyTheme(this.currentTheme);
             
             // Apply piece timeout setting to BlockPalette
             if (this.blockPalette && this.blockPalette.setPieceTimeoutEnabled) {
                 this.blockPalette.setPieceTimeoutEnabled(this.pieceTimeoutEnabled);
             }
-            
-            // Verify theme CSS is loaded by checking for a key CSS variable
-            this.verifyThemeLoaded();
             
             // Ensure theme is applied after DOM is ready
             if (document.readyState === 'loading') {
@@ -2989,16 +2979,30 @@ class BlockdokuGame {
                 l.disabled = true;
             });
             
-            // Enable the correct built theme link
+            // Enable the correct built theme link and wait for it to load
+            let activeLink = null;
             if (theme === 'wood' && builtWoodLinks.length > 0) {
-                builtWoodLinks[0].disabled = false;
+                activeLink = builtWoodLinks[0];
+                activeLink.disabled = false;
                 console.log('App.js enabled built wood theme');
             } else if (theme === 'light' && builtLightLinks.length > 0) {
-                builtLightLinks[0].disabled = false;
+                activeLink = builtLightLinks[0];
+                activeLink.disabled = false;
                 console.log('App.js enabled built light theme');
             } else if (theme === 'dark' && builtDarkLinks.length > 0) {
-                builtDarkLinks[0].disabled = false;
+                activeLink = builtDarkLinks[0];
+                activeLink.disabled = false;
                 console.log('App.js enabled built dark theme');
+            }
+            
+            // Wait for stylesheet to load before verifying theme
+            if (activeLink) {
+                // Use requestAnimationFrame to ensure the stylesheet is applied
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        this.verifyThemeLoaded();
+                    });
+                });
             }
         } catch (e) {
             console.log('Error managing built theme links:', e);
