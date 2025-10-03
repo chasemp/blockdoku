@@ -156,7 +156,7 @@ export class DifficultyManager {
             { key: 'showSpeedTimer', label: 'Speed', emoji: '⚡' },
             { key: 'enablePrizeRecognition', label: 'Prizes', emoji: '🎉' },
             { key: 'pieceTimeoutEnabled', label: 'Timeout', emoji: '⏰' },
-            { key: 'enableWildBlocks', label: 'Wild', emoji: '🔥' }
+            { key: 'enableMagicBlocks', label: 'Magic', emoji: '🔮' }
         ];
         
         // Special handling for speed mode - compare pure defaults

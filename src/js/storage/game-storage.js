@@ -165,7 +165,9 @@ export class GameStorage {
             speedMode: 'bonus', // 'bonus', 'punishment', or 'ignored'
             speedDisplayMode: 'timer', // 'timer' or 'points'
             pieceTimeoutEnabled: false, // Enable piece timeout (15s warning, 30s timeout)
-            enableWildBlocks: false // Enable wild blocks that can clear lines when placed
+            enableMagicBlocks: false, // Enable magic blocks that can clear lines when placed
+            enableWildShapes: false, // Enable wild block shapes with creative geometries
+            autoRotateBlocks: false // Auto-rotate blocks when only one valid orientation
         };
         console.log('Returning default settings with difficulty:', defaults.difficulty);
         return defaults;

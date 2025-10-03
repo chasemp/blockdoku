@@ -119,12 +119,210 @@ export class BlockManager {
                 isWild: true,
                 wildType: 'lineClear',
                 description: 'Clears any line it completes'
+            },
+            
+            // === ADDITIONAL MAGIC BLOCK TYPES ===
+            
+            // Bomb magic blocks - clear surrounding area
+            bombSingle: {
+                name: 'Bomb Single',
+                shape: [[1]],
+                color: '#ff4444',
+                points: 8,
+                isWild: true,
+                wildType: 'bomb',
+                description: 'Explodes to clear 3x3 area around it'
+            },
+            bombLine2: {
+                name: 'Bomb Line',
+                shape: [[1, 1]],
+                color: '#ff4444',
+                points: 12,
+                isWild: true,
+                wildType: 'bomb',
+                description: 'Explodes to clear 3x3 area around each cell'
+            },
+            
+            // Lightning magic blocks - clear entire row and column
+            lightningSingle: {
+                name: 'Lightning Single',
+                shape: [[1]],
+                color: '#ffeb3b',
+                points: 15,
+                isWild: true,
+                wildType: 'lightning',
+                description: 'Clears entire row and column'
+            },
+            
+            // Ghost magic blocks - can overlap once per game
+            ghostSingle: {
+                name: 'Ghost Single',
+                shape: [[1]],
+                color: '#9c27b0',
+                points: 6,
+                isWild: true,
+                wildType: 'ghost',
+                description: 'Can overlap existing pieces (once per game)'
+            },
+            
+            // === WILD BLOCK SHAPES (Creative Geometries) ===
+            
+            // Pentominos (5-cell shapes)
+            pentominoF: {
+                name: 'F-Pentomino',
+                shape: [
+                    [1, 1, 0],
+                    [0, 1, 0],
+                    [0, 1, 1]
+                ],
+                color: '#ff6b6b',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            pentominoP: {
+                name: 'P-Pentomino',
+                shape: [
+                    [1, 1],
+                    [1, 1],
+                    [1, 0]
+                ],
+                color: '#4ecdc4',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            pentominoY: {
+                name: 'Y-Pentomino',
+                shape: [
+                    [0, 1, 0, 0],
+                    [1, 1, 1, 1]
+                ],
+                color: '#45b7d1',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            
+            // Cross shapes
+            crossSmall: {
+                name: 'Small Cross',
+                shape: [
+                    [0, 1, 0],
+                    [1, 1, 1],
+                    [0, 1, 0]
+                ],
+                color: '#96ceb4',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            crossLarge: {
+                name: 'Large Cross',
+                shape: [
+                    [0, 0, 1, 0, 0],
+                    [0, 0, 1, 0, 0],
+                    [1, 1, 1, 1, 1],
+                    [0, 0, 1, 0, 0],
+                    [0, 0, 1, 0, 0]
+                ],
+                color: '#feca57',
+                points: 9,
+                isWild: false,
+                isCreativeShape: true
+            },
+            
+            // Hollow shapes
+            hollowSquare: {
+                name: 'Hollow Square',
+                shape: [
+                    [1, 1, 1],
+                    [1, 0, 1],
+                    [1, 1, 1]
+                ],
+                color: '#ff9ff3',
+                points: 8,
+                isWild: false,
+                isCreativeShape: true
+            },
+            hollowRect: {
+                name: 'Hollow Rectangle',
+                shape: [
+                    [1, 1, 1, 1],
+                    [1, 0, 0, 1],
+                    [1, 1, 1, 1]
+                ],
+                color: '#54a0ff',
+                points: 10,
+                isWild: false,
+                isCreativeShape: true
+            },
+            
+            // Zigzag patterns
+            zigzagSmall: {
+                name: 'Small Zigzag',
+                shape: [
+                    [1, 0, 0],
+                    [1, 1, 0],
+                    [0, 1, 1]
+                ],
+                color: '#5f27cd',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            zigzagLarge: {
+                name: 'Large Zigzag',
+                shape: [
+                    [1, 0, 0, 0],
+                    [1, 1, 0, 0],
+                    [0, 1, 1, 0],
+                    [0, 0, 1, 1]
+                ],
+                color: '#00d2d3',
+                points: 7,
+                isWild: false,
+                isCreativeShape: true
+            },
+            
+            // Diagonal patterns
+            diagonal: {
+                name: 'Diagonal Line',
+                shape: [
+                    [1, 0, 0, 0],
+                    [0, 1, 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1]
+                ],
+                color: '#ff7675',
+                points: 4,
+                isWild: false,
+                isCreativeShape: true
+            },
+            
+            // Spiral pattern
+            spiral: {
+                name: 'Spiral',
+                shape: [
+                    [1, 1, 1],
+                    [0, 0, 1],
+                    [1, 1, 1]
+                ],
+                color: '#fd79a8',
+                points: 7,
+                isWild: false,
+                isCreativeShape: true
             }
         };
     }
     
-    generateRandomBlocks(count = 3, difficulty = 'all', difficultyManager = null, enableWildBlocks = false) {
+    generateRandomBlocks(count = 3, difficulty = 'all', difficultyManager = null, enableMagicBlocks = false, enableWildShapes = false) {
         let availableShapes = Object.keys(this.blockShapes);
+        
+        // Filter out creative shapes unless wild shapes are enabled
+        if (!enableWildShapes) {
+            availableShapes = availableShapes.filter(key => !this.blockShapes[key].isCreativeShape);
+        }
         
         // Use difficulty manager if provided
         if (difficultyManager) {
@@ -188,7 +386,7 @@ export class BlockManager {
             // Only generate wild blocks if the setting is enabled
             // 10% chance to generate a wild block (but max 1 per set)
             const hasWildBlock = this.currentBlocks.some(block => block.isWild);
-            const shouldGenerateWild = enableWildBlocks && !hasWildBlock && Math.random() < 0.1 && wildBlocks.length > 0;
+            const shouldGenerateWild = enableMagicBlocks && !hasWildBlock && Math.random() < 0.1 && wildBlocks.length > 0;
             
             if (shouldGenerateWild) {
                 // Select a random wild block

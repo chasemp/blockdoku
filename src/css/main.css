@@ -1771,15 +1771,15 @@ body {
 }
 
 /* Wild block styles */
-.block-item.wild-block {
+.block-item.magic-block {
     position: relative;
     background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 142, 142, 0.1) 100%);
     border: 2px solid #ff6b6b !important;
     animation: wildBlockGlow 2s ease-in-out infinite;
 }
 
-.block-item.wild-block::before {
-    content: '🔥';
+.block-item.magic-block::before {
+    content: '🔮';
     position: absolute;
     top: -5px;
     right: -5px;
@@ -1788,7 +1788,7 @@ body {
     animation: wildIconPulse 1.5s ease-in-out infinite;
 }
 
-.block-item.wild-block:hover {
+.block-item.magic-block:hover {
     transform: scale(1.08) translateY(-2px);
     border-color: #ff4444 !important;
     background: radial-gradient(circle at center, rgba(255, 107, 107, 0.15) 0%, transparent 70%);
@@ -1797,7 +1797,7 @@ body {
         0 0 15px rgba(255, 107, 107, 0.4);
 }
 
-.block-item.wild-block.selected {
+.block-item.magic-block.selected {
     border-color: #ff4444 !important;
     background: radial-gradient(circle at center, rgba(255, 107, 107, 0.2) 0%, transparent 70%);
     box-shadow: 
@@ -1824,6 +1824,158 @@ body {
         transform: scale(1.2);
         opacity: 0.8;
     }
+}
+
+/* Magic block feedback animations */
+@keyframes magicActivation {
+    0% { 
+        opacity: 0; 
+        transform: translate(-50%, -50%) scale(0.5); 
+    }
+    20% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1.2); 
+    }
+    100% { 
+        opacity: 0; 
+        transform: translate(-50%, -100px) scale(0.8); 
+    }
+}
+
+@keyframes magicExplanation {
+    0% { 
+        opacity: 0; 
+        transform: translate(-50%, -50%) scale(0.8); 
+    }
+    15% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1); 
+    }
+    85% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1); 
+    }
+    100% { 
+        opacity: 0; 
+        transform: translate(-50%, -80px) scale(0.9); 
+    }
+}
+
+@keyframes magicStandby {
+    0% { 
+        opacity: 0; 
+        transform: translate(-50%, -50%) scale(0.9); 
+    }
+    25% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1); 
+    }
+    75% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1); 
+    }
+    100% { 
+        opacity: 0; 
+        transform: translate(-50%, -70px) scale(0.8); 
+    }
+}
+
+/* Magic block feedback styling */
+.magic-block-activation .magic-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.2rem;
+    animation: pulse 0.5s ease-in-out infinite alternate;
+}
+
+.magic-block-activation .magic-text {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.1rem;
+}
+
+.magic-block-activation .magic-subtext {
+    font-size: 0.7rem;
+    opacity: 0.8;
+}
+
+.magic-block-explanation .magic-clear-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.magic-block-explanation .magic-clear-details {
+    font-size: 0.8rem;
+    margin-bottom: 0.2rem;
+    opacity: 0.9;
+}
+
+.magic-block-explanation .magic-clear-bonus {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #00ff88;
+    text-shadow: 0 0 8px #00ff88;
+}
+
+.magic-block-standby .magic-standby-text {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.1rem;
+}
+
+.magic-block-standby .magic-standby-subtext {
+    font-size: 0.6rem;
+    opacity: 0.8;
+}
+
+/* Additional magic block type animations */
+@keyframes bombExplosion {
+    0% { 
+        opacity: 0; 
+        transform: translate(-50%, -50%) scale(0.3); 
+    }
+    15% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1.3); 
+    }
+    30% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1); 
+    }
+    85% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1); 
+    }
+    100% { 
+        opacity: 0; 
+        transform: translate(-50%, -100px) scale(0.7); 
+    }
+}
+
+/* Bomb explosion styling */
+.bomb-explosion .bomb-icon {
+    font-size: 2rem;
+    margin-bottom: 0.3rem;
+    animation: pulse 0.3s ease-in-out infinite alternate;
+}
+
+.bomb-explosion .bomb-text {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+}
+
+.bomb-explosion .bomb-details {
+    font-size: 0.8rem;
+    margin-bottom: 0.2rem;
+    opacity: 0.9;
+}
+
+.bomb-explosion .bomb-bonus {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #00ff88;
+    text-shadow: 0 0 8px #00ff88;
 }
 
 @keyframes wildBlockSelected {

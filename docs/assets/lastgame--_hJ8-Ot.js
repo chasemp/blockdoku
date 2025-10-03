@@ -35,6 +35,9 @@ import"./modulepreload-polyfill-B5Qt9EMX.js";/* empty css             *//* empty
                         ${e.countdownEnabled?`
                             <p>⏳ Countdown: ${e.countdownDuration||3} min${e.timeRemaining!==null?` (${Math.max(0,Math.floor(e.timeRemaining/60))}:${String(Math.max(0,e.timeRemaining%60)).padStart(2,"0")} remaining)`:""}</p>
                         `:""}
+                        ${e.piecesPlaced?`
+                            <p>📊 Efficiency: ${e.pointsPerPiece.toFixed(1)} pts/piece (${e.piecesPlaced} pieces placed)</p>
+                        `:""}
                         ${e.isHighScore?'<p class="high-score-badge">🎉 New High Score! 🎉</p>':""}
                     </div>
                 `;const t=e.breakdown||{},l={rows:e.rowClears||0,columns:e.columnClears||0,squares:e.squareClears||0};if(o+=`

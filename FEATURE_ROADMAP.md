@@ -1,10 +1,10 @@
 # Blockdoku Feature Roadmap
 
-## 🎯 Phase 1: Core UX Improvements (Foundation)
+## 🎯 Phase 1: Core UX Improvements (Foundation) ✅ **COMPLETED**
 *Priority: High | Timeline: 2-3 weeks*
 
 ### 1.1 Visual Enhancements
-- [ ] **Block Preview on Board**
+- [x] **Block Preview on Board** *(Already existed)*
   - Ghost outline of selected block when hovering over valid positions
   - Theme-appropriate colors for preview
 - [ ] **Theme-Appropriate Placement Hints**
@@ -13,16 +13,16 @@
   - Red = invalid placement
   - Respect current theme colors
 
-### 1.2 Quality of Life
-- [ ] **Auto-Rotate Smart Placement**
+### 1.2 Quality of Life ✅ **COMPLETED**
+- [x] **Auto-Rotate Smart Placement**
   - Automatically rotate blocks when there's only one valid orientation
   - Setting to enable/disable this feature
-- [ ] **Efficiency Metrics**
+- [x] **Efficiency Metrics**
   - Add "Points per Piece" to lastgame.html stats
   - Track and display efficiency trends
 
-### 1.3 Animation Improvements
-- [ ] **Cascade Effect for Multiple Line Clears**
+### 1.3 Animation Improvements ✅ **COMPLETED**
+- [x] **Cascade Effect for Multiple Line Clears**
   - Satisfying sequential clearing animation
   - Enhanced particle effects for combos
   - Sound effects to match

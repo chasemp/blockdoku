@@ -1407,22 +1407,113 @@ class BlockdokuGame {
         console.log('Starting line clear animation for:', clearedLines);
         // Set timestamp for safety timeout
         this.pendingClearsTimestamp = Date.now();
-        // Start glow effect immediately
-        this.highlightClearingBlocks(clearedLines);
         
-        // Store the timeout ID so we can cancel it if needed
-        this.clearTimeoutId = setTimeout(() => {
-            console.log('Timeout reached, calling completeLineClear');
-            this.completeLineClear(clearedLines);
-        }, 750);
+        // Check if we have multiple types of clears for cascade effect
+        const clearTypes = [];
+        if (clearedLines.rows.length > 0) clearTypes.push({ type: 'rows', lines: clearedLines.rows });
+        if (clearedLines.columns.length > 0) clearTypes.push({ type: 'columns', lines: clearedLines.columns });
+        if (clearedLines.squares.length > 0) clearTypes.push({ type: 'squares', lines: clearedLines.squares });
         
-        // Add a safety timeout to prevent permanent stuck state
+        if (clearTypes.length > 1) {
+            // Multiple types - use cascade effect
+            this.startCascadeClearAnimation(clearTypes, clearedLines);
+        } else {
+            // Single type - use standard animation
+            this.highlightClearingBlocks(clearedLines);
+            
+            // Store the timeout ID so we can cancel it if needed
+            this.clearTimeoutId = setTimeout(() => {
+                console.log('Timeout reached, calling completeLineClear');
+                this.completeLineClear(clearedLines);
+            }, 750);
+            
+            // Add a safety timeout to prevent permanent stuck state
+            this.safetyTimeoutId = setTimeout(() => {
+                if (this.pendingClears) {
+                    console.warn('Safety timeout reached - forcing line clear completion');
+                    this.forceCompleteLineClear(clearedLines);
+                }
+            }, 2000); // 2 seconds safety timeout
+        }
+    }
+    
+    // Cascade animation for multiple line types
+    startCascadeClearAnimation(clearTypes, allClearedLines) {
+        console.log('🌊 Starting cascade animation for:', clearTypes);
+        
+        let currentStep = 0;
+        const cascadeDelay = 300; // Delay between each cascade step
+        
+        const processCascadeStep = () => {
+            if (currentStep >= clearTypes.length) {
+                // All cascade steps complete - finish the clearing
+                console.log('🌊 Cascade complete, finishing clear');
+                this.completeLineClear(allClearedLines);
+                return;
+            }
+            
+            const currentClearType = clearTypes[currentStep];
+            console.log(`🌊 Cascade step ${currentStep + 1}/${clearTypes.length}: ${currentClearType.type}`);
+            
+            // Create partial cleared lines object for this step
+            const stepClearedLines = {
+                rows: currentClearType.type === 'rows' ? currentClearType.lines : [],
+                columns: currentClearType.type === 'columns' ? currentClearType.lines : [],
+                squares: currentClearType.type === 'squares' ? currentClearType.lines : []
+            };
+            
+            // Highlight this step's lines
+            this.highlightClearingBlocks(stepClearedLines, true); // true for cascade mode
+            
+            // Add enhanced particle effects for cascade
+            this.addCascadeParticleEffects(stepClearedLines, currentStep);
+            
+            // Move to next step
+            currentStep++;
+            setTimeout(processCascadeStep, cascadeDelay);
+        };
+        
+        // Start the cascade
+        processCascadeStep();
+        
+        // Add overall safety timeout
         this.safetyTimeoutId = setTimeout(() => {
             if (this.pendingClears) {
-                console.warn('Safety timeout reached - forcing line clear completion');
-                this.forceCompleteLineClear(clearedLines);
+                console.warn('🌊 Cascade safety timeout reached - forcing completion');
+                this.forceCompleteLineClear(allClearedLines);
             }
-        }, 2000); // 2 seconds safety timeout
+        }, 3000); // Longer timeout for cascade
+    }
+    
+    // Add enhanced particle effects for cascade steps
+    addCascadeParticleEffects(clearedLines, stepIndex) {
+        if (!this.effectsManager) return;
+        
+        const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']; // Different colors for each step
+        const color = colors[stepIndex % colors.length];
+        
+        // Add particles for each cleared line
+        clearedLines.rows.forEach(row => {
+            const y = row * (this.canvas.height / 9) + (this.canvas.height / 18);
+            for (let i = 0; i < 3; i++) {
+                const x = (i + 1) * (this.canvas.width / 4);
+                this.effectsManager.addParticle(x, y, color, 'cascade');
+            }
+        });
+        
+        clearedLines.columns.forEach(col => {
+            const x = col * (this.canvas.width / 9) + (this.canvas.width / 18);
+            for (let i = 0; i < 3; i++) {
+                const y = (i + 1) * (this.canvas.height / 4);
+                this.effectsManager.addParticle(x, y, color, 'cascade');
+            }
+        });
+        
+        clearedLines.squares.forEach(square => {
+            const x = square.col * 3 * (this.canvas.width / 9) + (this.canvas.width / 6);
+            const y = square.row * 3 * (this.canvas.height / 9) + (this.canvas.height / 6);
+            this.effectsManager.addParticle(x, y, color, 'cascade');
+        });
     }
     
     showImmediateClearFeedback(clearedLines) {
@@ -1601,7 +1692,7 @@ class BlockdokuGame {
         }, 400);
     }
     
-    highlightClearingBlocks(clearedLines) {
+    highlightClearingBlocks(clearedLines, cascadeMode = false) {
         // Draw the board with highlighted clearing blocks
         this.drawBoard();
         
@@ -1610,7 +1701,13 @@ class BlockdokuGame {
         const glowColor = this.getClearGlowColor();
         
         ctx.save();
-        ctx.globalAlpha = 0.7;
+        ctx.globalAlpha = cascadeMode ? 0.9 : 0.7; // More intense for cascade
+        
+        // Enhanced glow effect for cascade mode
+        if (cascadeMode) {
+            ctx.shadowColor = glowColor;
+            ctx.shadowBlur = 20;
+        }
         
         // Highlight clearing rows
         clearedLines.rows.forEach(row => {
@@ -2818,7 +2915,8 @@ class BlockdokuGame {
             this.showPoints = difficultySettings.showPoints || false;
             this.showPersonalBests = difficultySettings.showPersonalBests || false;
             this.showSpeedTimer = difficultySettings.showSpeedTimer || false;
-            this.enableWildBlocks = difficultySettings.enableWildBlocks || false;
+            this.enableMagicBlocks = difficultySettings.enableMagicBlocks || false;
+            this.enableWildShapes = difficultySettings.enableWildShapes || false;
             
             // Log difficulty settings application
             console.log(`🎮 Difficulty level game settings applied for: ${this.difficulty.toUpperCase()}`);
@@ -3221,6 +3319,9 @@ class BlockdokuGame {
             countdownDuration: this.storage.loadSettings().countdownDuration || 3,
             timeRemaining: this.timerSystem ? this.timerSystem.getTimeRemaining() : null,
             timeLimit: this.difficultyManager ? this.difficultyManager.getTimeLimit() : null,
+            // Efficiency metrics
+            piecesPlaced: this.gameEngine ? this.gameEngine.moveCount : 0,
+            pointsPerPiece: this.gameEngine && this.gameEngine.moveCount > 0 ? (stats.score / this.gameEngine.moveCount) : 0,
             prizeRecognitionEnabled: prizeRecognitionEnabled,
             prize: prize,
             nextPrize: nextPrizeInfo?.nextPrize || null,
@@ -3584,7 +3685,7 @@ class BlockdokuGame {
         }
         
         
-        const newBlocks = this.blockManager.generateRandomBlocks(blockCount, blockTypes, this.difficultyManager, this.enableWildBlocks);
+        const newBlocks = this.blockManager.generateRandomBlocks(blockCount, blockTypes, this.difficultyManager, this.enableMagicBlocks, this.enableWildShapes);
         console.log('Generated new blocks:', newBlocks);
         console.log('BlockPalette exists:', !!this.blockPalette);
         this.blockPalette.updateBlocks(newBlocks);
@@ -3596,15 +3697,18 @@ class BlockdokuGame {
         this.updatePlaceabilityIndicators();
         this.updateBlockPointsDisplay();
         this.autoSelectNextBlock();
+        
+        // Auto-rotate blocks to optimal orientations
+        this.optimizeBlockOrientations();
     }
 
     // Enhanced block placement with hints
     placeBlock(row, col) {
         if (!this.canPlaceBlock(row, col)) return;
         
-        // Store reference to the block before placement for wild block logic
+        // Store reference to the block before placement for magic block logic
         const placedBlock = this.selectedBlock;
-        const isWildBlock = placedBlock && placedBlock.isWild;
+        const isMagicBlock = placedBlock && placedBlock.isWild;
         
         // Place the block on the board
         this.board = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);
@@ -3612,9 +3716,9 @@ class BlockdokuGame {
         // Update petrification tracking for newly placed cells
         this.petrificationManager.updateBoardTracking(this.board);
         
-        // Handle wild block special effects
-        if (isWildBlock && placedBlock.wildType === 'lineClear') {
-            this.handleWildBlockPlacement(placedBlock, row, col);
+        // Handle magic block special effects
+        if (isMagicBlock) {
+            this.handleMagicBlockPlacement(placedBlock, row, col);
         }
         
         // Award 1 point for block placement (as documented in scoring.md)
@@ -3687,36 +3791,212 @@ class BlockdokuGame {
         
         // Auto-select the first available block
         this.autoSelectNextBlock();
+        
+        // Auto-rotate remaining blocks to optimal orientations
+        this.optimizeBlockOrientations();
     }
     
-    // Handle wild block special effects
-    handleWildBlockPlacement(wildBlock, row, col) {
-        console.log('🔥 Wild block placed!', wildBlock);
+    // Auto-rotate blocks to optimal orientations based on board state
+    optimizeBlockOrientations() {
+        if (!this.storage.loadSettings().autoRotateBlocks) return;
         
-        // Find all lines that the wild block is part of
-        const wildLines = this.findLinesContainingWildBlock(wildBlock, row, col);
+        console.log('🔄 Optimizing block orientations based on board state');
         
-        if (wildLines.rows.length > 0 || wildLines.columns.length > 0 || wildLines.squares.length > 0) {
-            console.log('🔥 Wild block triggered line clears:', wildLines);
+        this.blockManager.currentBlocks.forEach((block, index) => {
+            const optimalBlock = this.findOptimalOrientation(block);
+            if (optimalBlock && optimalBlock.rotation !== block.rotation) {
+                console.log(`🔄 Auto-rotating ${block.name} from ${block.rotation}° to ${optimalBlock.rotation}° (${optimalBlock.validPositions} valid positions)`);
+                this.blockManager.currentBlocks[index] = optimalBlock;
+            }
+        });
+        
+        // Update the palette to show optimized orientations
+        this.blockPalette.updateBlocks(this.blockManager.currentBlocks);
+    }
+    
+    // Find the optimal orientation for a block based on valid placement positions
+    findOptimalOrientation(block) {
+        let bestBlock = block;
+        let maxValidPositions = this.countValidPositions(block);
+        
+        // Try all 4 orientations (0°, 90°, 180°, 270°)
+        let currentBlock = { ...block };
+        for (let i = 0; i < 3; i++) {
+            currentBlock = this.blockManager.rotateBlock(currentBlock);
+            const validPositions = this.countValidPositions(currentBlock);
             
-            // Show special wild block effect
-            this.showWildBlockEffect(row, col);
-            
-            // Force clear the lines that contain the wild block
-            setTimeout(() => {
-                this.forceWildBlockClears(wildLines);
-            }, 500); // Delay to show the effect first
+            if (validPositions > maxValidPositions) {
+                maxValidPositions = validPositions;
+                bestBlock = { ...currentBlock };
+            }
+        }
+        
+        return { ...bestBlock, validPositions: maxValidPositions };
+    }
+    
+    // Count how many valid positions exist for a block on the current board
+    countValidPositions(block) {
+        let count = 0;
+        for (let row = 0; row < this.boardSize; row++) {
+            for (let col = 0; col < this.boardSize; col++) {
+                if (this.blockManager.canPlaceBlock(block, row, col, this.board)) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+    
+    // Handle magic block special effects
+    handleMagicBlockPlacement(magicBlock, row, col) {
+        console.log('🔮 Magic block placed!', magicBlock);
+        
+        // Show immediate magic block activation feedback
+        this.showMagicBlockActivationFeedback(row, col, magicBlock);
+        
+        // Handle different magic types
+        switch (magicBlock.wildType) {
+            case 'lineClear':
+                this.handleLineClearMagic(magicBlock, row, col);
+                break;
+            case 'bomb':
+                this.handleBombMagic(magicBlock, row, col);
+                break;
+            case 'lightning':
+                this.handleLightningMagic(magicBlock, row, col);
+                break;
+            case 'ghost':
+                this.handleGhostMagic(magicBlock, row, col);
+                break;
+            default:
+                console.warn('Unknown magic type:', magicBlock.wildType);
+                this.handleLineClearMagic(magicBlock, row, col); // Fallback
         }
     }
     
-    // Find all lines (rows, columns, squares) that contain the wild block
-    findLinesContainingWildBlock(wildBlock, startRow, startCol) {
+    // Handle line-clear magic (original behavior)
+    handleLineClearMagic(magicBlock, row, col) {
+        // Find all lines that the magic block is part of
+        const magicLines = this.findLinesContainingMagicBlock(magicBlock, row, col);
+        
+        if (magicLines.rows.length > 0 || magicLines.columns.length > 0 || magicLines.squares.length > 0) {
+            console.log('🔮 Line-clear magic triggered:', magicLines);
+            
+            // Show detailed explanation of what the magic block cleared
+            this.showMagicBlockClearExplanation(magicLines, row, col);
+            
+            // Show special magic block effect
+            this.showMagicBlockEffect(row, col);
+            
+            // Force clear the lines that contain the magic block
+            setTimeout(() => {
+                this.forceMagicBlockClears(magicLines);
+            }, 1000); // Longer delay to show explanation
+        } else {
+            // Magic block placed but no lines to clear yet
+            this.showMagicBlockStandbyMessage(row, col);
+        }
+    }
+    
+    // Handle bomb magic - clear 3x3 area around each cell
+    handleBombMagic(magicBlock, row, col) {
+        console.log('💣 Bomb magic triggered!', magicBlock);
+        
+        // Calculate all cells to clear (3x3 around each block cell)
+        const cellsToClear = new Set();
+        
+        // For each cell in the placed block
+        for (let r = 0; r < magicBlock.shape.length; r++) {
+            for (let c = 0; c < magicBlock.shape[r].length; c++) {
+                if (magicBlock.shape[r][c] === 1) {
+                    const blockRow = row + r;
+                    const blockCol = col + c;
+                    
+                    // Add 3x3 area around this cell
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            const clearRow = blockRow + dr;
+                            const clearCol = blockCol + dc;
+                            
+                            if (clearRow >= 0 && clearRow < this.boardSize && 
+                                clearCol >= 0 && clearCol < this.boardSize) {
+                                cellsToClear.add(`${clearRow},${clearCol}`);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Show bomb explosion effect
+        this.showBombExplosionEffect(row, col, cellsToClear.size);
+        
+        // Clear the cells after explosion animation
+        setTimeout(() => {
+            this.clearBombCells(cellsToClear);
+        }, 1200);
+    }
+    
+    // Handle lightning magic - clear entire row and column
+    handleLightningMagic(magicBlock, row, col) {
+        console.log('⚡ Lightning magic triggered!', magicBlock);
+        
+        const lightningLines = { rows: [], columns: [], squares: [] };
+        
+        // For each cell in the placed block, clear its row and column
+        for (let r = 0; r < magicBlock.shape.length; r++) {
+            for (let c = 0; c < magicBlock.shape[r].length; c++) {
+                if (magicBlock.shape[r][c] === 1) {
+                    const blockRow = row + r;
+                    const blockCol = col + c;
+                    
+                    if (!lightningLines.rows.includes(blockRow)) {
+                        lightningLines.rows.push(blockRow);
+                    }
+                    if (!lightningLines.columns.includes(blockCol)) {
+                        lightningLines.columns.push(blockCol);
+                    }
+                }
+            }
+        }
+        
+        // Show lightning effect
+        this.showLightningEffect(row, col, lightningLines);
+        
+        // Clear the lines after lightning animation
+        setTimeout(() => {
+            this.forceMagicBlockClears(lightningLines);
+        }, 1000);
+    }
+    
+    // Handle ghost magic - special placement rules
+    handleGhostMagic(magicBlock, row, col) {
+        console.log('👻 Ghost magic triggered!', magicBlock);
+        
+        // Ghost blocks have already been placed (they can overlap)
+        // Just show the ghost effect
+        this.showGhostEffect(row, col);
+        
+        // Check if any lines were completed after ghost placement
+        const completedLines = this.scoringSystem.checkForCompletedLines(this.board);
+        
+        if (completedLines.rows.length > 0 || completedLines.columns.length > 0 || completedLines.squares.length > 0) {
+            setTimeout(() => {
+                this.forceMagicBlockClears(completedLines);
+            }, 800);
+        } else {
+            this.showMagicBlockStandbyMessage(row, col);
+        }
+    }
+    
+    // Find all lines (rows, columns, squares) that contain the magic block
+    findLinesContainingMagicBlock(magicBlock, startRow, startCol) {
         const lines = { rows: [], columns: [], squares: [] };
         
-        // Check each cell of the placed wild block
-        for (let r = 0; r < wildBlock.shape.length; r++) {
-            for (let c = 0; c < wildBlock.shape[r].length; c++) {
-                if (wildBlock.shape[r][c] === 1) {
+        // Check each cell of the placed magic block
+        for (let r = 0; r < magicBlock.shape.length; r++) {
+            for (let c = 0; c < magicBlock.shape[r].length; c++) {
+                if (magicBlock.shape[r][c] === 1) {
                     const boardRow = startRow + r;
                     const boardCol = startCol + c;
                     
@@ -3765,16 +4045,16 @@ class BlockdokuGame {
         return true;
     }
     
-    // Show special visual effect for wild block activation
-    showWildBlockEffect(row, col) {
+    // Show special visual effect for magic block activation
+    showMagicBlockEffect(row, col) {
         const cellSize = this.cellSize;
         const x = col * cellSize + cellSize / 2;
         const y = row * cellSize + cellSize / 2;
         
         // Create wild effect element
-        const wildEffect = document.createElement('div');
-        wildEffect.textContent = '🔥 WILD! 🔥';
-        wildEffect.style.cssText = `
+        const magicEffect = document.createElement('div');
+        magicEffect.textContent = '🔮 MAGIC! 🔮';
+        magicEffect.style.cssText = `
             position: absolute;
             left: ${x}px;
             top: ${y}px;
@@ -3785,15 +4065,15 @@ class BlockdokuGame {
             text-shadow: 0 0 10px rgba(255, 68, 68, 0.8);
             pointer-events: none;
             z-index: 1000;
-            animation: wildBlockActivation 1s ease-out forwards;
+            animation: magicBlockActivation 1s ease-out forwards;
         `;
         
-        // Add CSS animation for wild effect
-        if (!document.querySelector('#wild-effect-styles')) {
+        // Add CSS animation for magic effect
+        if (!document.querySelector('#magic-effect-styles')) {
             const style = document.createElement('style');
-            style.id = 'wild-effect-styles';
+            style.id = 'magic-effect-styles';
             style.textContent = `
-                @keyframes wildBlockActivation {
+                @keyframes magicBlockActivation {
                     0% { 
                         transform: translate(-50%, -50%) scale(0.5);
                         opacity: 0;
@@ -3811,34 +4091,236 @@ class BlockdokuGame {
             document.head.appendChild(style);
         }
         
-        this.canvas.parentElement.appendChild(wildEffect);
+        this.canvas.parentElement.appendChild(magicEffect);
         
         // Remove effect after animation
         setTimeout(() => {
-            if (wildEffect.parentElement) {
-                wildEffect.parentElement.removeChild(wildEffect);
+            if (magicEffect.parentElement) {
+                magicEffect.parentElement.removeChild(magicEffect);
             }
         }, 1000);
     }
     
-    // Force clear lines triggered by wild block
-    forceWildBlockClears(wildLines) {
-        // Use the existing line clearing system but mark as wild-triggered
-        this.pendingClears = wildLines;
+    // Force clear lines triggered by magic block
+    forceMagicBlockClears(magicLines) {
+        // Use the existing line clearing system but mark as magic-triggered
+        this.pendingClears = magicLines;
         this.pendingClearsTimestamp = Date.now();
         
-        // Calculate and apply score for wild block clears
-        const scoreResult = this.scoringSystem.calculateScoreForClears(wildLines, this.difficultyManager.getScoreMultiplier());
+        // Calculate and apply score for magic block clears
+        const scoreResult = this.scoringSystem.calculateScoreForClears(magicLines, this.difficultyManager.getScoreMultiplier());
         this.scoringSystem.addScore(scoreResult.totalScore);
         this.score = this.scoringSystem.getScore();
         
         // Show the clearing animation
-        this.highlightClearingBlocks(wildLines);
+        this.highlightClearingBlocks(magicLines);
         
         // Complete the clear after animation
         setTimeout(() => {
             this.completeLineClear(wildLines);
         }, 800);
+    }
+    
+    // Show immediate feedback when magic block is activated
+    showMagicBlockActivationFeedback(row, col, magicBlock) {
+        const cellSize = this.cellSize;
+        const x = col * cellSize + cellSize / 2;
+        const y = row * cellSize + cellSize / 2;
+        
+        // Create magic activation message
+        const magicMessage = document.createElement('div');
+        magicMessage.className = 'magic-block-activation';
+        magicMessage.innerHTML = `
+            <div class="magic-icon">🔮</div>
+            <div class="magic-text">MAGIC ACTIVATED!</div>
+            <div class="magic-subtext">${magicBlock.name}</div>
+        `;
+        magicMessage.style.position = 'absolute';
+        magicMessage.style.left = `${x}px`;
+        magicMessage.style.top = `${y}px`;
+        magicMessage.style.transform = 'translate(-50%, -50%)';
+        magicMessage.style.color = '#ff6b6b';
+        magicMessage.style.fontSize = '1rem';
+        magicMessage.style.fontWeight = '700';
+        magicMessage.style.textAlign = 'center';
+        magicMessage.style.textShadow = '0 0 10px #ff6b6b';
+        magicMessage.style.pointerEvents = 'none';
+        magicMessage.style.zIndex = '1001';
+        magicMessage.style.opacity = '0';
+        magicMessage.style.animation = 'magicActivation 2s ease-out forwards';
+        
+        // Add to canvas container
+        this.canvas.parentElement.appendChild(magicMessage);
+        
+        // Remove after animation
+        setTimeout(() => {
+            if (magicMessage.parentElement) {
+                magicMessage.parentElement.removeChild(magicMessage);
+            }
+        }, 2000);
+    }
+    
+    // Show detailed explanation of what magic block cleared
+    showMagicBlockClearExplanation(clearedLines, row, col) {
+        const cellSize = this.cellSize;
+        const x = col * cellSize + cellSize / 2;
+        const y = row * cellSize + cellSize / 2;
+        
+        // Count what was cleared
+        const totalCleared = clearedLines.rows.length + clearedLines.columns.length + clearedLines.squares.length;
+        let clearText = '';
+        
+        if (clearedLines.rows.length > 0) {
+            clearText += `${clearedLines.rows.length} row${clearedLines.rows.length > 1 ? 's' : ''}`;
+        }
+        if (clearedLines.columns.length > 0) {
+            if (clearText) clearText += ', ';
+            clearText += `${clearedLines.columns.length} column${clearedLines.columns.length > 1 ? 's' : ''}`;
+        }
+        if (clearedLines.squares.length > 0) {
+            if (clearText) clearText += ', ';
+            clearText += `${clearedLines.squares.length} square${clearedLines.squares.length > 1 ? 's' : ''}`;
+        }
+        
+        // Create explanation message
+        const explanation = document.createElement('div');
+        explanation.className = 'magic-block-explanation';
+        explanation.innerHTML = `
+            <div class="magic-clear-title">✨ MAGIC CLEAR! ✨</div>
+            <div class="magic-clear-details">Cleared ${clearText}</div>
+            <div class="magic-clear-bonus">+${totalCleared * 50} Magic Bonus!</div>
+        `;
+        explanation.style.position = 'absolute';
+        explanation.style.left = `${x}px`;
+        explanation.style.top = `${y - 60}px`;
+        explanation.style.transform = 'translate(-50%, -50%)';
+        explanation.style.color = '#ffd700';
+        explanation.style.fontSize = '0.9rem';
+        explanation.style.fontWeight = '600';
+        explanation.style.textAlign = 'center';
+        explanation.style.textShadow = '0 0 8px #ffd700';
+        explanation.style.pointerEvents = 'none';
+        explanation.style.zIndex = '1002';
+        explanation.style.opacity = '0';
+        explanation.style.animation = 'magicExplanation 3s ease-out forwards';
+        explanation.style.background = 'rgba(0, 0, 0, 0.8)';
+        explanation.style.padding = '0.5rem';
+        explanation.style.borderRadius = '8px';
+        explanation.style.border = '2px solid #ffd700';
+        
+        // Add to canvas container
+        this.canvas.parentElement.appendChild(explanation);
+        
+        // Remove after animation
+        setTimeout(() => {
+            if (explanation.parentElement) {
+                explanation.parentElement.removeChild(explanation);
+            }
+        }, 3000);
+    }
+    
+    // Show message when magic block is placed but not activated yet
+    showMagicBlockStandbyMessage(row, col) {
+        const cellSize = this.cellSize;
+        const x = col * cellSize + cellSize / 2;
+        const y = row * cellSize + cellSize / 2;
+        
+        // Create standby message
+        const standbyMessage = document.createElement('div');
+        standbyMessage.className = 'magic-block-standby';
+        standbyMessage.innerHTML = `
+            <div class="magic-standby-text">🔮 Magic Ready</div>
+            <div class="magic-standby-subtext">Will clear any completed line</div>
+        `;
+        standbyMessage.style.position = 'absolute';
+        standbyMessage.style.left = `${x}px`;
+        standbyMessage.style.top = `${y - 30}px`;
+        standbyMessage.style.transform = 'translate(-50%, -50%)';
+        standbyMessage.style.color = '#96ceb4';
+        standbyMessage.style.fontSize = '0.8rem';
+        standbyMessage.style.fontWeight = '600';
+        standbyMessage.style.textAlign = 'center';
+        standbyMessage.style.textShadow = '0 0 6px #96ceb4';
+        standbyMessage.style.pointerEvents = 'none';
+        standbyMessage.style.zIndex = '1000';
+        standbyMessage.style.opacity = '0';
+        standbyMessage.style.animation = 'magicStandby 2s ease-out forwards';
+        
+        // Add to canvas container
+        this.canvas.parentElement.appendChild(standbyMessage);
+        
+        // Remove after animation
+        setTimeout(() => {
+            if (standbyMessage.parentElement) {
+                standbyMessage.parentElement.removeChild(standbyMessage);
+            }
+        }, 2000);
+    }
+    
+    // Show bomb explosion effect
+    showBombExplosionEffect(row, col, cellsCleared) {
+        const cellSize = this.cellSize;
+        const x = col * cellSize + cellSize / 2;
+        const y = row * cellSize + cellSize / 2;
+        
+        // Create explosion message
+        const explosion = document.createElement('div');
+        explosion.className = 'bomb-explosion';
+        explosion.innerHTML = `
+            <div class="bomb-icon">💥</div>
+            <div class="bomb-text">BOMB EXPLOSION!</div>
+            <div class="bomb-details">Cleared ${cellsCleared} cells</div>
+            <div class="bomb-bonus">+${cellsCleared * 10} Bomb Bonus!</div>
+        `;
+        explosion.style.position = 'absolute';
+        explosion.style.left = `${x}px`;
+        explosion.style.top = `${y}px`;
+        explosion.style.transform = 'translate(-50%, -50%)';
+        explosion.style.color = '#ff4444';
+        explosion.style.fontSize = '1rem';
+        explosion.style.fontWeight = '700';
+        explosion.style.textAlign = 'center';
+        explosion.style.textShadow = '0 0 10px #ff4444';
+        explosion.style.pointerEvents = 'none';
+        explosion.style.zIndex = '1003';
+        explosion.style.opacity = '0';
+        explosion.style.animation = 'bombExplosion 2.5s ease-out forwards';
+        explosion.style.background = 'rgba(0, 0, 0, 0.9)';
+        explosion.style.padding = '0.8rem';
+        explosion.style.borderRadius = '12px';
+        explosion.style.border = '3px solid #ff4444';
+        
+        this.canvas.parentElement.appendChild(explosion);
+        
+        setTimeout(() => {
+            if (explosion.parentElement) {
+                explosion.parentElement.removeChild(explosion);
+            }
+        }, 2500);
+    }
+    
+    // Clear cells affected by bomb magic
+    clearBombCells(cellsToClear) {
+        let cellsCleared = 0;
+        
+        cellsToClear.forEach(cellKey => {
+            const [row, col] = cellKey.split(',').map(Number);
+            if (this.board[row][col] === 1) {
+                this.board[row][col] = 0;
+                cellsCleared++;
+            }
+        });
+        
+        // Award bonus points for bomb clearing
+        const bombBonus = cellsCleared * 10;
+        this.scoringSystem.addPlacementPoints(bombBonus, this.difficultyManager.getScoreMultiplier());
+        this.score = this.scoringSystem.getScore();
+        
+        // Redraw board and update UI
+        this.drawBoard();
+        this.updateUI();
+        
+        console.log(`💣 Bomb cleared ${cellsCleared} cells for ${bombBonus} bonus points`);
     }
     
     // Show visual feedback for speed timer
