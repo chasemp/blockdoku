@@ -829,10 +829,10 @@ export class GameSettingsManager {
                 const animSpeed = this.settings.animationSpeed || 'normal';
                 const speedEmojis = {
                     'slow': '🐢 Slow',
-                    'normal': '⚡ Normal',
+                    'normal': '🎬 Normal',
                     'fast': '🚀 Fast'
                 };
-                bubble.textContent = speedEmojis[animSpeed] || '⚡ speed';
+                bubble.textContent = speedEmojis[animSpeed] || '🎬 speed';
                 
                 // Apply different colors based on speed
                 bubble.classList.remove('state-red', 'state-green', 'state-orange');
