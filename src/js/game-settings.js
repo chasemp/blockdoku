@@ -638,6 +638,9 @@ export class GameSettingsManager {
         
         // Update difficulty bubbles to reflect user changes
         this.updateDifficultyBubbles();
+        
+        // Update setting state bubbles to reflect on/off state
+        this.updateSettingStateBubbles();
     }
     
     updateDifficultyBubbles() {
@@ -794,7 +797,122 @@ export class GameSettingsManager {
         // Update individual setting bubbles
         setTimeout(() => {
             this.updateIndividualSettingBubbles();
+            this.updateSettingStateBubbles();
         }, 100); // Small delay to ensure difficulty manager is loaded
+    }
+    
+    updateSettingStateBubbles() {
+        // Update all setting bubbles to reflect current on/off state
+        const bubbles = document.querySelectorAll('.setting-bubble[data-setting]');
+        
+        // Define which settings are difficulty-specific vs global
+        const difficultySpecificKeys = [
+            'hints', 'timer', 'personalBest', 'speedTimer', 
+            'showPoints', 'sound', 'animations', 
+            'petrification', 'deadPixels', 'speedMode'
+        ];
+        
+        bubbles.forEach(bubble => {
+            const settingKey = bubble.dataset.setting;
+            let isEnabled = false;
+            
+            // Special handling for speed mode (radio buttons)
+            if (settingKey === 'speedMode') {
+                const speedMode = this.settings.speedMode || 'bonus';
+                const modeEmojis = {
+                    'bonus': '🏃 Bonus',
+                    'punishment': '⚡ Punishment',
+                    'ignored': '🚶 Ignored'
+                };
+                bubble.textContent = modeEmojis[speedMode] || '🏃 mode';
+                
+                // Apply different colors based on mode
+                bubble.classList.remove('state-red', 'state-green', 'state-orange');
+                if (speedMode === 'ignored') {
+                    bubble.classList.add('state-red'); // Off/disabled state
+                } else if (speedMode === 'punishment') {
+                    bubble.classList.add('state-orange'); // Warning state
+                } else {
+                    bubble.classList.add('state-green'); // Bonus (positive state)
+                }
+                
+                bubble.classList.add('difficulty-specific');
+                bubble.classList.remove('global-setting');
+                return;
+            }
+            
+            // Special handling for animation speed (radio buttons)
+            if (settingKey === 'animationSpeed') {
+                const animSpeed = this.settings.animationSpeed || 'normal';
+                const speedEmojis = {
+                    'slow': '🐢 Slow',
+                    'normal': '⚡ Normal',
+                    'fast': '🚀 Fast'
+                };
+                bubble.textContent = speedEmojis[animSpeed] || '⚡ speed';
+                
+                // Apply different colors based on speed
+                bubble.classList.remove('state-red', 'state-green', 'state-orange');
+                if (animSpeed === 'normal') {
+                    bubble.classList.add('state-red'); // Off/neutral state
+                } else if (animSpeed === 'fast') {
+                    bubble.classList.add('state-orange'); // Warning/intense state
+                } else {
+                    bubble.classList.add('state-green'); // Slow (relaxed state)
+                }
+                
+                bubble.classList.add('global-setting');
+                bubble.classList.remove('difficulty-specific');
+                return;
+            }
+            
+            // Map bubble data-setting to actual checkbox IDs and determine state
+            const checkboxMap = {
+                'hints': 'enable-hints',
+                'timer': 'enable-timer',
+                'personalBest': 'show-personal-bests',
+                'speedTimer': 'show-speed-timer',
+                'sound': 'sound-enabled',
+                'animations': 'animations-enabled',
+                'haptic': 'haptic-enabled',
+                'autoSave': 'auto-save',
+                'showPoints': 'show-points',
+                'placementPoints': 'show-placement-points',
+                'prizeRecognition': 'enable-prize-recognition',
+                'successMode': 'success-mode-enabled',
+                'petrification': 'enable-petrification',
+                'deadPixels': 'enable-dead-pixels',
+                'blockHover': 'block-hover-effects',
+                'selectionGlow': 'block-selection-glow',
+                'blockEntrance': 'block-entrance-animations',
+                'blockPlacement': 'block-placement-animations',
+                'lineClear': 'line-clear-animations',
+                'scoreAnim': 'score-animations',
+                'combo': 'combo-animations',
+                'particles': 'particle-effects'
+            };
+            
+            const checkboxId = checkboxMap[settingKey];
+            if (checkboxId) {
+                const checkbox = document.getElementById(checkboxId);
+                if (checkbox) {
+                    isEnabled = checkbox.checked;
+                }
+            }
+            
+            // Update bubble class based on state
+            bubble.classList.remove('state-red', 'state-green');
+            bubble.classList.add(isEnabled ? 'state-green' : 'state-red');
+            
+            // Add difficulty-specific or global-setting class
+            if (difficultySpecificKeys.includes(settingKey)) {
+                bubble.classList.add('difficulty-specific');
+                bubble.classList.remove('global-setting');
+            } else {
+                bubble.classList.add('global-setting');
+                bubble.classList.remove('difficulty-specific');
+            }
+        });
     }
     
     updateBlockPointsDisplay() {

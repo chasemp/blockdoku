@@ -3920,3 +3920,112 @@ html.light-theme .settings-section .difficulty-option.selected {
         opacity: 0;
     }
 }
+
+/* Setting Bubbles - Dynamic status indicators */
+.setting-bubble {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    margin-left: auto;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    opacity: 0.9;
+    position: relative;
+    flex-shrink: 0;
+}
+
+/* Speed mode and animation speed bubbles in header - no margin-left auto */
+.speed-mode-bubble,
+.animation-speed-bubble {
+    margin-left: 0.5rem;
+}
+
+/* Red state (disabled/off) - softer, more neutral */
+.setting-bubble.state-red {
+    background: linear-gradient(135deg, #d4a373 0%, #b8956a 100%);
+    color: #2a2a2a;
+    box-shadow: 0 2px 8px rgba(212, 163, 115, 0.3);
+}
+
+/* Green state (enabled/on) */
+.setting-bubble.state-green {
+    background: linear-gradient(135deg, #44ff44 0%, #00cc00 100%);
+    color: #1a1a1a;
+    box-shadow: 0 2px 8px rgba(68, 255, 68, 0.3);
+}
+
+/* Orange state (for punishment/warning) */
+.setting-bubble.state-orange {
+    background: linear-gradient(135deg, #ff9944 0%, #ff7700 100%);
+    color: #1a1a1a;
+    box-shadow: 0 2px 8px rgba(255, 153, 68, 0.4);
+}
+
+/* Yellow state (for difficulty comparisons) */
+.setting-bubble.state-yellow {
+    background: linear-gradient(135deg, #ffdd44 0%, #ffaa00 100%);
+    color: #1a1a1a;
+    box-shadow: 0 2px 8px rgba(255, 221, 68, 0.3);
+}
+
+/* Difficulty-specific settings - get a gold border to show they're tied to difficulty level */
+.setting-bubble.difficulty-specific {
+    border: 2px solid #ffd700;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4), inset 0 0 8px rgba(255, 215, 0, 0.2);
+}
+
+/* Global settings - get a subtle gray border */
+.setting-bubble.global-setting {
+    border: 2px solid rgba(128, 128, 128, 0.3);
+}
+
+.setting-bubble:hover {
+    transform: scale(1.05);
+    opacity: 1;
+}
+
+/* Add a small indicator tooltip on hover */
+.setting-bubble.difficulty-specific::after {
+    content: "Per-Difficulty";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 1000;
+}
+
+.setting-bubble.difficulty-specific:hover::after {
+    opacity: 1;
+}
+
+.setting-bubble.global-setting::after {
+    content: "Global";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 1000;
+}
+
+.setting-bubble.global-setting:hover::after {
+    opacity: 1;
+}

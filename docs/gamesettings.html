@@ -140,11 +140,11 @@
     <meta property="twitter:title" content="Blockdoku - Block Puzzle Game">
     <meta property="twitter:description" content="A modern take on the classic block puzzle game. Play anywhere, anytime!">
     <meta property="twitter:image" content="https://blockdoku.523.life/icons/icon-512x512.png">
-  <script type="module" crossorigin src="./assets/gamesettings-YWLtqTeN.js"></script>
+  <script type="module" crossorigin src="./assets/gamesettings-D-WzrNjE.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/modulepreload-polyfill-B5Qt9EMX.js">
   <link rel="modulepreload" crossorigin href="./assets/difficulty-settings-manager-D2MsyMLE.js">
   <link rel="modulepreload" crossorigin href="./assets/confirmation-dialog-Bfw5TIb9.js">
-  <link rel="stylesheet" crossorigin href="./assets/main-CYtMOvYt.css">
+  <link rel="stylesheet" crossorigin href="./assets/main-JZaEn-fP.css">
   <link rel="stylesheet" crossorigin href="./assets/wood-36S1T1G_.css">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
@@ -174,6 +174,7 @@
                         <label>
                             <input type="checkbox" id="enable-hints" />
                             Enable hints
+                            <span class="setting-bubble" data-setting="hints">⚙️ hints</span>
                         </label>
                         <p class="setting-description">Show placement suggestions for blocks when you're stuck</p>
                     </div>
@@ -182,6 +183,7 @@
                         <label>
                             <input type="checkbox" id="enable-timer" />
                             Enable timer
+                            <span class="setting-bubble" data-setting="timer">⚙️ timer</span>
                         </label>
                         <p class="setting-description">Add time pressure to increase difficulty and excitement</p>
                     </div>
@@ -190,6 +192,7 @@
                         <label>
                             <input type="checkbox" id="show-personal-bests" />
                             Enable Personal Best
+                            <span class="setting-bubble" data-setting="personalBest">⚙️ best</span>
                             </label>
                         <p class="setting-description">Display your personal best score for the current difficulty level in the utility bar</p>
                 </div>
@@ -198,6 +201,7 @@
                         <label>
                             <input type="checkbox" id="show-speed-timer" />
                             Enable Speed Timer
+                            <span class="setting-bubble" data-setting="speedTimer">⚙️ speed</span>
                         </label>
                         <p class="setting-description">Display speed timer in the utility bar when speed mode is active</p>
                     </div>
@@ -212,7 +216,10 @@
                 
             <!-- Speed Tracking Mode Section -->
             <div class="speed-tracking-mode-settings settings-section-container">
-                    <h3>Speed Tracking</h3>
+                    <h3 style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        Speed Tracking
+                        <span class="setting-bubble speed-mode-bubble" data-setting="speedMode">🏃 mode</span>
+                    </h3>
                     <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0; text-align: center;">Choose how placement speed affects your score</p>
                     <div class="speed-mode-options">
                         <label class="speed-mode-option">
@@ -273,36 +280,6 @@
                     <p>Complex shapes, time pressure, limited moves</p>
                 </button>
             </div>
-        </div>
-        
-            <!-- Game Modes Section -->
-            <div class="game-modes-settings settings-section-container">
-                    <h3>Game Modes</h3>
-                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Enable special game modes that add unique challenges and mechanics.</p>
-                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Multiple modes can be active simultaneously, but these are never activated by default.</p>
-                    
-                    <!-- Petrification Mode -->
-                    <div class="setting-item game-mode-item">
-                        <label>
-                            <input type="checkbox" id="enable-petrification" />
-                            Enable petrification
-                        </label>
-                        <p class="setting-description">Grid cells petrify after 10s and blocks after 30s in place. Petrified cells can't be cleared until a clear event happens. Adds strategic time pressure!</p>
-                    </div>
-                    
-                    <!-- Dead Pixels Mode -->
-                    <div class="setting-item game-mode-item">
-                        <label>
-                            <input type="checkbox" id="enable-dead-pixels" />
-                            Enable dead pixels
-                        </label>
-                        <p class="setting-description">Add "dead" pixels to the board that cannot be used for block placement, like a broken screen. Toggle on/off anytime!</p>
-                    </div>
-                    <div class="setting-item" id="dead-pixels-intensity-container" style="margin-left: 2rem; display: none;">
-                        <label for="dead-pixels-intensity">Dead Pixels Intensity: <span id="dead-pixels-intensity-value">0</span></label>
-                        <input type="range" id="dead-pixels-intensity" min="0" max="5" value="0" step="1" style="width: 100%; max-width: 300px; margin-top: 0.5rem;" />
-                        <p class="setting-description" style="font-size: 0.85rem; margin-top: 0.5rem;">0 = Off, 5 = Maximum dead pixels (~15-20)</p>
-                    </div>
                 </div>
                 
                 <!-- Combo Display Settings -->
@@ -330,6 +307,7 @@
                     <label>
                         <input type="checkbox" id="sound-enabled" />
                         Sound effects
+                        <span class="setting-bubble" data-setting="sound">🔊</span>
                     </label>
                     <p class="setting-description">Play audio feedback for game actions and events</p>
                 </div>
@@ -337,6 +315,7 @@
                     <label>
                         <input type="checkbox" id="animations-enabled" />
                         Master animations
+                        <span class="setting-bubble" data-setting="animations">✨</span>
                     </label>
                     <p class="setting-description">Enable smooth transitions and visual effects during gameplay</p>
                 </div>
@@ -345,6 +324,7 @@
                         <label>
                             <input type="checkbox" id="haptic-enabled" />
                             Haptic feedback
+                            <span class="setting-bubble" data-setting="haptic">📳</span>
                         </label>
                         <p class="setting-description">Vibrate device for tactile feedback on supported devices</p>
                     </div>
@@ -353,6 +333,7 @@
                         <label>
                             <input type="checkbox" id="auto-save" />
                             Auto-save game
+                            <span class="setting-bubble" data-setting="autoSave">💾</span>
                         </label>
                         <p class="setting-description">Automatically save your progress so you can resume later</p>
                     </div>
@@ -361,6 +342,7 @@
                         <label>
                             <input type="checkbox" id="show-points" />
                             Show block points
+                            <span class="setting-bubble" data-setting="showPoints">🔢</span>
                         </label>
                         <p class="setting-description">Display point values on each block to help with scoring strategy</p>
                     </div>
@@ -369,6 +351,7 @@
                         <label>
                             <input type="checkbox" id="show-placement-points" />
                             Show placement points
+                            <span class="setting-bubble" data-setting="placementPoints">➕</span>
                         </label>
                         <p class="setting-description">Show floating point notifications when placing blocks (can be noisy if enabled)</p>
                     </div>
@@ -377,6 +360,7 @@
                         <label>
                             <input type="checkbox" id="enable-prize-recognition" checked />
                             Enable prize recognition
+                            <span class="setting-bubble" data-setting="prizeRecognition">🏆</span>
                         </label>
                         <p class="setting-description">Automatically detect and highlight special prize patterns for bonus points</p>
                     </div>
@@ -385,6 +369,7 @@
                         <label>
                             <input type="checkbox" id="success-mode-enabled" />
                             Enable success mode
+                            <span class="setting-bubble" data-setting="successMode">🎉</span>
                         </label>
                         <p class="setting-description">Show enhanced success animations and effects when achieving combos</p>
                     </div>
@@ -401,6 +386,7 @@
                         <label>
                             <input type="checkbox" id="enable-petrification" />
                             Enable petrification
+                            <span class="setting-bubble" data-setting="petrification">🪨</span>
                         </label>
                         <p class="setting-description">Grid cells petrify after 10s and blocks after 30s in place. Petrified cells can't be cleared until a clear event happens. Adds strategic time pressure!</p>
                     </div>
@@ -410,6 +396,7 @@
                         <label>
                             <input type="checkbox" id="enable-dead-pixels" />
                             Enable dead pixels
+                            <span class="setting-bubble" data-setting="deadPixels">💀</span>
                         </label>
                         <p class="setting-description">Add "dead" pixels to the board that cannot be used for block placement, like a broken screen. Toggle on/off anytime!</p>
                     </div>
@@ -428,6 +415,7 @@
                         <label>
                             <input type="checkbox" id="block-hover-effects" />
                             Block hover effects
+                            <span class="setting-bubble" data-setting="blockHover">🖱️</span>
                         </label>
                         <p class="setting-description">Highlight blocks when you move your cursor over them</p>
                     </div>
@@ -436,6 +424,7 @@
                         <label>
                             <input type="checkbox" id="block-selection-glow" />
                             Block selection glow
+                            <span class="setting-bubble" data-setting="selectionGlow">✨</span>
                         </label>
                         <p class="setting-description">Add a glowing outline to the currently selected block</p>
                     </div>
@@ -444,6 +433,7 @@
                         <label>
                             <input type="checkbox" id="block-entrance-animations" />
                             Block entrance animations
+                            <span class="setting-bubble" data-setting="blockEntrance">📥</span>
                         </label>
                         <p class="setting-description">Animate new blocks sliding in when they appear</p>
                     </div>
@@ -452,6 +442,7 @@
                         <label>
                             <input type="checkbox" id="block-placement-animations" />
                             Block placement animations
+                            <span class="setting-bubble" data-setting="blockPlacement">📍</span>
                         </label>
                         <p class="setting-description">Smooth transition when placing blocks on the grid</p>
                     </div>
@@ -460,6 +451,7 @@
                         <label>
                             <input type="checkbox" id="line-clear-animations" />
                             Line clear animations
+                            <span class="setting-bubble" data-setting="lineClear">💥</span>
                         </label>
                         <p class="setting-description">Visual effects when rows or columns are cleared</p>
                     </div>
@@ -468,6 +460,7 @@
                         <label>
                             <input type="checkbox" id="score-animations" />
                             Score animations
+                            <span class="setting-bubble" data-setting="scoreAnim">💯</span>
                         </label>
                         <p class="setting-description">Animate score changes and point notifications</p>
                     </div>
@@ -476,6 +469,7 @@
                         <label>
                             <input type="checkbox" id="combo-animations" />
                             Combo animations
+                            <span class="setting-bubble" data-setting="combo">🔥</span>
                         </label>
                         <p class="setting-description">Special effects when achieving combo multipliers</p>
                     </div>
@@ -484,12 +478,16 @@
                         <label>
                             <input type="checkbox" id="particle-effects" />
                             Particle effects
+                            <span class="setting-bubble" data-setting="particles">⭐</span>
                         </label>
                         <p class="setting-description">Show particle effects when clearing lines and achieving combos</p>
                     </div>
                     
                     <div class="setting-item">
-                        <h4 style="text-align: center; margin-bottom: 0.5rem;">Animation Speed</h4>
+                        <h4 style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            Animation Speed
+                            <span class="setting-bubble animation-speed-bubble" data-setting="animationSpeed">⚡ speed</span>
+                        </h4>
                         <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0; text-align: center;">Control the speed of visual effects and transitions throughout the game.</p>
                         <div class="animation-speed-options">
                             <label class="animation-speed-option">
@@ -517,7 +515,6 @@
                     </div>
                 </div>
                 
-                https://pea.523.life/
                 <button id="reset-current-difficulty" class="reset-button">
                     <span id="current-difficulty-text">Reset</span>
                 </button>
