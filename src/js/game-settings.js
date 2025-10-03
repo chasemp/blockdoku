@@ -94,6 +94,12 @@ export class GameSettingsManager {
             deadPixelsIntensityValue.textContent = intensity;
         }
         
+        // Wild blocks
+        const wildBlocksCheckbox = document.getElementById('enable-wild-blocks');
+        if (wildBlocksCheckbox) {
+            wildBlocksCheckbox.checked = this.settings.enableWildBlocks === true;
+        }
+        
         // Speed mode
         const speedMode = this.settings.speedMode || 'ignored';
         const bonusRadio = document.getElementById('speed-mode-bonus');
@@ -205,6 +211,23 @@ export class GameSettingsManager {
                 checkbox.checked = this.settings[key] === true;
             }
         });
+        
+        // Handle countdown duration slider
+        const timerCheckbox = document.getElementById('enable-timer');
+        const countdownDuration = document.getElementById('countdown-duration');
+        const countdownDurationValue = document.getElementById('countdown-duration-value');
+        const countdownContainer = document.getElementById('countdown-duration-container');
+        
+        if (timerCheckbox && countdownContainer) {
+            // Show/hide duration slider based on timer checkbox
+            countdownContainer.style.display = this.settings.enableTimer ? 'block' : 'none';
+        }
+        
+        if (countdownDuration && countdownDurationValue) {
+            const duration = this.settings.countdownDuration || 3;
+            countdownDuration.value = duration;
+            countdownDurationValue.textContent = `${duration}:00`;
+        }
     }
     
     setupEventListeners() {
@@ -400,6 +423,14 @@ export class GameSettingsManager {
             });
         }
         
+        // Wild blocks
+        const wildBlocksCheckbox = document.getElementById('enable-wild-blocks');
+        if (wildBlocksCheckbox) {
+            wildBlocksCheckbox.addEventListener('change', () => {
+                this.saveSetting('enableWildBlocks', wildBlocksCheckbox.checked);
+            });
+        }
+        
         // Speed mode
         const bonusRadio = document.getElementById('speed-mode-bonus');
         const punishmentRadio = document.getElementById('speed-mode-punishment');
@@ -545,11 +576,75 @@ export class GameSettingsManager {
         utilityBarSettings.forEach(({ id, key }) => {
             const checkbox = document.getElementById(id);
             if (checkbox) {
-                checkbox.addEventListener('change', () => {
-                    this.saveSetting(key, checkbox.checked);
+                checkbox.addEventListener('change', async () => {
+                    // Special handling for timer checkbox - show warning if enabling mid-game
+                    if (id === 'enable-timer') {
+                        const wasEnabled = this.settings[key] === true;
+                        const willBeEnabled = checkbox.checked;
+                        
+                        // Show warning if enabling countdown or disabling it mid-game
+                        if (wasEnabled !== willBeEnabled && this.isGameInProgress()) {
+                            const action = willBeEnabled ? 'enabling' : 'disabling';
+                            const confirmed = await this.confirmationDialog.show(
+                                `⚠️ Countdown Timer Change\n\n${action === 'enabling' ? 'Enabling' : 'Disabling'} the countdown timer mid-game will reset your current score to 0.\n\nThis ensures fair scoring since the countdown timer affects the game's difficulty and scoring system.\n\nDo you want to continue?`
+                            );
+                            
+                            if (!confirmed) {
+                                // Revert checkbox state
+                                checkbox.checked = wasEnabled;
+                                return;
+                            }
+                            
+                            // Reset the game score
+                            this.resetCurrentGameScore();
+                        }
+                        
+                        this.saveSetting(key, checkbox.checked);
+                        
+                        // Show/hide duration slider
+                        const countdownContainer = document.getElementById('countdown-duration-container');
+                        if (countdownContainer) {
+                            countdownContainer.style.display = checkbox.checked ? 'block' : 'none';
+                        }
+                    } else {
+                        this.saveSetting(key, checkbox.checked);
+                    }
                 });
             }
         });
+        
+        // Countdown duration slider
+        const countdownDuration = document.getElementById('countdown-duration');
+        if (countdownDuration) {
+            countdownDuration.addEventListener('input', async () => {
+                const newDuration = parseInt(countdownDuration.value);
+                const currentDuration = this.settings.countdownDuration || 3;
+                
+                // Show warning if changing duration mid-game and countdown is enabled
+                if (newDuration !== currentDuration && this.isGameInProgress() && this.settings.enableTimer) {
+                    const confirmed = await this.confirmationDialog.show(
+                        `⚠️ Countdown Duration Change\n\nChanging the countdown duration mid-game will reset your current score to 0.\n\nThis ensures fair scoring since the countdown timer affects the game's difficulty and scoring system.\n\nDo you want to continue?`
+                    );
+                    
+                    if (!confirmed) {
+                        // Revert slider value
+                        countdownDuration.value = currentDuration;
+                        return;
+                    }
+                    
+                    // Reset the game score
+                    this.resetCurrentGameScore();
+                }
+                
+                this.saveSetting('countdownDuration', newDuration);
+                
+                // Update display value
+                const durationValue = document.getElementById('countdown-duration-value');
+                if (durationValue) {
+                    durationValue.textContent = `${newDuration}:00`;
+                }
+            });
+        }
     }
     
     setupResetStatisticsListener() {
@@ -591,7 +686,7 @@ export class GameSettingsManager {
         const difficultySpecificSettings = [
             'enableHints', 'showPoints', 'enableTimer', 'enablePetrification', 
             'enableDeadPixels', 'showPersonalBests', 'showSpeedTimer', 'speedMode',
-            'animationsEnabled', 'soundEnabled'
+            'animationsEnabled', 'soundEnabled', 'enableWildBlocks'
         ];
         
         if (difficultySpecificSettings.includes(key)) {
@@ -657,7 +752,8 @@ export class GameSettingsManager {
             'showPersonalBests': 'show-personal-bests',
             'showSpeedTimer': 'show-speed-timer',
             'enablePrizeRecognition': 'enable-prize-recognition',
-            'pieceTimeoutEnabled': 'piece-timeout-enabled'
+            'pieceTimeoutEnabled': 'piece-timeout-enabled',
+            'enableWildBlocks': 'enable-wild-blocks'
         };
         
         // Add bubbles to individual settings
@@ -792,7 +888,7 @@ export class GameSettingsManager {
         const difficultySpecificKeys = [
             'hints', 'timer', 'personalBest', 'speedTimer', 
             'showPoints', 'sound', 'animations', 
-            'petrification', 'deadPixels', 'speedMode'
+            'petrification', 'deadPixels', 'speedMode', 'wildBlocks'
         ];
         
         bubbles.forEach(bubble => {
@@ -865,6 +961,7 @@ export class GameSettingsManager {
                 'successMode': 'success-mode-enabled',
                 'petrification': 'enable-petrification',
                 'deadPixels': 'enable-dead-pixels',
+                'wildBlocks': 'enable-wild-blocks',
                 'blockHover': 'block-hover-effects',
                 'selectionGlow': 'block-selection-glow',
                 'blockEntrance': 'block-entrance-animations',
@@ -1112,6 +1209,37 @@ export class GameSettingsManager {
             this.updateCurrentDifficultyText();
         });
     }
+    
+    // Helper method to check if a game is currently in progress
+    isGameInProgress() {
+        // Check if there's an active game in the main window
+        if (window.opener && window.opener.game) {
+            const game = window.opener.game;
+            return game.score > 0 || game.blockManager?.currentBlocks?.length > 0;
+        }
+        return false;
+    }
+    
+    // Helper method to reset the current game score
+    resetCurrentGameScore() {
+        if (window.opener && window.opener.game) {
+            const game = window.opener.game;
+            game.score = 0;
+            game.level = 1;
+            if (game.scoringSystem) {
+                game.scoringSystem.reset();
+            }
+            if (game.timerSystem) {
+                game.timerSystem.reset();
+                game.timerSystem.initialize();
+                game.timerSystem.start();
+            }
+            // Update the UI in the main game window
+            if (game.updateUI) {
+                game.updateUI();
+            }
+        }
+    }
 }
 
 // Initialize when page loads
@@ -1123,3 +1251,4 @@ if (document.readyState === 'loading') {
     // DOM is already ready, instantiate immediately
     window.gameSettingsManager = new GameSettingsManager();
 }
+

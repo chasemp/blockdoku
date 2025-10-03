@@ -87,11 +87,43 @@ export class BlockManager {
                 ],
                 color: '#fd7e14',
                 points: 4
+            },
+            
+            // Wild blocks - special power-up blocks
+            wildSingle: {
+                name: 'Wild Single',
+                shape: [[1]],
+                color: '#ff6b6b',
+                points: 3,
+                isWild: true,
+                wildType: 'lineClear',
+                description: 'Clears any line it completes'
+            },
+            wildLine2: {
+                name: 'Wild Line 2',
+                shape: [[1, 1]],
+                color: '#ff6b6b',
+                points: 5,
+                isWild: true,
+                wildType: 'lineClear',
+                description: 'Clears any line it completes'
+            },
+            wildL: {
+                name: 'Wild L',
+                shape: [
+                    [1, 0],
+                    [1, 1]
+                ],
+                color: '#ff6b6b',
+                points: 6,
+                isWild: true,
+                wildType: 'lineClear',
+                description: 'Clears any line it completes'
             }
         };
     }
     
-    generateRandomBlocks(count = 3, difficulty = 'all', difficultyManager = null) {
+    generateRandomBlocks(count = 3, difficulty = 'all', difficultyManager = null, enableWildBlocks = false) {
         let availableShapes = Object.keys(this.blockShapes);
         
         // Use difficulty manager if provided
@@ -141,25 +173,43 @@ export class BlockManager {
             availableShapes = Object.keys(this.blockShapes);
         }
         
+        // Separate wild blocks from regular blocks
+        const wildBlocks = Object.keys(this.blockShapes).filter(key => this.blockShapes[key].isWild);
+        const regularBlocks = availableShapes.filter(key => !this.blockShapes[key].isWild);
+        
         this.currentBlocks = [];
         
         // Create a copy of available shapes to avoid modifying the original
-        let remainingShapes = [...availableShapes];
+        let remainingShapes = [...regularBlocks];
         
         for (let i = 0; i < count; i++) {
-            // If we've used all available shapes, reset the pool
-            if (remainingShapes.length === 0) {
-                remainingShapes = [...availableShapes];
+            let selectedKey;
+            
+            // Only generate wild blocks if the setting is enabled
+            // 10% chance to generate a wild block (but max 1 per set)
+            const hasWildBlock = this.currentBlocks.some(block => block.isWild);
+            const shouldGenerateWild = enableWildBlocks && !hasWildBlock && Math.random() < 0.1 && wildBlocks.length > 0;
+            
+            if (shouldGenerateWild) {
+                // Select a random wild block
+                const wildIndex = Math.floor(Math.random() * wildBlocks.length);
+                selectedKey = wildBlocks[wildIndex];
+            } else {
+                // Select a regular block
+                // If we've used all available shapes, reset the pool
+                if (remainingShapes.length === 0) {
+                    remainingShapes = [...regularBlocks];
+                }
+                
+                const randomIndex = Math.floor(Math.random() * remainingShapes.length);
+                selectedKey = remainingShapes[randomIndex];
+                
+                // Remove the selected shape to avoid duplicates
+                remainingShapes.splice(randomIndex, 1);
             }
             
-            const randomIndex = Math.floor(Math.random() * remainingShapes.length);
-            const randomKey = remainingShapes[randomIndex];
-            
-            // Remove the selected shape to avoid duplicates
-            remainingShapes.splice(randomIndex, 1);
-            
             const block = {
-                ...this.blockShapes[randomKey],
+                ...this.blockShapes[selectedKey],
                 id: `block_${i}_${Date.now()}`,
                 rotation: 0
             };

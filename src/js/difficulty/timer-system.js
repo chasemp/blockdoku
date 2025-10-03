@@ -26,11 +26,20 @@ export class TimerSystem {
     }
     
     start() {
-        if (!this.isActive || this.timeLimit === null) return;
+        if (!this.isActive || this.timeLimit === null) {
+            return;
+        }
         
         this.startTime = Date.now();
         this.isPaused = false;
         this.pausedTime = 0;
+        
+        // Debug: Confirm countdown timer started
+        console.log('⏳ Countdown Timer Started:', {
+            timeLimit: this.timeLimit,
+            startTime: new Date(this.startTime).toLocaleTimeString(),
+            formattedTimeLimit: this.formatTime(this.timeLimit)
+        });
     }
     
     pause() {

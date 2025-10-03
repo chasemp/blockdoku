@@ -1939,27 +1939,29 @@ class BlockdokuGame {
         // Update speed timer display in utility bar
         if (speedTimerElement && speedTimerValueElement) {
             const settings = this.storage.loadSettings();
-            const showSpeedTimer = settings.showSpeedTimer === true;
+            // Use difficulty-specific setting for speed timer
+            const difficultySettings = this.difficultySettings.getSettingsForDifficulty(this.difficulty);
+            const showSpeedTimer = difficultySettings.showSpeedTimer === true;
             
             if (showSpeedTimer) {
                 speedTimerElement.style.display = 'flex';
                 
                 // Display either countdown timer or points based on speedDisplayMode
                 if (this.speedDisplayMode === 'timer') {
-                    // Show countdown timer
+                    // Show countdown timer - always show something even if timer hasn't started
                     if (this.speedTimerStartTime) {
                         const elapsed = Date.now() - this.speedTimerStartTime;
                         const seconds = (elapsed / 1000).toFixed(1);
                         speedTimerValueElement.textContent = `${seconds}s`;
                     } else {
-                        speedTimerValueElement.textContent = '0.0s';
+                        speedTimerValueElement.textContent = 'Ready';
                     }
                 } else {
                     // Show total speed bonus points
-                    speedTimerValueElement.textContent = speedStats.totalSpeedBonus;
+                    speedTimerValueElement.textContent = speedStats.totalSpeedBonus || 0;
                     
                     // Add pulse animation for recent speed bonuses
-                    if (speedStats.speedBonuses.length > 0) {
+                    if (speedStats.speedBonuses && speedStats.speedBonuses.length > 0) {
                         const lastBonus = speedStats.speedBonuses[speedStats.speedBonuses.length - 1];
                         const timeSinceLastBonus = Date.now() - lastBonus.timestamp;
                         if (timeSinceLastBonus < 2000) { // Within last 2 seconds
@@ -2244,11 +2246,11 @@ class BlockdokuGame {
                 hintBtn.disabled = !hintStatus.available;
                 
                 if (hintStatus.active) {
-                    hintBtn.textContent = '💡 Hint On';
+                    hintBtn.textContent = 'On';
                 } else if (hintStatus.available) {
-                    hintBtn.textContent = '💡 Hint Off';
+                    hintBtn.textContent = 'Off';
                 } else {
-                    hintBtn.textContent = `💡 Hint (${Math.ceil(hintStatus.cooldownRemaining / 1000)}s)`;
+                    hintBtn.textContent = `${Math.ceil(hintStatus.cooldownRemaining / 1000)}s`;
                 }
                 console.log('Hint button status:', hintStatus);
             }
@@ -2314,7 +2316,8 @@ class BlockdokuGame {
             
             if (timerEnabled) {
                 const timeRemaining = this.timerSystem.getTimeRemaining();
-                timerElement.textContent = this.timerSystem.formatTime(timeRemaining);
+                const formattedTime = this.timerSystem.formatTime(timeRemaining);
+                timerElement.textContent = formattedTime;
                 
                 // Remove all timer state classes
                 timerDisplay.classList.remove('warning', 'critical');
@@ -2815,6 +2818,7 @@ class BlockdokuGame {
             this.showPoints = difficultySettings.showPoints || false;
             this.showPersonalBests = difficultySettings.showPersonalBests || false;
             this.showSpeedTimer = difficultySettings.showSpeedTimer || false;
+            this.enableWildBlocks = difficultySettings.enableWildBlocks || false;
             
             // Log difficulty settings application
             console.log(`🎮 Difficulty level game settings applied for: ${this.difficulty.toUpperCase()}`);
@@ -3212,6 +3216,11 @@ class BlockdokuGame {
             enablePetrification: this.enablePetrification,
             speedStats: this.scoringSystem.getSpeedStats ? this.scoringSystem.getSpeedStats() : null,
             speedMode: this.scoringSystem.speedConfig ? this.scoringSystem.speedConfig.mode : 'ignored',
+            // Countdown timer information
+            countdownEnabled: this.storage.loadSettings().enableTimer || false,
+            countdownDuration: this.storage.loadSettings().countdownDuration || 3,
+            timeRemaining: this.timerSystem ? this.timerSystem.getTimeRemaining() : null,
+            timeLimit: this.difficultyManager ? this.difficultyManager.getTimeLimit() : null,
             prizeRecognitionEnabled: prizeRecognitionEnabled,
             prize: prize,
             nextPrize: nextPrizeInfo?.nextPrize || null,
@@ -3575,7 +3584,7 @@ class BlockdokuGame {
         }
         
         
-        const newBlocks = this.blockManager.generateRandomBlocks(blockCount, blockTypes, this.difficultyManager);
+        const newBlocks = this.blockManager.generateRandomBlocks(blockCount, blockTypes, this.difficultyManager, this.enableWildBlocks);
         console.log('Generated new blocks:', newBlocks);
         console.log('BlockPalette exists:', !!this.blockPalette);
         this.blockPalette.updateBlocks(newBlocks);
@@ -3593,11 +3602,20 @@ class BlockdokuGame {
     placeBlock(row, col) {
         if (!this.canPlaceBlock(row, col)) return;
         
+        // Store reference to the block before placement for wild block logic
+        const placedBlock = this.selectedBlock;
+        const isWildBlock = placedBlock && placedBlock.isWild;
+        
         // Place the block on the board
         this.board = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);
         
         // Update petrification tracking for newly placed cells
         this.petrificationManager.updateBoardTracking(this.board);
+        
+        // Handle wild block special effects
+        if (isWildBlock && placedBlock.wildType === 'lineClear') {
+            this.handleWildBlockPlacement(placedBlock, row, col);
+        }
         
         // Award 1 point for block placement (as documented in scoring.md)
         this.scoringSystem.addPlacementPoints(this.scoringSystem.basePoints.single, this.difficultyManager.getScoreMultiplier());
@@ -3669,6 +3687,158 @@ class BlockdokuGame {
         
         // Auto-select the first available block
         this.autoSelectNextBlock();
+    }
+    
+    // Handle wild block special effects
+    handleWildBlockPlacement(wildBlock, row, col) {
+        console.log('🔥 Wild block placed!', wildBlock);
+        
+        // Find all lines that the wild block is part of
+        const wildLines = this.findLinesContainingWildBlock(wildBlock, row, col);
+        
+        if (wildLines.rows.length > 0 || wildLines.columns.length > 0 || wildLines.squares.length > 0) {
+            console.log('🔥 Wild block triggered line clears:', wildLines);
+            
+            // Show special wild block effect
+            this.showWildBlockEffect(row, col);
+            
+            // Force clear the lines that contain the wild block
+            setTimeout(() => {
+                this.forceWildBlockClears(wildLines);
+            }, 500); // Delay to show the effect first
+        }
+    }
+    
+    // Find all lines (rows, columns, squares) that contain the wild block
+    findLinesContainingWildBlock(wildBlock, startRow, startCol) {
+        const lines = { rows: [], columns: [], squares: [] };
+        
+        // Check each cell of the placed wild block
+        for (let r = 0; r < wildBlock.shape.length; r++) {
+            for (let c = 0; c < wildBlock.shape[r].length; c++) {
+                if (wildBlock.shape[r][c] === 1) {
+                    const boardRow = startRow + r;
+                    const boardCol = startCol + c;
+                    
+                    // Check if this cell completes a row
+                    if (this.board[boardRow].every(cell => cell === 1)) {
+                        if (!lines.rows.includes(boardRow)) {
+                            lines.rows.push(boardRow);
+                        }
+                    }
+                    
+                    // Check if this cell completes a column
+                    if (this.board.every(row => row[boardCol] === 1)) {
+                        if (!lines.columns.includes(boardCol)) {
+                            lines.columns.push(boardCol);
+                        }
+                    }
+                    
+                    // Check if this cell completes a 3x3 square
+                    const squareRow = Math.floor(boardRow / 3);
+                    const squareCol = Math.floor(boardCol / 3);
+                    if (this.isSquareComplete(squareRow, squareCol)) {
+                        const squareKey = `${squareRow}-${squareCol}`;
+                        if (!lines.squares.some(sq => `${sq.row}-${sq.col}` === squareKey)) {
+                            lines.squares.push({ row: squareRow, col: squareCol });
+                        }
+                    }
+                }
+            }
+        }
+        
+        return lines;
+    }
+    
+    // Check if a 3x3 square is complete
+    isSquareComplete(squareRow, squareCol) {
+        const startRow = squareRow * 3;
+        const startCol = squareCol * 3;
+        
+        for (let r = startRow; r < startRow + 3; r++) {
+            for (let c = startCol; c < startCol + 3; c++) {
+                if (this.board[r][c] !== 1) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    // Show special visual effect for wild block activation
+    showWildBlockEffect(row, col) {
+        const cellSize = this.cellSize;
+        const x = col * cellSize + cellSize / 2;
+        const y = row * cellSize + cellSize / 2;
+        
+        // Create wild effect element
+        const wildEffect = document.createElement('div');
+        wildEffect.textContent = '🔥 WILD! 🔥';
+        wildEffect.style.cssText = `
+            position: absolute;
+            left: ${x}px;
+            top: ${y}px;
+            transform: translate(-50%, -50%);
+            color: #ff4444;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 68, 68, 0.8);
+            pointer-events: none;
+            z-index: 1000;
+            animation: wildBlockActivation 1s ease-out forwards;
+        `;
+        
+        // Add CSS animation for wild effect
+        if (!document.querySelector('#wild-effect-styles')) {
+            const style = document.createElement('style');
+            style.id = 'wild-effect-styles';
+            style.textContent = `
+                @keyframes wildBlockActivation {
+                    0% { 
+                        transform: translate(-50%, -50%) scale(0.5);
+                        opacity: 0;
+                    }
+                    50% { 
+                        transform: translate(-50%, -50%) scale(1.2);
+                        opacity: 1;
+                    }
+                    100% { 
+                        transform: translate(-50%, -50%) scale(1) translateY(-20px);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        this.canvas.parentElement.appendChild(wildEffect);
+        
+        // Remove effect after animation
+        setTimeout(() => {
+            if (wildEffect.parentElement) {
+                wildEffect.parentElement.removeChild(wildEffect);
+            }
+        }, 1000);
+    }
+    
+    // Force clear lines triggered by wild block
+    forceWildBlockClears(wildLines) {
+        // Use the existing line clearing system but mark as wild-triggered
+        this.pendingClears = wildLines;
+        this.pendingClearsTimestamp = Date.now();
+        
+        // Calculate and apply score for wild block clears
+        const scoreResult = this.scoringSystem.calculateScoreForClears(wildLines, this.difficultyManager.getScoreMultiplier());
+        this.scoringSystem.addScore(scoreResult.totalScore);
+        this.score = this.scoringSystem.getScore();
+        
+        // Show the clearing animation
+        this.highlightClearingBlocks(wildLines);
+        
+        // Complete the clear after animation
+        setTimeout(() => {
+            this.completeLineClear(wildLines);
+        }, 800);
     }
     
     // Show visual feedback for speed timer
@@ -3909,8 +4079,8 @@ class BlockdokuGame {
     
     updateSpeedTimerDisplay() {
         // Only update if speed timer is enabled and in timer mode
-        const settings = this.storage.loadSettings();
-        const showSpeedTimer = settings.showSpeedTimer === true;
+        const difficultySettings = this.difficultySettings.getSettingsForDifficulty(this.difficulty);
+        const showSpeedTimer = difficultySettings.showSpeedTimer === true;
         
         if (!showSpeedTimer || this.speedDisplayMode !== 'timer') {
             return;
