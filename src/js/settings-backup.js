@@ -1044,32 +1044,7 @@ export class SettingsManager {
     }
     
     async selectDifficulty(difficulty) {
-        // Check if there's a game in progress by looking at localStorage
-        const gameState = localStorage.getItem(this.storage?.storageKey || 'blockdoku_game_data');
-        let gameInProgress = false;
-        
-        if (gameState) {
-            try {
-                const state = JSON.parse(gameState);
-                gameInProgress = state.score > 0 || state.board.some(row => row.some(cell => cell === 1));
-            } catch (e) {
-                // If we can't parse the game state, assume no game in progress
-                gameInProgress = false;
-            }
-        }
-        
-        if (gameInProgress) {
-            // Show confirmation dialog
-            const confirmed = await this.confirmationDialog.show(
-                `Changing difficulty to ${difficulty.toUpperCase()} will reset your current game and you'll lose your progress. Are you sure you want to continue?`
-            );
-            
-            if (!confirmed) {
-                // User cancelled, revert the UI selection
-                this.updateDifficultyUI();
-                return;
-            }
-        }
+        // No confirmation needed - difficulty changes apply to current game without resetting progress
         
         this.currentDifficulty = difficulty;
         this.updateDifficultyUI();
