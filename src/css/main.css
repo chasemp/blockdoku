@@ -1221,7 +1221,7 @@ body {
     transition: all 0.2s ease;
 }
 
-/* Match setting bubble colors for consistency across all themes */
+/* Match setting bubble colors - green and orange stand out, disabled blends with theme */
 .bubble-enabled {
     background: linear-gradient(135deg, #44ff44 0%, #00cc00 100%);
     color: #1a1a1a;
@@ -1230,10 +1230,11 @@ body {
 }
 
 .bubble-disabled {
-    background: linear-gradient(135deg, #d4a373 0%, #b8956a 100%);
-    color: #2a2a2a;
-    border: 1px solid #b8956a;
-    box-shadow: 0 2px 6px rgba(212, 163, 115, 0.3);
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-hover) 100%);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    opacity: 0.7;
 }
 
 .bubble-neutral {
@@ -3942,11 +3943,12 @@ html.light-theme .settings-section .difficulty-option.selected {
     margin-left: 0.5rem;
 }
 
-/* Red state (disabled/off) - softer, more neutral */
+/* Disabled/off state - blends with theme */
 .setting-bubble.state-red {
-    background: linear-gradient(135deg, #d4a373 0%, #b8956a 100%);
-    color: #2a2a2a;
-    box-shadow: 0 2px 8px rgba(212, 163, 115, 0.3);
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-hover) 100%);
+    color: var(--text-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    opacity: 0.7;
 }
 
 /* Green state (enabled/on) */
