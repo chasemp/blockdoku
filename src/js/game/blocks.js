@@ -312,6 +312,344 @@ export class BlockManager {
                 points: 7,
                 isWild: false,
                 isCreativeShape: true
+            },
+            
+            // More Pentominos (completing the classic set)
+            pentominoI: {
+                name: 'I-Pentomino',
+                shape: [
+                    [1],
+                    [1],
+                    [1],
+                    [1],
+                    [1]
+                ],
+                color: '#e17055',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            pentominoL: {
+                name: 'L-Pentomino',
+                shape: [
+                    [1, 0],
+                    [1, 0],
+                    [1, 0],
+                    [1, 1]
+                ],
+                color: '#a29bfe',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            pentominoN: {
+                name: 'N-Pentomino',
+                shape: [
+                    [0, 1],
+                    [1, 1],
+                    [1, 0],
+                    [1, 0]
+                ],
+                color: '#fd63c7',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            pentominoT: {
+                name: 'T-Pentomino',
+                shape: [
+                    [1, 1, 1],
+                    [0, 1, 0],
+                    [0, 1, 0]
+                ],
+                color: '#6c5ce7',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            pentominoU: {
+                name: 'U-Pentomino',
+                shape: [
+                    [1, 0, 1],
+                    [1, 1, 1]
+                ],
+                color: '#fd79a8',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            pentominoV: {
+                name: 'V-Pentomino',
+                shape: [
+                    [1, 0, 0],
+                    [1, 0, 0],
+                    [1, 1, 1]
+                ],
+                color: '#fdcb6e',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            pentominoW: {
+                name: 'W-Pentomino',
+                shape: [
+                    [1, 0, 0],
+                    [1, 1, 0],
+                    [0, 1, 1]
+                ],
+                color: '#e84393',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            pentominoX: {
+                name: 'X-Pentomino',
+                shape: [
+                    [0, 1, 0],
+                    [1, 1, 1],
+                    [0, 1, 0]
+                ],
+                color: '#00b894',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            pentominoZ: {
+                name: 'Z-Pentomino',
+                shape: [
+                    [1, 1, 0],
+                    [0, 1, 0],
+                    [0, 1, 1]
+                ],
+                color: '#0984e3',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            
+            // Hexominos (6-cell shapes) - More challenging
+            hexominoBar: {
+                name: 'Hexomino Bar',
+                shape: [
+                    [1, 1, 1, 1, 1, 1]
+                ],
+                color: '#2d3436',
+                points: 6,
+                isWild: false,
+                isCreativeShape: true
+            },
+            hexominoSnake: {
+                name: 'Hexomino Snake',
+                shape: [
+                    [1, 1, 0, 0],
+                    [0, 1, 1, 0],
+                    [0, 0, 1, 1]
+                ],
+                color: '#636e72',
+                points: 6,
+                isWild: false,
+                isCreativeShape: true
+            },
+            hexominoArch: {
+                name: 'Hexomino Arch',
+                shape: [
+                    [1, 0, 0, 1],
+                    [1, 1, 1, 1]
+                ],
+                color: '#74b9ff',
+                points: 6,
+                isWild: false,
+                isCreativeShape: true
+            },
+            hexominoStairs: {
+                name: 'Hexomino Stairs',
+                shape: [
+                    [1, 0, 0],
+                    [1, 1, 0],
+                    [0, 1, 1],
+                    [0, 0, 1]
+                ],
+                color: '#55a3ff',
+                points: 6,
+                isWild: false,
+                isCreativeShape: true
+            },
+            
+            // Irregular asymmetric shapes
+            asymmetricClaw: {
+                name: 'Asymmetric Claw',
+                shape: [
+                    [1, 0, 1],
+                    [1, 1, 0],
+                    [1, 0, 0]
+                ],
+                color: '#ff7675',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            asymmetricWing: {
+                name: 'Asymmetric Wing',
+                shape: [
+                    [0, 0, 1, 1],
+                    [1, 1, 1, 0]
+                ],
+                color: '#fd79a8',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            asymmetricTail: {
+                name: 'Asymmetric Tail',
+                shape: [
+                    [1, 1, 1, 0],
+                    [0, 0, 1, 1],
+                    [0, 0, 0, 1]
+                ],
+                color: '#fdcb6e',
+                points: 6,
+                isWild: false,
+                isCreativeShape: true
+            },
+            
+            // More hollow/frame shapes
+            hollowL: {
+                name: 'Hollow L',
+                shape: [
+                    [1, 0, 0],
+                    [1, 0, 0],
+                    [1, 1, 1]
+                ],
+                color: '#00cec9',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            hollowT: {
+                name: 'Hollow T',
+                shape: [
+                    [1, 1, 1],
+                    [0, 1, 0]
+                ],
+                color: '#6c5ce7',
+                points: 4,
+                isWild: false,
+                isCreativeShape: true
+            },
+            frameCorner: {
+                name: 'Frame Corner',
+                shape: [
+                    [1, 1, 1, 1],
+                    [1, 0, 0, 0],
+                    [1, 0, 0, 0],
+                    [1, 1, 1, 1]
+                ],
+                color: '#a29bfe',
+                points: 10,
+                isWild: false,
+                isCreativeShape: true
+            },
+            
+            // Complex patterns
+            checkerboard: {
+                name: 'Checkerboard',
+                shape: [
+                    [1, 0, 1],
+                    [0, 1, 0],
+                    [1, 0, 1]
+                ],
+                color: '#2d3436',
+                points: 5,
+                isWild: false,
+                isCreativeShape: true
+            },
+            butterfly: {
+                name: 'Butterfly',
+                shape: [
+                    [1, 0, 1],
+                    [1, 1, 1],
+                    [1, 0, 1]
+                ],
+                color: '#fd79a8',
+                points: 7,
+                isWild: false,
+                isCreativeShape: true
+            },
+            hourglass: {
+                name: 'Hourglass',
+                shape: [
+                    [1, 1, 1],
+                    [0, 1, 0],
+                    [1, 1, 1]
+                ],
+                color: '#fdcb6e',
+                points: 7,
+                isWild: false,
+                isCreativeShape: true
+            },
+            arrow: {
+                name: 'Arrow',
+                shape: [
+                    [0, 0, 1, 0, 0],
+                    [0, 1, 1, 1, 0],
+                    [1, 1, 1, 1, 1],
+                    [0, 0, 1, 0, 0],
+                    [0, 0, 1, 0, 0]
+                ],
+                color: '#00b894',
+                points: 11,
+                isWild: false,
+                isCreativeShape: true
+            },
+            diamond: {
+                name: 'Diamond',
+                shape: [
+                    [0, 1, 0],
+                    [1, 0, 1],
+                    [0, 1, 0]
+                ],
+                color: '#e17055',
+                points: 4,
+                isWild: false,
+                isCreativeShape: true
+            },
+            
+            // Advanced irregular shapes
+            lightning: {
+                name: 'Lightning Bolt',
+                shape: [
+                    [0, 1, 0],
+                    [1, 1, 0],
+                    [0, 1, 1],
+                    [0, 0, 1]
+                ],
+                color: '#fdcb6e',
+                points: 6,
+                isWild: false,
+                isCreativeShape: true
+            },
+            maze: {
+                name: 'Maze Pattern',
+                shape: [
+                    [1, 1, 0, 1],
+                    [0, 1, 0, 1],
+                    [0, 1, 1, 1]
+                ],
+                color: '#636e72',
+                points: 7,
+                isWild: false,
+                isCreativeShape: true
+            },
+            crown: {
+                name: 'Crown',
+                shape: [
+                    [1, 0, 1, 0, 1],
+                    [1, 1, 1, 1, 1]
+                ],
+                color: '#feca57',
+                points: 8,
+                isWild: false,
+                isCreativeShape: true
             }
         };
     }
@@ -394,16 +732,16 @@ export class BlockManager {
                 selectedKey = wildBlocks[wildIndex];
             } else {
                 // Select a regular block
-                // If we've used all available shapes, reset the pool
-                if (remainingShapes.length === 0) {
+            // If we've used all available shapes, reset the pool
+            if (remainingShapes.length === 0) {
                     remainingShapes = [...regularBlocks];
-                }
-                
-                const randomIndex = Math.floor(Math.random() * remainingShapes.length);
+            }
+            
+            const randomIndex = Math.floor(Math.random() * remainingShapes.length);
                 selectedKey = remainingShapes[randomIndex];
-                
-                // Remove the selected shape to avoid duplicates
-                remainingShapes.splice(randomIndex, 1);
+            
+            // Remove the selected shape to avoid duplicates
+            remainingShapes.splice(randomIndex, 1);
             }
             
             const block = {
@@ -475,6 +813,44 @@ export class BlockManager {
                         return false;
                     }
                     if (!board[row + r] || board[row + r][col + c] === 1) {
+                        return false;
+                    }
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    // Check if block is within board boundaries (for ghost blocks)
+    // This doesn't check for collisions, only boundaries
+    isWithinBounds(block, row, col, board) {
+        // Validate inputs first
+        if (!block || !board || !Array.isArray(board) || board.length === 0) {
+            console.warn('isWithinBounds: Invalid inputs', { block, board });
+            return false;
+        }
+        
+        const shape = block.shape;
+        if (!shape || !Array.isArray(shape) || shape.length === 0) {
+            console.warn('isWithinBounds: Invalid block shape', { block, shape });
+            return false;
+        }
+        
+        const boardSize = board.length;
+        
+        // Check if block fits within board boundaries
+        if (row < 0 || col < 0 || 
+            row + shape.length > boardSize || 
+            col + shape[0].length > boardSize) {
+            return false;
+        }
+        
+        // Additional bounds checking for each cell
+        for (let r = 0; r < shape.length; r++) {
+            for (let c = 0; c < shape[r].length; c++) {
+                if (shape[r][c] === 1) {
+                    if (row + r >= boardSize || col + c >= boardSize || row + r < 0 || col + c < 0) {
                         return false;
                     }
                 }

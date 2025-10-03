@@ -359,6 +359,13 @@ export class ScoringSystem {
             
 			// A combo occurs when 2+ total clears happen in the same clear event
 			if (isComboEvent) {
+                console.log('🎯 Combo Event Detected!', {
+                    clearTypes: clearTypes.length,
+                    totalClearsThisEvent,
+                    currentCombo: this.combo,
+                    currentTotalCombos: this.totalCombos
+                });
+                
                 // Update streak combo (resets when no combo)
                 this.combo++;
                 this.maxCombo = Math.max(this.maxCombo, this.combo);
@@ -370,6 +377,12 @@ export class ScoringSystem {
                 // Update total combos (never resets, cumulative)
                 this.totalCombos++;
                 this.maxTotalCombos = Math.max(this.maxTotalCombos, this.totalCombos);
+                
+                console.log('🎯 After Combo Update:', {
+                    newCombo: this.combo,
+                    newTotalCombos: this.totalCombos,
+                    streakCount: this.streakCount
+                });
                 
                 this.comboActivations++;
             } else {
