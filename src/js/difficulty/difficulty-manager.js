@@ -44,7 +44,7 @@ export class DifficultyManager {
                 blockSizeRange: [1, 3], // 1x1 to 3x3 blocks
                 allowedShapes: ['single', 'line2', 'line3', 'l2x2', 't3x2', 'z3x2'],
                 scoreMultiplier: 0.8,
-                timeLimit: null,
+                timeLimit: null, // User configurable via countdown duration setting
                 hintsEnabled: false,
                 blockGenerationDelay: 1000, // 1 second between new blocks
                 visualHints: false
@@ -56,7 +56,7 @@ export class DifficultyManager {
                 blockSizeRange: [1, 4], // 1x1 to 4x4 blocks
                 allowedShapes: 'all', // All available shapes
                 scoreMultiplier: 0.5,
-                timeLimit: 300, // 5 minutes
+                timeLimit: null, // User configurable via countdown duration setting
                 hintsEnabled: false,
                 blockGenerationDelay: 800, // 0.8 seconds between new blocks
                 visualHints: false,
@@ -118,11 +118,30 @@ export class DifficultyManager {
             return [];
         }
         
-        // Get effective settings (defaults + user overrides) for both difficulties
-        const normalSettings = difficultySettingsManager.getSettingsForDifficulty('normal');
-        const currentSettings = difficultySettingsManager.getSettingsForDifficulty(difficulty);
+        // Get PURE difficulty defaults (without user overrides) for comparison
+        const normalDefaults = difficultySettingsManager.difficultyDefaults['normal'] || {};
+        const currentDefaults = difficultySettingsManager.difficultyDefaults[difficulty] || {};
         
-        if (!normalSettings || !currentSettings || difficulty === 'normal') {
+        // Debug logging for difficulty comparison
+        if (difficulty === 'hard') {
+            console.log('🔍 Difficulty Defaults Comparison (Pure):', {
+                difficulty,
+                normalDefaults: { 
+                    enableHints: normalDefaults.enableHints,
+                    showPersonalBests: normalDefaults.showPersonalBests,
+                    showSpeedTimer: normalDefaults.showSpeedTimer,
+                    enableTimer: normalDefaults.enableTimer
+                },
+                currentDefaults: { 
+                    enableHints: currentDefaults.enableHints,
+                    showPersonalBests: currentDefaults.showPersonalBests,
+                    showSpeedTimer: currentDefaults.showSpeedTimer,
+                    enableTimer: currentDefaults.enableTimer
+                }
+            });
+        }
+        
+        if (!normalDefaults || !currentDefaults || difficulty === 'normal') {
             return [];
         }
         
@@ -132,28 +151,40 @@ export class DifficultyManager {
         const settingsToCompare = [
             { key: 'enableHints', label: 'Hints', emoji: '💡' },
             { key: 'showPoints', label: 'Points', emoji: '🔢' },
-            { key: 'enableTimer', label: 'Timer', emoji: '⏱️' },
+            { key: 'enableTimer', label: 'Countdown', emoji: '⏳' },
             { key: 'showPersonalBests', label: 'Best', emoji: '🏆' },
             { key: 'showSpeedTimer', label: 'Speed', emoji: '⚡' },
             { key: 'enablePrizeRecognition', label: 'Prizes', emoji: '🎉' },
-            { key: 'pieceTimeoutEnabled', label: 'Timeout', emoji: '⏰' }
+            { key: 'pieceTimeoutEnabled', label: 'Timeout', emoji: '⏰' },
+            { key: 'enableWildBlocks', label: 'Wild', emoji: '🔥' }
         ];
         
-        // Special handling for speed mode
-        if (currentSettings.speedMode !== normalSettings.speedMode) {
-            const speedModeLabel = currentSettings.speedMode === 'bonus' ? 'Bonus' : 
-                                   currentSettings.speedMode === 'punishment' ? 'Punish' : 'Speed';
+        // Special handling for speed mode - compare pure defaults
+        if (currentDefaults.speedMode !== normalDefaults.speedMode) {
+            const speedModeLabel = currentDefaults.speedMode === 'bonus' ? 'Bonus' : 
+                                   currentDefaults.speedMode === 'punishment' ? 'Punish' : 'Speed';
             bubbles.push({
-                type: currentSettings.speedMode === 'ignored' ? 'disabled' : 'enabled',
+                type: currentDefaults.speedMode === 'ignored' ? 'disabled' : 'enabled',
                 label: speedModeLabel,
                 emoji: '🏃'
             });
         }
         
-        // Compare each setting with normal
+        // Compare each setting with normal defaults (pure comparison)
         settingsToCompare.forEach(setting => {
-            const normalValue = normalSettings[setting.key];
-            const currentValue = currentSettings[setting.key];
+            const normalValue = normalDefaults[setting.key];
+            const currentValue = currentDefaults[setting.key];
+            
+            // Debug logging for difficulty comparison
+            if (difficulty === 'hard' && setting.key === 'enableHints') {
+                console.log('🔍 Difficulty Comparison Debug (Pure Defaults):', {
+                    difficulty,
+                    settingKey: setting.key,
+                    normalValue,
+                    currentValue,
+                    different: normalValue !== currentValue
+                });
+            }
             
             if (normalValue !== currentValue) {
                 bubbles.push({
@@ -215,6 +246,15 @@ export class DifficultyManager {
     }
     
     getTimeLimit() {
+        // Check if user has enabled countdown timer with custom duration
+        if (this.game && this.game.storage) {
+            const settings = this.game.storage.loadSettings();
+            if (settings.enableTimer && settings.countdownDuration) {
+                return settings.countdownDuration * 60; // Convert minutes to seconds
+            }
+        }
+        
+        // Fall back to difficulty-specific time limit
         return this.difficultySettings[this.currentDifficulty].timeLimit;
     }
     

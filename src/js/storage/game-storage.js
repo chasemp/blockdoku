@@ -153,6 +153,7 @@ export class GameStorage {
             autoSave: true,
             enableHints: false,
             enableTimer: false,
+            countdownDuration: 3, // Default countdown duration in minutes (3-10 range)
             enablePetrification: false,
             enableDeadPixels: false,
             deadPixelsIntensity: 0,
@@ -163,7 +164,8 @@ export class GameStorage {
             comboDisplayMode: 'cumulative', // 'streak' or 'cumulative'
             speedMode: 'bonus', // 'bonus', 'punishment', or 'ignored'
             speedDisplayMode: 'timer', // 'timer' or 'points'
-            pieceTimeoutEnabled: false // Enable piece timeout (15s warning, 30s timeout)
+            pieceTimeoutEnabled: false, // Enable piece timeout (15s warning, 30s timeout)
+            enableWildBlocks: false // Enable wild blocks that can clear lines when placed
         };
         console.log('Returning default settings with difficulty:', defaults.difficulty);
         return defaults;

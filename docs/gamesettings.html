@@ -140,11 +140,11 @@
     <meta property="twitter:title" content="Blockdoku - Block Puzzle Game">
     <meta property="twitter:description" content="A modern take on the classic block puzzle game. Play anywhere, anytime!">
     <meta property="twitter:image" content="https://blockdoku.523.life/icons/icon-512x512.png">
-  <script type="module" crossorigin src="./assets/gamesettings-BVBFMmI6.js"></script>
+  <script type="module" crossorigin src="./assets/gamesettings-CldmblIA.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="modulepreload" crossorigin href="./assets/difficulty-settings-manager-D2MsyMLE.js">
-  <link rel="modulepreload" crossorigin href="./assets/confirmation-dialog-Bfw5TIb9.js">
-  <link rel="stylesheet" crossorigin href="./assets/main-CmIm6_5U.css">
+  <link rel="modulepreload" crossorigin href="./assets/difficulty-settings-manager-Cn-lu4xS.js">
+  <link rel="modulepreload" crossorigin href="./assets/confirmation-dialog-CE0X1pfx.js">
+  <link rel="stylesheet" crossorigin href="./assets/main-HJztQvMG.css">
   <link rel="stylesheet" crossorigin href="./assets/wood-36S1T1G_.css">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
@@ -182,10 +182,15 @@
                     <div class="setting-item">
                         <label>
                             <input type="checkbox" id="enable-timer" />
-                            Enable timer
-                            <span class="setting-bubble" data-setting="timer">⏱️ timer</span>
+                            Enable countdown
+                            <span class="setting-bubble" data-setting="timer">⏳ countdown</span>
                         </label>
                         <p class="setting-description">Add time pressure to increase difficulty and excitement</p>
+                    </div>
+                    <div class="setting-item" id="countdown-duration-container" style="margin-left: 2rem; display: none;">
+                        <label for="countdown-duration">Countdown Duration: <span id="countdown-duration-value">3:00</span></label>
+                        <input type="range" id="countdown-duration" min="3" max="10" value="3" step="1" style="width: 100%; max-width: 300px; margin-top: 0.5rem;" />
+                        <p class="setting-description" style="font-size: 0.85rem; margin-top: 0.5rem;">3 = 3 minutes, 10 = 10 minutes</p>
                     </div>
                     
                     <div class="setting-item">
@@ -378,8 +383,8 @@
             <!-- Game Modes Section -->
             <div class="game-modes-settings settings-section-container">
                     <h3>Game Modes</h3>
-                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Enable special game modes that add unique challenges and mechanics.</p>
-                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0;">Multiple modes can be active simultaneously, but these are never activated by default.</p>
+                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0; text-align: center;">Enable special game modes that add unique challenges and mechanics.</p>
+                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0; text-align: center;">Most modes can be active simultaneously, but these are never activated by default.</p>
                     
                     <!-- Petrification Mode -->
                     <div class="setting-item game-mode-item">
@@ -404,6 +409,16 @@
                         <label for="dead-pixels-intensity">Dead Pixels Intensity: <span id="dead-pixels-intensity-value">0</span></label>
                         <input type="range" id="dead-pixels-intensity" min="0" max="5" value="0" step="1" style="width: 100%; max-width: 300px; margin-top: 0.5rem;" />
                         <p class="setting-description" style="font-size: 0.85rem; margin-top: 0.5rem;">0 = Off, 5 = Maximum dead pixels (~15-20)</p>
+                    </div>
+                    
+                    <!-- Wild Blocks Mode -->
+                    <div class="setting-item game-mode-item">
+                        <label>
+                            <input type="checkbox" id="enable-wild-blocks" />
+                            Enable wild blocks
+                            <span class="setting-bubble" data-setting="wildBlocks">🔥 wild</span>
+                        </label>
+                        <p class="setting-description">Occasionally generate special wild blocks that automatically clear any line they complete when placed. Adds exciting power-up gameplay!</p>
                     </div>
                 </div>
                 

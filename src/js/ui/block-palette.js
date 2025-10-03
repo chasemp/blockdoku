@@ -152,7 +152,14 @@ export class BlockPalette {
         const blockDiv = document.createElement('div');
         blockDiv.className = 'block-item';
         blockDiv.dataset.blockId = block.id;
-        blockDiv.title = `Click to select, double-click to rotate: ${block.name} (${block.points} pts)`;
+        
+        // Add special styling for wild blocks
+        if (block.isWild) {
+            blockDiv.classList.add('wild-block');
+            blockDiv.title = `🔥 WILD BLOCK: ${block.name} (${block.points} pts) - ${block.description}`;
+        } else {
+            blockDiv.title = `Click to select, double-click to rotate: ${block.name} (${block.points} pts)`;
+        }
         
         // Create block info container
         const blockInfo = document.createElement('div');
@@ -175,10 +182,21 @@ export class BlockPalette {
         canvas.height = block.shape.length * cellSize;
         const ctx = canvas.getContext('2d');
         
-        // Draw block
-        ctx.fillStyle = block.color;
-        ctx.strokeStyle = this.darkenColor(block.color);
-        ctx.lineWidth = 2; // Increased line width for better visibility
+        // Draw block with special effects for wild blocks
+        if (block.isWild) {
+            // Create gradient effect for wild blocks
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#ff6b6b');
+            gradient.addColorStop(0.5, '#ff8e8e');
+            gradient.addColorStop(1, '#ff6b6b');
+            ctx.fillStyle = gradient;
+            ctx.strokeStyle = '#cc0000';
+            ctx.lineWidth = 3; // Thicker border for wild blocks
+        } else {
+            ctx.fillStyle = block.color;
+            ctx.strokeStyle = this.darkenColor(block.color);
+            ctx.lineWidth = 2; // Increased line width for better visibility
+        }
         
         for (let r = 0; r < block.shape.length; r++) {
             for (let c = 0; c < block.shape[r].length; c++) {
@@ -187,6 +205,22 @@ export class BlockPalette {
                     const y = r * cellSize;
                     ctx.fillRect(x, y, cellSize, cellSize);
                     ctx.strokeRect(x, y, cellSize, cellSize);
+                    
+                    // Add sparkle effect for wild blocks
+                    if (block.isWild) {
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                        ctx.fillRect(x + cellSize/2 - 2, y + 4, 4, 2);
+                        ctx.fillRect(x + cellSize - 6, y + cellSize/2 - 1, 2, 2);
+                        ctx.fillRect(x + 4, y + cellSize - 6, 2, 2);
+                        // Reset fill style for next cell
+                        if (block.isWild) {
+                            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                            gradient.addColorStop(0, '#ff6b6b');
+                            gradient.addColorStop(0.5, '#ff8e8e');
+                            gradient.addColorStop(1, '#ff6b6b');
+                            ctx.fillStyle = gradient;
+                        }
+                    }
                 }
             }
         }

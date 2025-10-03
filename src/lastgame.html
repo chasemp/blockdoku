@@ -492,6 +492,9 @@
                         <p>Total Combos: ${stats.totalCombos || 0}</p>
                         <p>Max Combo Streak: ${stats.maxStreakCount || 0}</p>
                         <p>Difficulty: ${(stats.difficulty || 'NORMAL').toUpperCase()} (x${stats.difficultyMultiplier || 1})</p>
+                        ${stats.countdownEnabled ? `
+                            <p>⏳ Countdown: ${stats.countdownDuration || 3} min${stats.timeRemaining !== null ? ` (${Math.max(0, Math.floor(stats.timeRemaining / 60))}:${String(Math.max(0, stats.timeRemaining % 60)).padStart(2, '0')} remaining)` : ''}</p>
+                        ` : ''}
                         ${stats.isHighScore ? '<p class="high-score-badge">🎉 New High Score! 🎉</p>' : ''}
                     </div>
                 `;

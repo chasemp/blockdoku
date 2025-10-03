@@ -9,6 +9,10 @@ export class DifficultySettingsManager {
 
     /**
      * Define default settings for each difficulty level
+     * 
+     * IMPORTANT: Game modes (like enableWildBlocks, enablePetrification, etc.) 
+     * should NOT be coupled with difficulty defaults. They should remain false
+     * for all difficulties to allow users to enable them independently.
      */
     initializeDifficultyDefaults() {
         return {
@@ -24,7 +28,8 @@ export class DifficultySettingsManager {
                 animationsEnabled: true,
                 soundEnabled: false,
                 pieceTimeoutEnabled: false,
-                enablePrizeRecognition: true
+                enablePrizeRecognition: true,
+                enableWildBlocks: false
             },
             normal: {
                 enableHints: false,
@@ -38,7 +43,8 @@ export class DifficultySettingsManager {
                 animationsEnabled: true,
                 soundEnabled: false,
                 pieceTimeoutEnabled: false,
-                enablePrizeRecognition: false
+                enablePrizeRecognition: false,
+                enableWildBlocks: false
             },
             hard: {
                 enableHints: false,
@@ -52,7 +58,8 @@ export class DifficultySettingsManager {
                 animationsEnabled: true,
                 soundEnabled: false,
                 pieceTimeoutEnabled: false,
-                enablePrizeRecognition: false
+                enablePrizeRecognition: false,
+                enableWildBlocks: false
             },
             expert: {
                 enableHints: false,
@@ -66,7 +73,8 @@ export class DifficultySettingsManager {
                 animationsEnabled: true,
                 soundEnabled: false,
                 pieceTimeoutEnabled: false,
-                enablePrizeRecognition: false
+                enablePrizeRecognition: false,
+                enableWildBlocks: false  // Game modes should not be coupled with difficulty defaults
             }
         };
     }
@@ -77,6 +85,17 @@ export class DifficultySettingsManager {
     getSettingsForDifficulty(difficulty) {
         const defaults = this.difficultyDefaults[difficulty] || {};
         const userOverrides = this.getUserOverrides(difficulty);
+        
+        // Debug logging for hints issue
+        if (difficulty === 'hard') {
+            console.log('🔍 Hard Difficulty Settings Debug:', {
+                difficulty,
+                defaultHints: defaults.enableHints,
+                userOverrides,
+                userHintsOverride: userOverrides.enableHints,
+                finalHints: { ...defaults, ...userOverrides }.enableHints
+            });
+        }
         
         // Merge defaults with user overrides
         return { ...defaults, ...userOverrides };
