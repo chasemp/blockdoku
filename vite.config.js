@@ -4,25 +4,28 @@ import { copyFileSync, existsSync, mkdirSync } from 'fs'
 import { resolve } from 'path'
 
 /**
- * BUILD SYSTEM NOTE (read me before changing the build):
+ * BUILD SYSTEM (DEPLOYMENT MODEL):
  *
- * This Vite config intentionally uses a non-standard layout for this PWA:
- * - root: 'src'                      → development server serves from `src/`
- * - publicDir: '../public'           → public assets live at project-level `public/`
- * - base: './'                       → enables file:// preview and root-level deploys
- * - build.outDir: '../'              → writes production files to the REPO ROOT
- * - build.emptyOutDir: false         → avoids deleting non-build files (e.g., README, .git)
+ * Source → Build → Deploy
+ * /src   → /docs → GitHub Pages
  *
- * Why: The deployed site expects files at the repository root (e.g., GitHub Pages/flat hosting),
- * and the `build-and-deploy.js` script copies/creates additional artifacts at the root.
+ * Development:
+ * - root: 'src'                      → dev server serves from /src
+ * - publicDir: '../public'           → static assets from /public
+ * - Run: npm run dev → http://localhost:3456
  *
- * If you switch to a conventional Vite setup (output to `dist/`) or deploy under a sub-path:
- * - Change build.outDir to 'dist'
- * - Update `base` to the site sub-path, e.g., '/blockdoku/' (GitHub Pages), or keep '/' for root
- * - Align VitePWA manifest settings (`start_url`, `scope`) with the chosen base
- * - Remove or rewrite `build-and-deploy.js` which currently assumes root-level output
- * - Update CI/CD to publish the `dist/` directory instead of the repo root
- * Failing to keep these in sync will break installability, offline behavior, or routing.
+ * Production Build:
+ * - build.outDir: '../docs'          → builds to /docs directory
+ * - build.emptyOutDir: true          → safe to clear /docs (only contains built files)
+ * - base: './'                       → enables relative paths for GitHub Pages
+ * - Run: npm run build → generates /docs
+ *
+ * Deployment:
+ * - GitHub Pages serves from /docs directory on main branch
+ * - /docs contains ONLY generated files (never edit directly!)
+ * - See DEPLOYMENT.md for complete workflow
+ *
+ * ⚠️  CRITICAL: Never edit files in /docs manually - they are auto-generated!
  */
 
 export default defineConfig({
@@ -33,11 +36,11 @@ export default defineConfig({
   // Use relative base to support file:// previews and root-level hosting
   base: './',
   build: {
-    // IMPORTANT: Output into the repository root (non-standard)
-    // If you change this to 'dist', also update `build-and-deploy.js` and README.
-    outDir: '../',
-    // Do not empty the repo root on build
-    emptyOutDir: false,
+    // Output into /docs directory for GitHub Pages deployment
+    // /docs is gitignored on main but committed builds go here
+    outDir: '../docs',
+    // Safe to empty /docs since it only contains built files
+    emptyOutDir: true,
     assetsDir: 'assets',
     rollupOptions: {
       input: {

@@ -130,8 +130,11 @@ class BlockdokuGame {
             
             // Always reload game state when returning from settings (if not game over)
             if (!this.isGameOver) {
-                this.loadGameState();
-                this.draw();
+                // Small delay to ensure DOM is ready when returning from settings
+                setTimeout(() => {
+                    this.loadGameState();
+                    this.draw();
+                }, 10);
             }
         });
         
@@ -145,8 +148,11 @@ class BlockdokuGame {
                 
                 // Always reload game state when settings change (if not game over)
                 if (!this.isGameOver) {
-                    this.loadGameState();
-                    this.draw();
+                    // Small delay to ensure DOM is ready when settings change
+                    setTimeout(() => {
+                        this.loadGameState();
+                        this.draw();
+                    }, 10);
                 }
             }
         });
@@ -1289,12 +1295,6 @@ class BlockdokuGame {
     }
     
     checkLineClears() {
-        // Don't check for clears if we're already in the middle of a clearing animation
-        if (this.pendingClears) {
-            console.log('Skipping line clear check - animation in progress');
-            return;
-        }
-        
         // Safety check: if pendingClears has been stuck for too long, reset it
         if (this.pendingClears && this.pendingClearsTimestamp) {
             const timeSincePending = Date.now() - this.pendingClearsTimestamp;
@@ -1304,6 +1304,12 @@ class BlockdokuGame {
                 this.pendingClearResult = null;
                 this.pendingClearsTimestamp = null;
             }
+        }
+        
+        // Don't check for clears if we're already in the middle of a clearing animation
+        if (this.pendingClears) {
+            console.log('Skipping line clear check - animation in progress');
+            return;
         }
         
         // Ensure board is valid before checking
@@ -2736,11 +2742,25 @@ class BlockdokuGame {
             
             console.log('Game state loaded successfully');
         } else {
-            console.log('No saved game state found - preserving current board state');
-            // If no saved state, ensure we have a valid board (don't overwrite existing state)
+            console.log('No saved game state found - starting fresh game');
+            // If no saved state, ensure we have a valid board and generate blocks
             if (!this.board || !Array.isArray(this.board)) {
                 this.board = this.initializeBoard();
             }
+            
+            // Ensure BlockPalette is rendered before generating blocks
+            if (this.blockPalette) {
+                console.log('Rendering block palette before generating blocks');
+                this.blockPalette.render();
+            } else {
+                console.error('BlockPalette not available!');
+            }
+            
+            // Generate initial blocks for a fresh game (with small delay to ensure DOM is ready)
+            setTimeout(() => {
+                console.log('Generating new blocks for fresh game');
+                this.generateNewBlocks();
+            }, 10);
         }
     }
 
