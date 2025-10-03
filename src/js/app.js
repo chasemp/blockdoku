@@ -1005,6 +1005,15 @@ class BlockdokuGame {
             this.updatePlaceabilityIndicators();
         }
         
+        // Ghost blocks can overlap existing pieces (special magic power)
+        const isGhostBlock = this.selectedBlock.isWild && this.selectedBlock.wildType === 'ghost';
+        
+        if (isGhostBlock) {
+            // Ghost blocks only need to be within board boundaries
+            // They can overlap with existing pieces
+            return this.blockManager.isWithinBounds(this.selectedBlock, row, col, this.board);
+        }
+        
         // First check basic placement validity
         const canPlace = this.blockManager.canPlaceBlock(this.selectedBlock, row, col, this.board);
         if (!canPlace) {
@@ -1354,13 +1363,18 @@ class BlockdokuGame {
     updateScoreForClears(clearedLines) {
         console.log('updateScoreForClears called with:', clearedLines);
         
-        // Get difficulty multiplier and calculate score with it
+        // Get difficulty multiplier
         const difficultyMultiplier = this.difficultyManager.getScoreMultiplier();
-        const scoreInfo = this.scoringSystem.calculateScoreForClears(clearedLines, difficultyMultiplier);
-        console.log('Score calculation result:', scoreInfo);
         
-        // Update app score (score is already adjusted for difficulty in calculateScoreForClears)
-        this.score = this.score + scoreInfo.scoreGained;
+        // Use applyClears instead of calculateScoreForClears to update combo counters
+        const result = this.scoringSystem.applyClears(this.board, clearedLines, difficultyMultiplier);
+        console.log('Score calculation result:', result);
+        
+        // Update the board state
+        this.board = result.board;
+        
+        // Update app score (score was already added to scoringSystem in applyClears)
+        this.score = this.scoringSystem.getScore();
         
         // Update scoring system score to keep in sync
         this.scoringSystem.score = this.score;
@@ -1389,16 +1403,26 @@ class BlockdokuGame {
         // Store the result for later use in completeLineClear
         this.pendingClearResult = {
             clearedLines: clearedLines,
-            scoreGained: scoreInfo.scoreGained,
-            isCombo: scoreInfo.isComboEvent,
+            scoreGained: result.scoreGained,
+            isCombo: result.isCombo,
             combo: this.scoringSystem.getCombo()
         };
         
         // Store score info for enhanced display
-        this.lastScoreInfo = scoreInfo;
+        this.lastScoreInfo = {
+            scoreGained: result.scoreGained,
+            isComboEvent: result.isCombo,
+            clearTypes: result.comboTypes || [],
+            totalClears: totalClears,
+            breakdown: {
+                linePoints: 0,
+                squarePoints: 0,
+                comboBonus: 0
+            }
+        };
         
         // Show immediate point breakdown display
-        this.showPointBreakdown(scoreInfo, clearedLines);
+        this.showPointBreakdown(this.lastScoreInfo, clearedLines);
         
         console.log('Score updated immediately. New score:', this.score, 'New level:', this.level);
     }
@@ -2011,12 +2035,22 @@ class BlockdokuGame {
         
         // Check for combo hit based on the active display mode
         const previousTotalCombos = this.previousTotalCombos || 0;
+        console.log('🎯 Combo Debug:', { 
+            mode, 
+            currentCombo, 
+            totalCombos, 
+            previousTotalCombos, 
+            previousCombo: this.previousCombo 
+        });
+        
         if (mode === 'cumulative') {
             if (totalCombos > previousTotalCombos && totalCombos >= 1) {
+                console.log('🎯 Animating cumulative combo hit:', totalCombos);
                 this.animateComboHit(comboElement);
             }
         } else {
             if (currentCombo > this.previousCombo && currentCombo >= 1) {
+                console.log('🎯 Animating streak combo hit:', currentCombo);
                 this.animateComboHit(comboElement);
             }
         }
@@ -4321,6 +4355,101 @@ class BlockdokuGame {
         this.updateUI();
         
         console.log(`💣 Bomb cleared ${cellsCleared} cells for ${bombBonus} bonus points`);
+    }
+    
+    // Show lightning effect
+    showLightningEffect(row, col, lightningLines) {
+        const cellSize = this.cellSize;
+        const x = col * cellSize + cellSize / 2;
+        const y = row * cellSize + cellSize / 2;
+        
+        // Count what was cleared
+        const totalCleared = lightningLines.rows.length + lightningLines.columns.length;
+        let clearText = '';
+        
+        if (lightningLines.rows.length > 0) {
+            clearText += `${lightningLines.rows.length} row${lightningLines.rows.length > 1 ? 's' : ''}`;
+        }
+        if (lightningLines.columns.length > 0) {
+            if (clearText) clearText += ' + ';
+            clearText += `${lightningLines.columns.length} column${lightningLines.columns.length > 1 ? 's' : ''}`;
+        }
+        
+        // Create lightning message
+        const lightning = document.createElement('div');
+        lightning.className = 'lightning-strike';
+        lightning.innerHTML = `
+            <div class="lightning-icon">⚡</div>
+            <div class="lightning-text">LIGHTNING STRIKE!</div>
+            <div class="lightning-details">Cleared ${clearText}</div>
+            <div class="lightning-bonus">+${totalCleared * 25} Lightning Bonus!</div>
+        `;
+        lightning.style.position = 'absolute';
+        lightning.style.left = `${x}px`;
+        lightning.style.top = `${y}px`;
+        lightning.style.transform = 'translate(-50%, -50%)';
+        lightning.style.color = '#ffd700';
+        lightning.style.fontSize = '1rem';
+        lightning.style.fontWeight = '700';
+        lightning.style.textAlign = 'center';
+        lightning.style.textShadow = '0 0 15px #ffd700, 0 0 30px #ffd700';
+        lightning.style.pointerEvents = 'none';
+        lightning.style.zIndex = '1003';
+        lightning.style.opacity = '0';
+        lightning.style.animation = 'lightningStrike 2s ease-out forwards';
+        lightning.style.background = 'rgba(0, 0, 0, 0.9)';
+        lightning.style.padding = '0.8rem';
+        lightning.style.borderRadius = '12px';
+        lightning.style.border = '3px solid #ffd700';
+        
+        this.canvas.parentElement.appendChild(lightning);
+        
+        setTimeout(() => {
+            if (lightning.parentElement) {
+                lightning.parentElement.removeChild(lightning);
+            }
+        }, 2000);
+    }
+    
+    // Show ghost effect
+    showGhostEffect(row, col) {
+        const cellSize = this.cellSize;
+        const x = col * cellSize + cellSize / 2;
+        const y = row * cellSize + cellSize / 2;
+        
+        // Create ghost message
+        const ghost = document.createElement('div');
+        ghost.className = 'ghost-phase';
+        ghost.innerHTML = `
+            <div class="ghost-icon">👻</div>
+            <div class="ghost-text">GHOST PHASE!</div>
+            <div class="ghost-details">Passed through obstacles</div>
+        `;
+        ghost.style.position = 'absolute';
+        ghost.style.left = `${x}px`;
+        ghost.style.top = `${y}px`;
+        ghost.style.transform = 'translate(-50%, -50%)';
+        ghost.style.color = '#9370db';
+        ghost.style.fontSize = '1rem';
+        ghost.style.fontWeight = '700';
+        ghost.style.textAlign = 'center';
+        ghost.style.textShadow = '0 0 10px #9370db';
+        ghost.style.pointerEvents = 'none';
+        ghost.style.zIndex = '1003';
+        ghost.style.opacity = '0';
+        ghost.style.animation = 'ghostPhase 2s ease-out forwards';
+        ghost.style.background = 'rgba(0, 0, 0, 0.85)';
+        ghost.style.padding = '0.8rem';
+        ghost.style.borderRadius = '12px';
+        ghost.style.border = '3px dashed #9370db';
+        
+        this.canvas.parentElement.appendChild(ghost);
+        
+        setTimeout(() => {
+            if (ghost.parentElement) {
+                ghost.parentElement.removeChild(ghost);
+            }
+        }, 2000);
     }
     
     // Show visual feedback for speed timer

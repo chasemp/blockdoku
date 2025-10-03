@@ -610,6 +610,48 @@ export class SettingsManager {
                 this.showNotification('All statistics and high scores have been permanently deleted');
             });
         }
+        
+        // Clear Cache & Reset Service Worker button
+        const clearCacheBtn = document.getElementById('clear-cache-button');
+        if (clearCacheBtn) {
+            clearCacheBtn.addEventListener('click', async () => {
+                const confirmed = await this.confirmationDialog.show(
+                    '🧹 Clear Cache & Reset Service Workers\n\nThis will:\n• Unregister all service workers\n• Clear all service worker caches\n• Force a fresh reload of all files\n\nUseful for development or fixing issues.\n\nYour game data and settings will NOT be affected.\n\nContinue?'
+                );
+                if (!confirmed) return;
+                
+                try {
+                    // Unregister all service workers
+                    if ('serviceWorker' in navigator) {
+                        const registrations = await navigator.serviceWorker.getRegistrations();
+                        for (const registration of registrations) {
+                            await registration.unregister();
+                            console.log('Service worker unregistered:', registration);
+                        }
+                    }
+                    
+                    // Clear all caches
+                    if ('caches' in window) {
+                        const cacheNames = await caches.keys();
+                        for (const cacheName of cacheNames) {
+                            await caches.delete(cacheName);
+                            console.log('Cache deleted:', cacheName);
+                        }
+                    }
+                    
+                    this.showNotification('Cache cleared! Reloading page...');
+                    
+                    // Reload the page after a short delay
+                    setTimeout(() => {
+                        window.location.reload(true);
+                    }, 1500);
+                    
+                } catch (error) {
+                    console.error('Error clearing cache:', error);
+                    this.showNotification('Error clearing cache. Check console for details.');
+                }
+            });
+        }
     }
     
     
