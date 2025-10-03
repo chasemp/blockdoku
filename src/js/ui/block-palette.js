@@ -195,17 +195,11 @@ export class BlockPalette {
         shapeContainer.appendChild(preview);
         blockInfo.appendChild(shapeContainer);
         
-        // Create points display (circular badge)
+        // Create points display (circular badge only)
         const pointsBadge = document.createElement('div');
         pointsBadge.className = 'block-points';
         pointsBadge.textContent = block.points;
         blockInfo.appendChild(pointsBadge);
-        
-        // Create points display (overlay text - alternative)
-        const pointsOverlay = document.createElement('div');
-        pointsOverlay.className = 'block-points-overlay';
-        pointsOverlay.textContent = `${block.points} pts`;
-        blockInfo.appendChild(pointsOverlay);
         
         blockDiv.appendChild(blockInfo);
         
