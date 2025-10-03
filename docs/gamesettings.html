@@ -140,11 +140,11 @@
     <meta property="twitter:title" content="Blockdoku - Block Puzzle Game">
     <meta property="twitter:description" content="A modern take on the classic block puzzle game. Play anywhere, anytime!">
     <meta property="twitter:image" content="https://blockdoku.523.life/icons/icon-512x512.png">
-  <script type="module" crossorigin src="./assets/gamesettings-CldmblIA.js"></script>
+  <script type="module" crossorigin src="./assets/gamesettings-BG53b9xD.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="modulepreload" crossorigin href="./assets/difficulty-settings-manager-Cn-lu4xS.js">
-  <link rel="modulepreload" crossorigin href="./assets/confirmation-dialog-CE0X1pfx.js">
-  <link rel="stylesheet" crossorigin href="./assets/main-HJztQvMG.css">
+  <link rel="modulepreload" crossorigin href="./assets/difficulty-settings-manager-BW40esTg.js">
+  <link rel="modulepreload" crossorigin href="./assets/confirmation-dialog-C_sDWQ13.js">
+  <link rel="stylesheet" crossorigin href="./assets/main-CSBfgmzY.css">
   <link rel="stylesheet" crossorigin href="./assets/wood-36S1T1G_.css">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
@@ -411,14 +411,40 @@
                         <p class="setting-description" style="font-size: 0.85rem; margin-top: 0.5rem;">0 = Off, 5 = Maximum dead pixels (~15-20)</p>
                     </div>
                     
-                    <!-- Wild Blocks Mode -->
+                    <!-- Magic Blocks Mode -->
                     <div class="setting-item game-mode-item">
                         <label>
-                            <input type="checkbox" id="enable-wild-blocks" />
-                            Enable wild blocks
-                            <span class="setting-bubble" data-setting="wildBlocks">🔥 wild</span>
+                            <input type="checkbox" id="enable-magic-blocks" />
+                            Enable magic blocks
+                            <span class="setting-bubble" data-setting="magicBlocks">🔮 magic</span>
                         </label>
-                        <p class="setting-description">Occasionally generate special wild blocks that automatically clear any line they complete when placed. Adds exciting power-up gameplay!</p>
+                        <p class="setting-description">Occasionally generate special magic blocks that automatically clear any line they complete when placed. Adds exciting power-up gameplay!</p>
+                    </div>
+                </div>
+                
+            <!-- Quality of Life Section -->
+            <div class="quality-of-life-settings settings-section-container">
+                    <h3>Quality of Life</h3>
+                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0; text-align: center;">Smart features to improve your gameplay experience.</p>
+                    
+                    <!-- Auto-Rotate Blocks -->
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="auto-rotate-blocks" />
+                            Auto-rotate blocks
+                            <span class="setting-bubble" data-setting="autoRotate">🔄 smart</span>
+                        </label>
+                        <p class="setting-description">Automatically rotate blocks when there's only one valid orientation for placement. Saves time and reduces frustration!</p>
+                    </div>
+                    
+                    <!-- Wild Block Shapes -->
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="enable-wild-shapes" />
+                            Enable wild block shapes
+                            <span class="setting-bubble" data-setting="wildShapes">🔥 shapes</span>
+                        </label>
+                        <p class="setting-description">Add creative block shapes like pentominos, crosses, hollow blocks, and zigzag patterns. Makes gameplay more varied and challenging!</p>
                     </div>
                 </div>
                 

@@ -155,8 +155,8 @@ export class BlockPalette {
         
         // Add special styling for wild blocks
         if (block.isWild) {
-            blockDiv.classList.add('wild-block');
-            blockDiv.title = `🔥 WILD BLOCK: ${block.name} (${block.points} pts) - ${block.description}`;
+            blockDiv.classList.add('magic-block');
+            blockDiv.title = `🔮 MAGIC BLOCK: ${block.name} (${block.points} pts) - ${block.description}`;
         } else {
             blockDiv.title = `Click to select, double-click to rotate: ${block.name} (${block.points} pts)`;
         }

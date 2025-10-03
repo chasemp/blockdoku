@@ -94,10 +94,22 @@ export class GameSettingsManager {
             deadPixelsIntensityValue.textContent = intensity;
         }
         
-        // Wild blocks
-        const wildBlocksCheckbox = document.getElementById('enable-wild-blocks');
-        if (wildBlocksCheckbox) {
-            wildBlocksCheckbox.checked = this.settings.enableWildBlocks === true;
+        // Magic blocks
+        const magicBlocksCheckbox = document.getElementById('enable-magic-blocks');
+        if (magicBlocksCheckbox) {
+            magicBlocksCheckbox.checked = this.settings.enableMagicBlocks === true;
+        }
+        
+        // Auto-rotate blocks
+        const autoRotateCheckbox = document.getElementById('auto-rotate-blocks');
+        if (autoRotateCheckbox) {
+            autoRotateCheckbox.checked = this.settings.autoRotateBlocks === true;
+        }
+        
+        // Wild block shapes
+        const wildShapesCheckbox = document.getElementById('enable-wild-shapes');
+        if (wildShapesCheckbox) {
+            wildShapesCheckbox.checked = this.settings.enableWildShapes === true;
         }
         
         // Speed mode
@@ -423,11 +435,27 @@ export class GameSettingsManager {
             });
         }
         
-        // Wild blocks
-        const wildBlocksCheckbox = document.getElementById('enable-wild-blocks');
-        if (wildBlocksCheckbox) {
-            wildBlocksCheckbox.addEventListener('change', () => {
-                this.saveSetting('enableWildBlocks', wildBlocksCheckbox.checked);
+        // Magic blocks
+        const magicBlocksCheckbox = document.getElementById('enable-magic-blocks');
+        if (magicBlocksCheckbox) {
+            magicBlocksCheckbox.addEventListener('change', () => {
+                this.saveSetting('enableMagicBlocks', magicBlocksCheckbox.checked);
+            });
+        }
+        
+        // Auto-rotate blocks
+        const autoRotateCheckbox = document.getElementById('auto-rotate-blocks');
+        if (autoRotateCheckbox) {
+            autoRotateCheckbox.addEventListener('change', () => {
+                this.saveSetting('autoRotateBlocks', autoRotateCheckbox.checked);
+            });
+        }
+        
+        // Wild block shapes
+        const wildShapesCheckbox = document.getElementById('enable-wild-shapes');
+        if (wildShapesCheckbox) {
+            wildShapesCheckbox.addEventListener('change', () => {
+                this.saveSetting('enableWildShapes', wildShapesCheckbox.checked);
             });
         }
         
@@ -888,7 +916,7 @@ export class GameSettingsManager {
         const difficultySpecificKeys = [
             'hints', 'timer', 'personalBest', 'speedTimer', 
             'showPoints', 'sound', 'animations', 
-            'petrification', 'deadPixels', 'speedMode', 'wildBlocks'
+            'petrification', 'deadPixels', 'speedMode', 'magicBlocks', 'autoRotate', 'wildShapes'
         ];
         
         bubbles.forEach(bubble => {
@@ -961,7 +989,9 @@ export class GameSettingsManager {
                 'successMode': 'success-mode-enabled',
                 'petrification': 'enable-petrification',
                 'deadPixels': 'enable-dead-pixels',
-                'wildBlocks': 'enable-wild-blocks',
+                'magicBlocks': 'enable-magic-blocks',
+                'autoRotate': 'auto-rotate-blocks',
+                'wildShapes': 'enable-wild-shapes',
                 'blockHover': 'block-hover-effects',
                 'selectionGlow': 'block-selection-glow',
                 'blockEntrance': 'block-entrance-animations',

@@ -10,7 +10,7 @@ export class DifficultySettingsManager {
     /**
      * Define default settings for each difficulty level
      * 
-     * IMPORTANT: Game modes (like enableWildBlocks, enablePetrification, etc.) 
+     * IMPORTANT: Game modes (like enableMagicBlocks, enablePetrification, etc.) 
      * should NOT be coupled with difficulty defaults. They should remain false
      * for all difficulties to allow users to enable them independently.
      */
@@ -29,7 +29,7 @@ export class DifficultySettingsManager {
                 soundEnabled: false,
                 pieceTimeoutEnabled: false,
                 enablePrizeRecognition: true,
-                enableWildBlocks: false
+                enableMagicBlocks: false
             },
             normal: {
                 enableHints: false,
@@ -44,7 +44,7 @@ export class DifficultySettingsManager {
                 soundEnabled: false,
                 pieceTimeoutEnabled: false,
                 enablePrizeRecognition: false,
-                enableWildBlocks: false
+                enableMagicBlocks: false
             },
             hard: {
                 enableHints: false,
@@ -59,7 +59,7 @@ export class DifficultySettingsManager {
                 soundEnabled: false,
                 pieceTimeoutEnabled: false,
                 enablePrizeRecognition: false,
-                enableWildBlocks: false
+                enableMagicBlocks: false
             },
             expert: {
                 enableHints: false,
@@ -74,7 +74,7 @@ export class DifficultySettingsManager {
                 soundEnabled: false,
                 pieceTimeoutEnabled: false,
                 enablePrizeRecognition: false,
-                enableWildBlocks: false  // Game modes should not be coupled with difficulty defaults
+                enableMagicBlocks: false  // Game modes should not be coupled with difficulty defaults
             }
         };
     }
