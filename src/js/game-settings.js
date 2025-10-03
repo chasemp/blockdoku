@@ -265,10 +265,10 @@ export class GameSettingsManager {
                     this.loadSettings(); // Reload to apply new difficulty settings
                     this.updateUI();
                     
-                    // Update individual setting bubbles for new difficulty
-                    setTimeout(() => {
-                        this.updateIndividualSettingBubbles();
-                    }, 150);
+                    // Individual setting bubbles disabled for cleaner UI
+                    // setTimeout(() => {
+                    //     this.updateIndividualSettingBubbles();
+                    // }, 150);
                 
                 // Notify other pages
                 window.postMessage({
@@ -628,11 +628,22 @@ export class GameSettingsManager {
             this.updateDifficultyDescription(option, difficulty);
         });
         
-        // Update individual setting bubbles
-        this.updateIndividualSettingBubbles();
+        // Clean up any existing individual setting bubbles
+        this.updateIndividualSettingBubbles(); // Now just cleans up existing bubbles
     }
     
     updateIndividualSettingBubbles() {
+        // DISABLED: This feature was adding extra decorative bubbles that created visual clutter
+        // and inconsistency between difficulty modes. Now we just clean up any existing ones.
+        
+        // Clear existing individual bubbles
+        document.querySelectorAll('.individual-setting-bubble').forEach(bubble => {
+            bubble.remove();
+        });
+        
+        return; // Exit early - feature disabled
+        
+        // The rest of this function is kept for reference but not executed
         if (!this.difficultyManager) return;
         
         // Get comparison bubbles for current difficulty
@@ -648,11 +659,6 @@ export class GameSettingsManager {
             'enablePrizeRecognition': 'enable-prize-recognition',
             'pieceTimeoutEnabled': 'piece-timeout-enabled'
         };
-        
-        // Clear existing individual bubbles
-        document.querySelectorAll('.individual-setting-bubble').forEach(bubble => {
-            bubble.remove();
-        });
         
         // Add bubbles to individual settings
         Object.entries(settingElementMap).forEach(([settingKey, elementId]) => {
@@ -771,9 +777,9 @@ export class GameSettingsManager {
         this.loadSettings();
         this.updateDifficultySelection();
         
-        // Update individual setting bubbles
+        // Clean up individual setting bubbles and update state bubbles
         setTimeout(() => {
-            this.updateIndividualSettingBubbles();
+            this.updateIndividualSettingBubbles(); // Now just cleans up existing bubbles
             this.updateSettingStateBubbles();
         }, 100); // Small delay to ensure difficulty manager is loaded
     }
