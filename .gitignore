@@ -64,3 +64,8 @@ venv.bak/
 # Temporary files
 tmp/
 temp/
+
+# Build metadata (auto-generated, copied to /docs by hook)
+/build
+/build-info.json
+/src/build-info.json
