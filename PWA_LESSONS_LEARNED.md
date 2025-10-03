@@ -6,6 +6,88 @@ This document captures critical lessons learned during the development of Blockd
 
 ## 🚨 Critical Issues We've Repeatedly Fixed
 
+### **CRITICAL: Source vs Build File Confusion (2024-2025)**
+
+**The Most Destructive Issue We Faced** - This deployment model confusion caused more problems than any other issue and led to weeks of circular debugging.
+
+#### The Problem
+We had a broken deployment model where source and built files were mixed:
+- Source files lived in `/src`
+- Built files were scattered in root directory
+- `vite.config.js` originally built to root (`outDir: '../'`)
+- Developers (and AI) would edit the WRONG files
+- Changes would be lost or overwritten unpredictably
+- PRs were created to "fix" issues that were just stale builds
+- The live site served stale content while source was updated
+
+**Symptom:** PR #92 "Investigate hidden game setting implementation" - Settings weren't visible because built files in root were stale, not because code was broken!
+
+#### Root Causes Identified
+1. **Unclear Separation:** No obvious distinction between source and built files
+2. **Build to Root:** Vite built directly to repository root, mixing files
+3. **Manual Build Process:** Easy to forget `npm run build` before committing
+4. **No Protections:** Nothing prevented editing built files
+5. **Documentation Collision:** `/docs` contained project documentation, not builds
+6. **Build Metadata Churn:** Build timestamps caused endless commit noise
+
+#### The Solution (October 3, 2025)
+
+**New Architecture:**
+```
+/src/          → Source code (EDIT HERE)
+/docs/         → Built output (AUTO-GENERATED)
+/project-docs/ → Project documentation (MOVED HERE)
+```
+
+**4 Layers of Protection:**
+1. `.gitattributes` - Marks `/docs` as generated
+2. `.cursorrules` - Warns AI not to edit `/docs`
+3. HTML comments - "DO NOT EDIT" in all built HTML files
+4. Documentation - Comprehensive guides
+
+**Pre-commit Hook:**
+- Runs 20 regression tests
+- Builds `/src` → `/docs` automatically
+- Copies build metadata (`build`, `build-info.json`) to `/docs`
+- Stages `/docs` changes
+- Result: Can't forget to build, working directory stays clean
+
+**Build Metadata Solution:**
+- Root `build` and `build-info.json` → gitignored (prevent churn)
+- Hook copies them to `/docs` for deployment
+- Only `/docs` versions committed
+- Result: No timestamp commit noise
+
+**GitHub Pages:**
+- Configured to serve from `main` branch, `/docs` folder
+- No GitHub Actions needed
+- Custom domain: `blockdoku.523.life`
+
+#### What We Learned
+1. **Source/Build Separation is CRITICAL** - Clear directory boundaries prevent chaos
+2. **Build on Commit** - Pre-commit hooks eliminate "forgot to build" errors
+3. **Protect Generated Files** - Multiple layers catch mistakes
+4. **Gitignore Build Artifacts** - Timestamp files cause endless commit churn
+5. **No File-System Protection** - Read-only files break git operations (rebase, merge)
+6. **Test Before Build** - Prevents committing broken code
+7. **Documentation Everywhere** - Can't have too much guidance
+
+#### Impact
+- **Before:** Constant confusion, circular debugging, lost work, stale deployments
+- **After:** Clear workflow, automatic builds, clean commits, reliable deployments
+
+#### Prevention for Future PWAs
+1. **Start with Clear Separation:** `/src` and `/docs` from day one
+2. **Configure Build Correctly:** Never build to repository root
+3. **Add Pre-commit Hook Early:** Automate builds and tests
+4. **Protect Generated Files:** Multiple warning layers
+5. **Gitignore Build Artifacts:** Only commit necessary built files
+6. **Document the Workflow:** Make it impossible to be confused
+
+**This was the most important architectural fix in the project's history.**
+
+---
+
 ### Recent Theme and Navigation Issues (2024-2025)
 
 **Issues Fixed in This Session:**
