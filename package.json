@@ -1,6 +1,6 @@
 {
   "name": "blockdoku-pwa",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "type": "module",
   "description": "A Progressive Web App for playing Blockudoku with multiple themes and local storage",
   "main": "src/index.html",
