@@ -200,10 +200,17 @@
                     <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0; text-align: center;">Choose how placement speed affects your score</p>
                     <div class="speed-mode-options">
                         <label class="speed-mode-option">
-                            <input type="radio" name="speed-mode" value="bonus" id="speed-mode-bonus" checked />
+                            <input type="radio" name="speed-mode" value="bonus" id="speed-mode-bonus" />
                             <span class="speed-mode-label">
                                 <strong>Bonus</strong>
                                 <small>Faster = more points.<br>Earn bonus points for quick placements.</small>
+                            </span>
+                        </label>
+                        <label class="speed-mode-option">
+                            <input type="radio" name="speed-mode" value="ignored" id="speed-mode-ignored" checked />
+                            <span class="speed-mode-label">
+                                <strong>Ignored</strong>
+                                <small>Speed doesn't affect score.<br>Play at your own pace.</small>
                             </span>
                         </label>
                         <label class="speed-mode-option">
@@ -211,13 +218,6 @@
                             <span class="speed-mode-label">
                                 <strong>Punishment</strong>
                                 <small>Slower = less points.<br>Any second past 1 second subtracts a point per second down to 0.</small>
-                            </span>
-                        </label>
-                        <label class="speed-mode-option">
-                            <input type="radio" name="speed-mode" value="ignored" id="speed-mode-ignored" />
-                            <span class="speed-mode-label">
-                                <strong>Ignored</strong>
-                                <small>Speed doesn't affect score.<br>Play at your own pace.</small>
                             </span>
                         </label>
                     </div>

@@ -95,7 +95,7 @@ export class GameSettingsManager {
         }
         
         // Speed mode
-        const speedMode = this.settings.speedMode || 'bonus';
+        const speedMode = this.settings.speedMode || 'ignored';
         const bonusRadio = document.getElementById('speed-mode-bonus');
         const punishmentRadio = document.getElementById('speed-mode-punishment');
         const ignoredRadio = document.getElementById('speed-mode-ignored');
@@ -818,13 +818,13 @@ export class GameSettingsManager {
             
             // Special handling for speed mode (radio buttons)
             if (settingKey === 'speedMode') {
-                const speedMode = this.settings.speedMode || 'bonus';
+                const speedMode = this.settings.speedMode || 'ignored';
                 const modeEmojis = {
                     'bonus': '🏃 Bonus',
                     'punishment': '⚡ Punishment',
                     'ignored': '🚶 Ignored'
                 };
-                bubble.textContent = modeEmojis[speedMode] || '🏃 mode';
+                bubble.textContent = modeEmojis[speedMode] || '🚶 mode';
                 
                 // Apply different colors based on mode
                 bubble.classList.remove('state-red', 'state-green', 'state-orange');
