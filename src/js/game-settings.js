@@ -245,30 +245,7 @@ export class GameSettingsManager {
                     return; // Already selected
                 }
                 
-                // Check if there's a game in progress
-                const gameState = localStorage.getItem(this.storage?.storageKey || 'blockdoku_game_data');
-                let gameInProgress = false;
-                
-                if (gameState) {
-                    try {
-                        const state = JSON.parse(gameState);
-                        gameInProgress = state.score > 0 || state.board.some(row => row.some(cell => cell === 1));
-                    } catch (e) {
-                        gameInProgress = false;
-                    }
-                }
-                
-                if (gameInProgress) {
-                    // Show confirmation dialog
-                    const confirmed = await this.confirmationDialog.show(
-                        `Changing difficulty to ${difficulty.toUpperCase()} will reset your current game and you'll lose your progress. Are you sure you want to continue?`,
-                        'Confirm Difficulty Change'
-                    );
-                    
-                    if (!confirmed) {
-                        return;
-                    }
-                }
+                // No confirmation needed - difficulty changes apply to current game without resetting progress
                 
                 console.log(`🎮 Game Settings: Changing difficulty to ${difficulty.toUpperCase()}`);
                 
