@@ -1,177 +1,165 @@
-# Blockdoku PWA - Quick Start
+# Blockdoku PWA - Quick Start Guide
 
-## 🚀 Daily Development
+**For:** Developers new to this codebase  
+**Updated:** October 3, 2025
+
+---
+
+## 🚀 5-Minute Setup
 
 ```bash
-# Start development server
+# Clone & install
+git clone https://github.com/chasemp/blockdoku.git
+cd blockdoku_pwa
+npm install
+
+# Start developing
 npm run dev
 # → Opens at http://localhost:3456
-# → Serves from /src
-# → Hot reload on file changes
 ```
-
-**Edit files in `/src`** - changes appear immediately, no building needed!
 
 ---
 
-## 📦 Deploy Changes
+## ✏️ Daily Workflow
 
 ```bash
-# 1. Build
-npm run build
-# Builds /src → /docs (~1 second)
+# 1. Edit source files (only edit /src!)
+vim src/index.html
 
-# 2. Test
-npm run preview
-# Opens at http://localhost:4173
+# 2. See changes instantly
+# (dev server auto-reloads)
 
-# 3. Commit & Deploy
-git add src/ docs/
-git commit -m "feat: your awesome changes"
+# 3. Commit when ready
+git add src/
+git commit -m "Your changes"
+# ← Pre-commit hook runs tests + builds /docs automatically!
+
+# 4. Push to deploy
 git push
-# → Live at https://blockdoku.523.life in ~2 minutes
+# → Live at blockdoku.523.life in ~2 minutes
 ```
 
----
-
-## ⚠️ Critical Rules
-
-### ✅ DO
-- Edit files in `/src` only
-- Run dev server for testing: `npm run dev`
-- Build before committing: `npm run build`
-- Test built version: `npm run preview`
-- Commit both `/src` and `/docs`
-
-### ❌ DON'T
-- Edit files in `/docs` (auto-generated!)
-- Commit without building
-- Push without testing preview
-- Edit root HTML files (old/stale)
+**That's it!** The hook handles testing, building, and staging.
 
 ---
 
-## 🗂️ File Locations
+## 📁 Where is Everything?
 
-| What | Where | Edit? |
-|------|-------|-------|
-| HTML pages | `/src/*.html` | ✅ Yes |
-| JavaScript | `/src/js/**/*.js` | ✅ Yes |
-| CSS | `/src/css/**/*.css` | ✅ Yes |
-| Built files | `/docs/**` | ❌ Never |
-
----
-
-## 🔗 URLs
-
-| Environment | URL | Source |
-|-------------|-----|--------|
-| Development | http://localhost:3456 | `/src` |
-| Preview | http://localhost:4173 | `/docs` |
-| Production | https://blockdoku.523.life | `/docs` |
+| Directory | Purpose | Action |
+|-----------|---------|--------|
+| `/src/` | Source code | ✅ **EDIT HERE** |
+| `/docs/` | Built output | ❌ **NEVER EDIT** (auto-generated) |
+| `/public/` | Static assets | ✅ Edit if needed |
+| `/tests/` | Test files | ✅ Add tests here |
+| `/project-docs/` | Documentation | ✅ Edit docs here |
 
 ---
 
-## 🆘 Common Tasks
+## 🔑 Golden Rules
 
-### Add a new page
+### 1. NEVER edit `/docs` files
+They're auto-generated. Edit `/src` instead.
+
+### 2. Commit triggers build
+Every commit automatically:
+- ✅ Runs 20 regression tests
+- ✅ Builds `/src` → `/docs`
+- ✅ Stages `/docs` changes
+
+### 3. Working directory stays clean
+After commit, `git status` should show nothing.
+If it doesn't, something's wrong!
+
+---
+
+## 🧪 Testing
+
 ```bash
-# 1. Create in /src
-vim src/newpage.html
+# Run all tests
+npm test
 
-# 2. Add to vite.config.js
-# Edit rollupOptions.input to include newpage
+# Run pre-commit tests manually
+node scripts/pre-commit-tests.js
 
-# 3. Build & test
+# E2E tests
+npm run test:e2e
+
+# Test production build locally
 npm run build
-npm run preview
-```
-
-### Fix a bug
-```bash
-# 1. Edit source
-vim src/js/app.js
-
-# 2. Test in dev (no building!)
-npm run dev
-# Changes appear immediately
-
-# 3. When done, build & deploy
-npm run build
-npm run preview
-git add src/ docs/
-git commit -m "fix: your bug fix"
-git push
-```
-
-### Change styling
-```bash
-# 1. Edit CSS
-vim src/css/main.css
-
-# 2. See changes immediately
-# Dev server auto-reloads
-
-# 3. Deploy when ready
-npm run build
-git add src/ docs/
-git commit -m "style: improved layout"
-git push
+npm run preview  # → http://localhost:4173
 ```
 
 ---
 
-## 🐛 Troubleshooting
+## 🐛 Quick Troubleshooting
 
-### Dev server not starting?
+### Dev server won't start
 ```bash
-# Kill existing server
-pkill -f "vite"
-
-# Restart
+# Check if port is in use
+lsof -i :3456
+# Kill it if needed, then retry
 npm run dev
 ```
 
-### Build fails?
+### Commit blocked by tests
 ```bash
-# Check for errors
-npm run build
+# See what's failing
+node scripts/pre-commit-tests.js
 
-# Clear cache
-rm -rf node_modules/.vite
-npm run build
+# Fix the issue, then commit again
 ```
 
-### Changes not showing on live site?
+### Live site doesn't match code
 ```bash
-# Did you build?
-npm run build
-
-# Did you commit /docs?
+# Verify /docs is up to date
 git status
+
+# If not, build manually
+npm run build
 git add docs/
-git commit -m "build: update production assets"
+git commit -m "Update /docs"
 git push
 ```
 
-### Need to start fresh?
+### Git complains about /docs permissions
 ```bash
-# Clean everything
-rm -rf docs/ node_modules/
-npm install
-npm run build
+# Make /docs writable
+chmod -R u+w docs/
+
+# Retry your git operation
 ```
 
 ---
 
-## 📚 More Info
+## 📚 Learn More
 
-- Full workflow: See `DEPLOYMENT.md`
-- Lessons learned: See `PWA_LESSONS_LEARNED.md`
-- Cursor AI rules: See `.cursorrules`
+### Local Documentation
+- **Quick Reference:** This file (for daily workflow)
+- **Deployment Guide:** `DEPLOYMENT_FINAL.md` (full deployment workflow)
+- **Lessons Learned:** `PWA_LESSONS_LEARNED.md` (what we learned building this)
+- **Project Docs:** `project-docs/README.md` (feature documentation)
+
+### PWA Best Practices (peadoubleueh repository)
+For comprehensive PWA development guidance, see:
+- 📖 **[PWA Development Workflow](https://github.com/chasemp/peadoubleueh/blob/main/PWA_DEVELOPMENT_WORKFLOW.md)**
+- 🏗️ **[Deployment Architecture](https://github.com/chasemp/peadoubleueh/blob/main/DEPLOYMENT_ARCHITECTURE.md)**
+- 💡 **[Development Lessons](https://github.com/chasemp/peadoubleueh/blob/main/PWA_DEVELOPMENT_LESSONS.md)**
+- 🎯 **[Quick Reference](https://github.com/chasemp/peadoubleueh/blob/main/PWA_QUICK_REFERENCE.md)**
+- 📦 **[PWA Template](https://github.com/chasemp/peadoubleueh/tree/main/src/pwa-template)** (starter template)
 
 ---
 
-**Last Updated:** January 3, 2025  
-**Version:** 2.0 (new /src → /docs workflow)
+## ✅ Success Checklist
 
+Your setup is correct if:
+- ✅ `npm run dev` shows changes instantly
+- ✅ Commits run tests automatically
+- ✅ `git status` is clean after commits
+- ✅ `git push` succeeds without conflicts
+- ✅ Live site updates within 2 minutes
+
+---
+
+**Questions?** Check `DEPLOYMENT_FINAL.md` for complete details.
+
+**Last Updated:** October 3, 2025
