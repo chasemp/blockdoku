@@ -72,6 +72,75 @@ This document captures critical lessons learned during the development of Blockd
 - Add tests for default behavior after data clearing
 - Use CSS preloading to prevent theme flashes
 
+### 4. Source vs Build File Confusion (CRITICAL!)
+**Problem:** Editing wrong files, deploying stale builds, confusing source vs built files
+**Frequency:** Fixed many times (culminated in major cleanup Jan 2025)
+**Root Cause:** Mixed source and built files in repository, unclear deployment model
+
+**What We Learned:**
+- Having source files in `/src` and built files in root causes massive confusion
+- Developers (and AI) repeatedly edited built files that got overwritten
+- Build process output location inconsistencies led to broken deployments
+- GitHub Pages configuration didn't match build output
+- Multiple open PRs were all symptoms of this core deployment confusion
+
+**The Problem in Detail:**
+- Root had `index.html`, `settings.html`, etc. (built files with Vite hashes)
+- `/src` had `index.html`, `settings.html`, etc. (source files)
+- `/src/gamesettings.html` existed but never got built to root
+- `vite.config.js` built to root (`outDir: '../'`) but `build-and-deploy.js` expected `dist/`
+- Developers edited root files, then next build overwrote their changes
+- Deployment showed old versions because builds weren't happening correctly
+- Test failures were due to outdated deployed code, not actual bugs
+
+**Real Impact:**
+- PR #92: "Hidden game settings" - actually just a stale build!
+- PR #106: "About section broken" - navigation edited in wrong file
+- PR #105: "Empty blocks" - might have been stale build issue
+- Multiple test failures due to deployed code not matching source
+- Hours wasted debugging "ghosts" (problems that only existed in stale builds)
+
+**The Solution:**
+```
+OLD (Confusing):
+/                         ← Mixed: some source, some built, unclear
+/src/                     ← Source files
+/dist/                    ← Build output (sometimes? unclear)
+
+NEW (Clear):
+/src/                     ← SOURCE: Edit here only
+/docs/                    ← BUILT: Never edit, auto-generated
+/public/                  ← Static assets
+```
+
+**Prevention Strategy:**
+1. **Clear Separation:** `/src` for source, `/docs` for built files
+2. **Safeguards:**
+   - `.gitattributes` marks `/docs` as generated
+   - `.cursorrules` warns against editing `/docs`
+   - Comments in `/docs` files warning they're auto-generated
+   - Make `/docs` files read-only on filesystem (optional)
+3. **Documentation:** Comprehensive `DEPLOYMENT.md` with workflow
+4. **Build Configuration:** `vite.config.js` clearly outputs to `../docs`
+5. **Pre-commit Hook:** Verify `/docs` matches `/src` (future enhancement)
+
+**Critical Lessons:**
+- Never mix source and built files in same directory
+- Make build output location crystal clear in comments
+- Use filesystem and git attributes to prevent editing wrong files
+- Document the deployment workflow comprehensively
+- Test builds locally before deploying
+- Review what changed in built files before committing
+- Automated builds in CI/CD avoid this entirely (but we commit builds for simplicity)
+
+**For Future PWAs:**
+- Decide build strategy from day one: commit builds or use CI/CD
+- If committing builds, separate directories and add protections
+- Document build/deploy workflow before writing any code
+- Never let built files live in root alongside source files
+- Use `.gitattributes` to mark generated code
+- Add cursor rules to prevent AI from editing generated files
+
 ## 🏗️ Architecture Lessons
 
 ### Theme Management Architecture

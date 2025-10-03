@@ -1,0 +1,16 @@
+# Mark /docs as generated code (helps GitHub show diffs better)
+/docs/** linguist-generated=true
+
+# Mark build output files as generated
+*.js linguist-generated=true export-ignore
+*.css linguist-generated=true export-ignore
+docs/** export-ignore
+
+# Ensure consistent line endings
+* text=auto
+*.js text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+
