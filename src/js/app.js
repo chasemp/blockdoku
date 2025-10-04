@@ -1962,6 +1962,17 @@ class BlockdokuGame {
             this.blockPalette.resetDragState();
         }
         
+        // Clean up any lingering UI elements
+        const pointBreakdown = document.getElementById('point-breakdown');
+        if (pointBreakdown && pointBreakdown.parentElement) {
+            pointBreakdown.parentElement.removeChild(pointBreakdown);
+        }
+        
+        // Clear any pending clears state
+        this.pendingClears = null;
+        this.pendingClearResult = null;
+        this.pendingClearsTimestamp = null;
+        
         // Reset animation tracking
         this.previousScore = 0;
         this.previousLevel = 1;
@@ -2152,14 +2163,16 @@ class BlockdokuGame {
     showPointBreakdown(scoreInfo, clearedLines) {
         if (!scoreInfo || scoreInfo.scoreGained === 0) return;
         
-        // Create or update point breakdown display
-        let breakdownElement = document.getElementById('point-breakdown');
-        if (!breakdownElement) {
-            breakdownElement = document.createElement('div');
-            breakdownElement.id = 'point-breakdown';
-            breakdownElement.className = 'point-breakdown';
-            document.querySelector('.game-info').appendChild(breakdownElement);
+        // Remove any existing point breakdown element first
+        const existingBreakdown = document.getElementById('point-breakdown');
+        if (existingBreakdown && existingBreakdown.parentElement) {
+            existingBreakdown.parentElement.removeChild(existingBreakdown);
         }
+        
+        // Create new point breakdown display
+        const breakdownElement = document.createElement('div');
+        breakdownElement.id = 'point-breakdown';
+        breakdownElement.className = 'point-breakdown';
         
         // Build breakdown text
         const breakdown = scoreInfo.breakdown || {};
@@ -2184,17 +2197,22 @@ class BlockdokuGame {
             breakdownElement.style.display = 'block';
             breakdownElement.style.opacity = '1';
             
+            // Append to body instead of game-info to avoid layout issues
+            document.body.appendChild(breakdownElement);
+            
             // Animate the breakdown
             breakdownElement.style.transition = 'all 0.3s ease-out';
-            breakdownElement.style.transform = 'scale(1.1)';
+            breakdownElement.style.transform = 'translate(-50%, -50%) scale(1.1)';
             breakdownElement.style.color = this.getClearGlowColor();
             
-            // Hide after 3 seconds
+            // Remove from DOM after animation completes
             setTimeout(() => {
                 breakdownElement.style.opacity = '0';
-                breakdownElement.style.transform = 'scale(1)';
+                breakdownElement.style.transform = 'translate(-50%, -50%) scale(1)';
                 setTimeout(() => {
-                    breakdownElement.style.display = 'none';
+                    if (breakdownElement.parentElement) {
+                        breakdownElement.parentElement.removeChild(breakdownElement);
+                    }
                 }, 300);
             }, 3000);
         }
