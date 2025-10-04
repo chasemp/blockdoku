@@ -2485,6 +2485,18 @@ class BlockdokuGame {
         
         if (timerDisplay && timerElement && this.timerSystem) {
             const timerEnabled = this.difficultyManager.getTimeLimit() !== null;
+            const currentDisplay = timerDisplay.style.display;
+            
+            // Only log when display state changes to reduce console spam
+            if ((timerEnabled && currentDisplay === 'none') || (!timerEnabled && currentDisplay !== 'none')) {
+                console.log('🖥️ Timer display update:', {
+                    timerEnabled,
+                    timeLimit: this.difficultyManager.getTimeLimit(),
+                    willDisplay: timerEnabled ? 'block' : 'none',
+                    timerSystemActive: this.timerSystem.isActive
+                });
+            }
+            
             timerDisplay.style.display = timerEnabled ? 'block' : 'none';
             
             if (timerEnabled) {
