@@ -37,15 +37,15 @@ export class BuildInfo {
         const buildId = now.toISOString().slice(0, 16).replace(/[-:T]/g, '');
         
         return {
-            version: '1.4.0',
+            version: '1.6.1',
             buildId: buildId,
             buildDate: now.toISOString(),
-            fullVersion: `1.4.0+${buildId}`
+            fullVersion: `1.6.1+${buildId}`
         };
     }
     
     getVersion() {
-        return this.buildInfo?.version || '1.4.0';
+        return this.buildInfo?.version || '1.6.1';
     }
     
     getBuildId() {
@@ -53,7 +53,7 @@ export class BuildInfo {
     }
     
     getFullVersion() {
-        return this.buildInfo?.fullVersion || '1.4.0+dev';
+        return this.buildInfo?.fullVersion || '1.6.1+dev';
     }
     
     getBuildDate() {

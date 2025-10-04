@@ -1290,23 +1290,49 @@ export class GameSettingsManager {
     resetCurrentGameScore() {
         if (window.opener && window.opener.game) {
             const game = window.opener.game;
+            
+            // First, reload settings in the game so it picks up the new enableTimer value
+            if (game.loadSettings) {
+                game.loadSettings();
+            }
+            
+            // Reset score and level (keep blocks on board)
             game.score = 0;
             game.level = 1;
+            
+            // Reset first piece placement flag so timer starts on next placement
+            game.firstPiecePlaced = false;
+            
             if (game.scoringSystem) {
                 game.scoringSystem.reset();
             }
+            
+            // Reinitialize the timer system with updated settings
             if (game.timerSystem) {
                 game.timerSystem.reset();
                 game.timerSystem.initialize();
-                game.timerSystem.start();
+                
+                // Don't start the timer immediately - it will start on next piece placement
+                if (game.timerSystem.isActive) {
+                    console.log('⏱️ Countdown timer will start on next piece placement');
+                } else {
+                    console.log('⏱️ Countdown timer disabled');
+                }
             }
+            
             // Update the UI in the main game window
             if (game.updateUI) {
                 game.updateUI();
             }
+            
             // Update timer display to reflect the countdown timer state
             if (game.updateTimerDisplay) {
                 game.updateTimerDisplay();
+            }
+            
+            // Update utility bar layout in case timer visibility changed
+            if (game.updateUtilityBarLayout) {
+                game.updateUtilityBarLayout();
             }
         }
     }
