@@ -1290,23 +1290,47 @@ export class GameSettingsManager {
     resetCurrentGameScore() {
         if (window.opener && window.opener.game) {
             const game = window.opener.game;
+            
+            // First, reload settings in the game so it picks up the new enableTimer value
+            if (game.loadSettings) {
+                game.loadSettings();
+            }
+            
+            // Reset score and level (keep blocks on board)
             game.score = 0;
             game.level = 1;
+            
             if (game.scoringSystem) {
                 game.scoringSystem.reset();
             }
+            
+            // Reinitialize the timer system with updated settings
             if (game.timerSystem) {
                 game.timerSystem.reset();
                 game.timerSystem.initialize();
-                game.timerSystem.start();
+                
+                // Only start the timer if it was successfully initialized with a time limit
+                if (game.timerSystem.isActive) {
+                    game.timerSystem.start();
+                    console.log('⏱️ Countdown timer started after mid-game enable');
+                } else {
+                    console.log('⏱️ Countdown timer disabled after mid-game disable');
+                }
             }
+            
             // Update the UI in the main game window
             if (game.updateUI) {
                 game.updateUI();
             }
+            
             // Update timer display to reflect the countdown timer state
             if (game.updateTimerDisplay) {
                 game.updateTimerDisplay();
+            }
+            
+            // Update utility bar layout in case timer visibility changed
+            if (game.updateUtilityBarLayout) {
+                game.updateUtilityBarLayout();
             }
         }
     }
