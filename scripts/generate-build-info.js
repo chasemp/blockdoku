@@ -67,6 +67,7 @@ function writeBuildInfo() {
     const buildInfo = generateBuildInfo();
     const srcPath = path.join(__dirname, '..', 'src', 'build-info.json');
     const rootPath = path.join(__dirname, '..', 'build-info.json');
+    const docsPath = path.join(__dirname, '..', 'docs', 'build-info.json');
     const buildFilePath = path.join(__dirname, '..', 'build');
     
     // Write to src directory for development
@@ -74,6 +75,14 @@ function writeBuildInfo() {
     
     // Write to root directory for production builds
     fs.writeFileSync(rootPath, JSON.stringify(buildInfo, null, 2));
+    
+    // Write to docs directory for deployed app (GitHub Pages serves from /docs)
+    // Check if docs directory exists (it will after build)
+    const docsDir = path.join(__dirname, '..', 'docs');
+    if (fs.existsSync(docsDir)) {
+        fs.writeFileSync(docsPath, JSON.stringify(buildInfo, null, 2));
+        console.log(`Build info copied to docs directory`);
+    }
     
     // Also write a plain-text build file with fullVersion for quick reference
     // This is helpful for human inspection, support, and CI artifacts.
