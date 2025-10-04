@@ -102,6 +102,9 @@ class BlockdokuGame {
         this.speedTimerInterval = null;
         this.speedDisplayMode = 'timer'; // 'timer' or 'points'
         
+        // Track if this is the first piece placement (for countdown timer start)
+        this.firstPiecePlaced = false;
+        
         // Drag and drop state
         this.isDragging = false;
         this.dragStartPosition = null;
@@ -239,9 +242,9 @@ class BlockdokuGame {
             this.generateNewBlocks();
         }
         
-        // Initialize timer system for current difficulty
+        // Initialize timer system for current difficulty (but don't start it yet)
+        // Timer will start on first piece placement
         this.timerSystem.initialize();
-        this.timerSystem.start();
         
         // Wait for DOM to be fully ready before sizing and drawing
         setTimeout(() => {
@@ -1964,10 +1967,13 @@ class BlockdokuGame {
         // Stop speed timer countdown
         this.stopSpeedTimerCountdown();
         
-        // Reset and restart timer system for new game
+        // Reset timer system for new game (but don't start it yet)
+        // Timer will start on first piece placement
         this.timerSystem.reset();
         this.timerSystem.initialize();
-        this.timerSystem.start();
+        
+        // Reset first piece placement flag
+        this.firstPiecePlaced = false;
         
         this.isInitialized = true;
         // Load combo display mode from settings
@@ -2918,6 +2924,21 @@ class BlockdokuGame {
                 this.deadPixelsManager.deserialize(savedState.deadPixelsState);
             }
             
+            // Set firstPiecePlaced flag if there's already game progress
+            // (score > 0 or any blocks on board)
+            const hasProgress = this.score > 0 || this.board.some(row => row.some(cell => cell === 1));
+            this.firstPiecePlaced = hasProgress;
+            
+            // If loading a game in progress with countdown timer enabled, start the timer
+            if (hasProgress && this.timerSystem && this.timerSystem.isActive) {
+                // Timer should already be running if game was in progress
+                // Only start if it's not already started
+                if (this.timerSystem.startTime === 0) {
+                    this.timerSystem.start();
+                    console.log('⏱️ Countdown timer resumed from saved game');
+                }
+            }
+            
             // Update placeability indicators after loading game state
             this.updatePlaceabilityIndicators();
             
@@ -3799,6 +3820,13 @@ class BlockdokuGame {
     // Enhanced block placement with hints
     placeBlock(row, col) {
         if (!this.canPlaceBlock(row, col)) return;
+        
+        // Start countdown timer on first piece placement (if timer is enabled)
+        if (!this.firstPiecePlaced && this.timerSystem && this.timerSystem.isActive) {
+            this.timerSystem.start();
+            console.log('⏱️ Countdown timer started on first piece placement');
+        }
+        this.firstPiecePlaced = true;
         
         // Store reference to the block before placement for magic block logic
         const placedBlock = this.selectedBlock;

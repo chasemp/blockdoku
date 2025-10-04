@@ -1300,6 +1300,9 @@ export class GameSettingsManager {
             game.score = 0;
             game.level = 1;
             
+            // Reset first piece placement flag so timer starts on next placement
+            game.firstPiecePlaced = false;
+            
             if (game.scoringSystem) {
                 game.scoringSystem.reset();
             }
@@ -1309,12 +1312,11 @@ export class GameSettingsManager {
                 game.timerSystem.reset();
                 game.timerSystem.initialize();
                 
-                // Only start the timer if it was successfully initialized with a time limit
+                // Don't start the timer immediately - it will start on next piece placement
                 if (game.timerSystem.isActive) {
-                    game.timerSystem.start();
-                    console.log('⏱️ Countdown timer started after mid-game enable');
+                    console.log('⏱️ Countdown timer will start on next piece placement');
                 } else {
-                    console.log('⏱️ Countdown timer disabled after mid-game disable');
+                    console.log('⏱️ Countdown timer disabled');
                 }
             }
             
