@@ -623,11 +623,29 @@ export class GameSettingsManager {
                                 return;
                             }
                             
-                            // Reset the game score
+                            // Save setting BEFORE resetting game so timer system can initialize correctly
+                            this.saveSetting(key, checkbox.checked);
+                            
+                            // Reset the game score (this will reinitialize the timer system)
                             this.resetCurrentGameScore();
+                        } else {
+                            // Save setting for non-game-in-progress case
+                            this.saveSetting(key, checkbox.checked);
+                            
+                            // Update timer display in game window if it exists
+                            if (window.opener && window.opener.game) {
+                                const game = window.opener.game;
+                                if (game.timerSystem) {
+                                    game.timerSystem.initialize();
+                                    if (checkbox.checked) {
+                                        game.timerSystem.start();
+                                    }
+                                }
+                                if (game.updateTimerDisplay) {
+                                    game.updateTimerDisplay();
+                                }
+                            }
                         }
-                        
-                        this.saveSetting(key, checkbox.checked);
                         
                         // Show/hide duration slider
                         const countdownContainer = document.getElementById('countdown-duration-container');
@@ -660,11 +678,27 @@ export class GameSettingsManager {
                         return;
                     }
                     
-                    // Reset the game score
+                    // Save setting BEFORE resetting game so timer system can initialize with new duration
+                    this.saveSetting('countdownDuration', newDuration);
+                    
+                    // Reset the game score (this will reinitialize the timer system)
                     this.resetCurrentGameScore();
+                } else {
+                    // Save setting for non-game-in-progress case
+                    this.saveSetting('countdownDuration', newDuration);
+                    
+                    // Update timer display in game window if it exists and countdown is enabled
+                    if (window.opener && window.opener.game && this.settings.enableTimer) {
+                        const game = window.opener.game;
+                        if (game.timerSystem) {
+                            game.timerSystem.initialize();
+                            game.timerSystem.start();
+                        }
+                        if (game.updateTimerDisplay) {
+                            game.updateTimerDisplay();
+                        }
+                    }
                 }
-                
-                this.saveSetting('countdownDuration', newDuration);
                 
                 // Update display value
                 const durationValue = document.getElementById('countdown-duration-value');
@@ -1267,6 +1301,10 @@ export class GameSettingsManager {
             // Update the UI in the main game window
             if (game.updateUI) {
                 game.updateUI();
+            }
+            // Update timer display to reflect the countdown timer state
+            if (game.updateTimerDisplay) {
+                game.updateTimerDisplay();
             }
         }
     }
