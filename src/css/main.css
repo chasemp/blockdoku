@@ -4097,7 +4097,7 @@ html.light-theme .settings-section .difficulty-option.selected {
 
 /* Point Breakdown Display */
 .point-breakdown {
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -4115,6 +4115,8 @@ html.light-theme .settings-section .difficulty-option.selected {
     line-height: 1.4;
     min-width: 200px;
     backdrop-filter: blur(10px);
+    width: auto;
+    height: auto;
 }
 
 .point-breakdown::before {
