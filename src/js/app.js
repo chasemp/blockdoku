@@ -97,7 +97,7 @@ class BlockdokuGame {
         this.comboModeActive = 'cumulative';
         this.comboModesUsed = new Set();
         
-        // Speed timer countdown tracking
+        // Speed timer tracking (counts UP to measure elapsed time for speed bonuses)
         this.speedTimerStartTime = null;
         this.speedTimerInterval = null;
         this.speedDisplayMode = 'timer'; // 'timer' or 'points'
@@ -2112,9 +2112,9 @@ class BlockdokuGame {
             if (showSpeedTimer) {
                 speedTimerElement.style.display = 'flex';
                 
-                // Display either countdown timer or points based on speedDisplayMode
+                // Display either elapsed time or points based on speedDisplayMode
                 if (this.speedDisplayMode === 'timer') {
-                    // Show countdown timer - always show something even if timer hasn't started
+                    // Show elapsed time (counts UP) - always show something even if timer hasn't started
                     if (this.speedTimerStartTime) {
                         const elapsed = Date.now() - this.speedTimerStartTime;
                         const seconds = (elapsed / 1000).toFixed(1);
@@ -4706,17 +4706,20 @@ class BlockdokuGame {
         return false;
     }
     
-    // Speed timer countdown methods
+    // Speed timer methods (counts UP to measure elapsed time)
+    // NOTE: Despite the method name "Countdown", this timer actually counts UP (0s → 1s → 2s)
+    // to measure elapsed time for speed bonuses. This is different from the countdown timer
+    // (timer-display) which counts DOWN (5:00 → 4:59 → 0:00) and ends the game.
     startSpeedTimerCountdown() {
         // Clear any existing timer
         if (this.speedTimerInterval) {
             clearInterval(this.speedTimerInterval);
         }
         
-        // Start the countdown timer
+        // Start the speed timer (counts UP from zero)
         this.speedTimerStartTime = Date.now();
         
-        // Update the display every 100ms for smooth countdown
+        // Update the display every 100ms for smooth updates
         this.speedTimerInterval = setInterval(() => {
             this.updateSpeedTimerDisplay();
         }, 100);
@@ -4731,7 +4734,7 @@ class BlockdokuGame {
     }
     
     updateSpeedTimerDisplay() {
-        // Only update if speed timer is enabled and in timer mode
+        // Only update if speed timer is enabled and in timer mode (showing elapsed time)
         const difficultySettings = this.difficultySettings.getSettingsForDifficulty(this.difficulty);
         const showSpeedTimer = difficultySettings.showSpeedTimer === true;
         
@@ -4743,6 +4746,7 @@ class BlockdokuGame {
         const speedTimerValueElement = document.getElementById('speed-timer-value');
         
         if (speedTimerElement && speedTimerValueElement && this.speedTimerStartTime) {
+            // Calculate and display elapsed time (counts UP)
             const elapsed = Date.now() - this.speedTimerStartTime;
             const seconds = (elapsed / 1000).toFixed(1);
             speedTimerValueElement.textContent = `${seconds}s`;
