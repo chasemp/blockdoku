@@ -254,10 +254,14 @@ export class DifficultyManager {
             // but countdownDuration is a global setting (stored in base settings)
             // We need to check both to determine if countdown timer should be active
             
+            // Use game's current difficulty, not the difficultyManager's cached value
+            // to ensure we're checking the right difficulty level
+            const currentDifficulty = this.game.difficulty || this.currentDifficulty;
+            
             // Get the difficulty-specific settings manager if available
             let enableTimer = false;
             if (this.game.difficultySettings) {
-                const difficultySettings = this.game.difficultySettings.getSettingsForDifficulty(this.currentDifficulty);
+                const difficultySettings = this.game.difficultySettings.getSettingsForDifficulty(currentDifficulty);
                 enableTimer = difficultySettings.enableTimer === true;
             } else {
                 // Fallback to base settings if difficulty settings manager not available
@@ -267,7 +271,7 @@ export class DifficultyManager {
             const countdownDuration = baseSettings.countdownDuration || 3; // Default 3 minutes
             
             if (enableTimer && countdownDuration) {
-                console.log(`⏱️ Countdown timer enabled: ${countdownDuration} minutes (${countdownDuration * 60} seconds)`);
+                console.log(`⏱️ Countdown timer enabled for ${currentDifficulty}: ${countdownDuration} minutes (${countdownDuration * 60} seconds)`);
                 return countdownDuration * 60; // Convert minutes to seconds
             }
         }
