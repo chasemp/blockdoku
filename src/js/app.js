@@ -3094,6 +3094,12 @@ class BlockdokuGame {
             }
             
             this.updateBlockPointsDisplay();
+            
+            // Update timer display to reflect countdown timer setting changes
+            this.updateTimerDisplay();
+            
+            // Update utility bar layout in case timer visibility changed
+            this.updateUtilityBarLayout();
         }
     }
 
