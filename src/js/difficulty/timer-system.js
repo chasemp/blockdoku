@@ -19,14 +19,21 @@ export class TimerSystem {
     
     initialize() {
         this.timeLimit = this.difficultyManager.getTimeLimit();
+        console.log('⏱️ TimerSystem.initialize() called:', {
+            timeLimit: this.timeLimit,
+            willBeActive: this.timeLimit && this.timeLimit > 0
+        });
+        
         if (this.timeLimit && this.timeLimit > 0) {
             this.timeRemaining = this.timeLimit;
             this.isActive = true;
+            console.log('✅ Countdown timer initialized and ready to start');
         } else {
             // Explicitly disable if no time limit
             this.isActive = false;
             this.timeLimit = null;
             this.timeRemaining = 0;
+            console.log('❌ Countdown timer disabled (no time limit set)');
         }
     }
     

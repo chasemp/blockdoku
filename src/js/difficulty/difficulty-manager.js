@@ -248,9 +248,27 @@ export class DifficultyManager {
     getTimeLimit() {
         // Check if user has enabled countdown timer with custom duration
         if (this.game && this.game.storage) {
-            const settings = this.game.storage.loadSettings();
-            if (settings.enableTimer && settings.countdownDuration) {
-                return settings.countdownDuration * 60; // Convert minutes to seconds
+            const baseSettings = this.game.storage.loadSettings();
+            
+            // IMPORTANT: enableTimer is a difficulty-specific setting (stored in overrides)
+            // but countdownDuration is a global setting (stored in base settings)
+            // We need to check both to determine if countdown timer should be active
+            
+            // Get the difficulty-specific settings manager if available
+            let enableTimer = false;
+            if (this.game.difficultySettings) {
+                const difficultySettings = this.game.difficultySettings.getSettingsForDifficulty(this.currentDifficulty);
+                enableTimer = difficultySettings.enableTimer === true;
+            } else {
+                // Fallback to base settings if difficulty settings manager not available
+                enableTimer = baseSettings.enableTimer === true;
+            }
+            
+            const countdownDuration = baseSettings.countdownDuration || 3; // Default 3 minutes
+            
+            if (enableTimer && countdownDuration) {
+                console.log(`⏱️ Countdown timer enabled: ${countdownDuration} minutes (${countdownDuration * 60} seconds)`);
+                return countdownDuration * 60; // Convert minutes to seconds
             }
         }
         
