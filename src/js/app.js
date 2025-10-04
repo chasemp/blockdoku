@@ -1966,6 +1966,7 @@ class BlockdokuGame {
         
         // Reset and restart timer system for new game
         this.timerSystem.reset();
+        this.timerSystem.initialize();
         this.timerSystem.start();
         
         this.isInitialized = true;
