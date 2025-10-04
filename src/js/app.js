@@ -1246,6 +1246,9 @@ class BlockdokuGame {
         if (this.pendingClears) {
             this.drawClearingBlockGlow(this.pendingClears);
         }
+        
+        // Draw clear notification if active
+        this.drawClearNotification();
     }
     
     toggleTheme() {
@@ -1564,13 +1567,29 @@ class BlockdokuGame {
             this.canvas.style.boxShadow = '';
         }, 300);
         
-        // Redraw board to show glow effect
-        this.drawBoard();
+        // Store notification state so it can be redrawn each frame
+        const totalClears = clearedLines.rows.length + clearedLines.columns.length + clearedLines.squares.length;
+        let message = '';
         
-        // Show immediate score popup
-        const centerX = this.canvas.width / 2;
-        const centerY = this.canvas.height / 2;
-        this.showQuickClearNotification(centerX, centerY, clearedLines);
+        if (totalClears === 1) {
+            if (clearedLines.rows.length > 0) message = 'ROW!';
+            else if (clearedLines.columns.length > 0) message = 'COLUMN!';
+            else if (clearedLines.squares.length > 0) message = 'SQUARE!';
+        } else if (totalClears > 1) {
+            message = `${totalClears} CLEARS!`;
+        }
+        
+        // Only show notification if there's actually a message
+        if (message) {
+            this.clearNotification = {
+                message: message,
+                startTime: Date.now(),
+                duration: 400
+            };
+        }
+        
+        // Redraw board to show glow effect (notification will be drawn in drawBoard)
+        this.drawBoard();
     }
     
     drawClearingBlockGlow(clearedLines, options = {}) {
@@ -1677,20 +1696,27 @@ class BlockdokuGame {
         this.ctx.restore();
     }
     
-    showQuickClearNotification(x, y, clearedLines) {
-        // Show immediate notification of what was cleared
-        this.ctx.save();
+    drawClearNotification() {
+        // Check if we have an active notification to draw
+        if (!this.clearNotification) return;
         
-        const totalClears = clearedLines.rows.length + clearedLines.columns.length + clearedLines.squares.length;
-        let message = '';
+        const now = Date.now();
+        const elapsed = now - this.clearNotification.startTime;
         
-        if (totalClears === 1) {
-            if (clearedLines.rows.length > 0) message = 'ROW!';
-            else if (clearedLines.columns.length > 0) message = 'COLUMN!';
-            else if (clearedLines.squares.length > 0) message = 'SQUARE!';
-        } else {
-            message = `${totalClears} CLEARS!`;
+        // If notification has expired, clear it
+        if (elapsed >= this.clearNotification.duration) {
+            this.clearNotification = null;
+            return;
         }
+        
+        // Calculate fade out
+        const alpha = 1 - (elapsed / this.clearNotification.duration);
+        
+        const x = this.canvas.width / 2;
+        const y = this.canvas.height / 2;
+        
+        this.ctx.save();
+        this.ctx.globalAlpha = alpha;
         
         // Draw background
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
@@ -1706,14 +1732,10 @@ class BlockdokuGame {
         this.ctx.fillStyle = notifGlow;
         this.ctx.font = 'bold 24px Arial';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText(message, x, y + 8);
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(this.clearNotification.message, x, y);
         
         this.ctx.restore();
-        
-        // Fade out quickly
-        setTimeout(() => {
-            this.drawBoard();
-        }, 400);
     }
     
     highlightClearingBlocks(clearedLines, cascadeMode = false) {
@@ -1972,6 +1994,7 @@ class BlockdokuGame {
         this.pendingClears = null;
         this.pendingClearResult = null;
         this.pendingClearsTimestamp = null;
+        this.clearNotification = null;
         
         // Reset animation tracking
         this.previousScore = 0;
