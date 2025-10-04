@@ -198,18 +198,36 @@ loadGameState() {
 - [x] Duration change resets score but keeps blocks
 
 ## Files Modified
+
+### Countdown Timer Fixes
 1. `src/js/difficulty/difficulty-manager.js` - Fixed getTimeLimit() method
 2. `src/js/difficulty/timer-system.js` - Added debug logging
 3. `src/js/app.js` - Added timer start on first placement, display updates
 4. `src/js/game-settings.js` - Improved mid-game timer toggle
 
+### Version Display Fix
+5. `scripts/generate-build-info.js` - Now copies build-info.json to docs folder
+6. `src/js/utils/build-info.js` - Updated fallback version to 1.6.1
+
 ## Build Info
-- Version: 1.6.1+20251004-0350
-- Build Date: 2025-10-04T03:50:51.584Z
+- Version: 1.6.1+20251004-0355
+- Build Date: 2025-10-04T03:55:06.341Z
 - All changes built successfully to `/docs` directory
+- `build-info.json` now properly deployed to `/docs` for version display
 
 ## Notes
 - The countdown timer feature is fully functional and tested
 - Timer properly integrates with difficulty-specific settings system
 - All edge cases handled (new game, saved game, mid-game toggle)
 - Console logging added for easier debugging in production
+
+## Additional Fix: Version Display
+**Issue:** Settings → About was showing version "1.4.0" instead of "1.6.1"
+
+**Root Cause:** The `build-info.json` file was being generated at the workspace root and in `/src`, but was not being copied to the `/docs` deployment directory. The UI was falling back to the hardcoded fallback version of "1.4.0" in `build-info.js`.
+
+**Solution:** 
+1. Modified `scripts/generate-build-info.js` to copy `build-info.json` to `/docs` directory during the postbuild step
+2. Updated fallback version in `src/js/utils/build-info.js` from "1.4.0" to "1.6.1" to match package.json
+
+**Result:** Settings → About now correctly displays version "v1.6.1+YYYYMMDD-HHMM"
