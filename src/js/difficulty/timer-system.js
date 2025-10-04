@@ -19,9 +19,14 @@ export class TimerSystem {
     
     initialize() {
         this.timeLimit = this.difficultyManager.getTimeLimit();
-        if (this.timeLimit) {
+        if (this.timeLimit && this.timeLimit > 0) {
             this.timeRemaining = this.timeLimit;
             this.isActive = true;
+        } else {
+            // Explicitly disable if no time limit
+            this.isActive = false;
+            this.timeLimit = null;
+            this.timeRemaining = 0;
         }
     }
     
@@ -165,8 +170,10 @@ export class TimerSystem {
     
     // Reset timer
     reset() {
+        // Re-fetch time limit from difficulty manager to ensure it's up to date
+        this.timeLimit = this.difficultyManager.getTimeLimit();
         this.timeRemaining = this.timeLimit || 0;
-        this.isActive = this.timeLimit !== null;
+        this.isActive = this.timeLimit !== null && this.timeLimit > 0;
         this.isPaused = false;
         this.startTime = 0;
         this.pausedTime = 0;
@@ -178,5 +185,8 @@ export class TimerSystem {
         this.isActive = false;
         this.timeLimit = null;
         this.timeRemaining = 0;
+        this.startTime = 0;
+        this.pausedTime = 0;
+        this.timeBonus = 0;
     }
 }

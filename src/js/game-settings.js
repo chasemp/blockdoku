@@ -636,9 +636,11 @@ export class GameSettingsManager {
                             if (window.opener && window.opener.game) {
                                 const game = window.opener.game;
                                 if (game.timerSystem) {
-                                    game.timerSystem.initialize();
                                     if (checkbox.checked) {
+                                        game.timerSystem.initialize();
                                         game.timerSystem.start();
+                                    } else {
+                                        game.timerSystem.disable();
                                     }
                                 }
                                 if (game.updateTimerDisplay) {
