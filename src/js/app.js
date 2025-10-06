@@ -3132,7 +3132,7 @@ class BlockdokuGame {
             this.updateTimerDisplay();
             
             // Update utility bar layout in case timer visibility changed
-            this.updateUtilityBarLayout();
+            this.updateUtilityBarState();
         }
     }
 
