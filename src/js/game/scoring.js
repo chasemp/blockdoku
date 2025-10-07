@@ -575,8 +575,9 @@ export class ScoringSystem {
                 const levelMultiplier = 1 + (this.level - 1) * 0.03;
                 penalty = Math.floor(penalty * levelMultiplier);
                 
-                // Cap the penalty (doubled for punishment mode)
-                const maxPenalty = this.speedConfig.maxBonus * 2;
+                // Cap the penalty at the max duration (in seconds) to prevent excessive penalties
+                const maxPenaltySeconds = maxDuration / 1000; // Convert max duration to seconds
+                const maxPenalty = Math.floor(maxPenaltySeconds); // Maximum penalty = max duration in seconds
                 return -Math.min(penalty, maxPenalty); // Return negative value for penalty
             }
             return 0;
