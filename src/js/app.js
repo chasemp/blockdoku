@@ -2116,8 +2116,15 @@ class BlockdokuGame {
                     // Show elapsed time (counts UP) - always show something even if timer hasn't started
                     if (this.speedTimerStartTime) {
                         const elapsed = Date.now() - this.speedTimerStartTime;
-                        const seconds = (elapsed / 1000).toFixed(1);
-                        speedTimerValueElement.textContent = `${seconds}s`;
+                        const precision = difficultySettings.speedTimerPrecision || 'seconds';
+                        
+                        if (precision === 'milliseconds') {
+                            const seconds = (elapsed / 1000).toFixed(1);
+                            speedTimerValueElement.textContent = `${seconds}s`;
+                        } else {
+                            const seconds = Math.floor(elapsed / 1000);
+                            speedTimerValueElement.textContent = `${seconds}s`;
+                        }
                     } else {
                         speedTimerValueElement.textContent = 'Ready';
                     }
@@ -4795,8 +4802,15 @@ class BlockdokuGame {
         if (speedTimerElement && speedTimerValueElement && this.speedTimerStartTime) {
             // Calculate and display elapsed time (counts UP)
             const elapsed = Date.now() - this.speedTimerStartTime;
-            const seconds = (elapsed / 1000).toFixed(1);
-            speedTimerValueElement.textContent = `${seconds}s`;
+            const precision = difficultySettings.speedTimerPrecision || 'seconds';
+            
+            if (precision === 'milliseconds') {
+                const seconds = (elapsed / 1000).toFixed(1);
+                speedTimerValueElement.textContent = `${seconds}s`;
+            } else {
+                const seconds = Math.floor(elapsed / 1000);
+                speedTimerValueElement.textContent = `${seconds}s`;
+            }
         }
     }
 }
