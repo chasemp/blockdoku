@@ -71,7 +71,7 @@ class BlockdokuGame {
         this.deadPixelsManager = new DeadPixelsManager();
         
         this.blockPalette = new BlockPalette('block-palette', this.blockManager, this);
-        this.scoringSystem = new ScoringSystem(this.petrificationManager, this.difficultyManager);
+        this.scoringSystem = new ScoringSystem(this.petrificationManager, this.difficultyManager, this);
         this.storage = new GameStorage();
         this.difficultySettings = new DifficultySettingsManager(this.storage);
         // this.effectsSystem = new EffectsSystem(this.canvas, this.ctx);
@@ -2029,7 +2029,7 @@ class BlockdokuGame {
         
         // Initialize difficulty systems
         this.timerSystem.initialize();
-        this.timerSystem.start();
+        // Note: Timer will start on first piece placement, not immediately
         this.hintSystem.reset();
         
         // Start new game with new difficulty
@@ -3920,7 +3920,9 @@ class BlockdokuGame {
     
     // Auto-rotate blocks to optimal orientations based on board state
     optimizeBlockOrientations() {
-        if (!this.storage.loadSettings().autoRotateBlocks) return;
+        // Check if auto-rotate is enabled for the current difficulty
+        const difficultySettings = this.difficultySettings.getSettingsForDifficulty(this.difficulty);
+        if (!difficultySettings.autoRotateBlocks) return;
         
         console.log('🔄 Optimizing block orientations based on board state');
         

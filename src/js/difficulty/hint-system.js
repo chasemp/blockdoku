@@ -25,7 +25,8 @@ export class HintSystem {
         return this.difficultyManager.isHintsEnabled() && 
                this.game.enableHints && 
                this.hintCooldown <= 0 && 
-               this.game.selectedBlock !== null;
+               this.game.selectedBlock !== null &&
+               this.game.blockManager.currentBlocks.length > 0;
     }
     
     toggleHints() {
@@ -73,11 +74,8 @@ export class HintSystem {
     }
     
     findValidPositions() {
-        // If no block is selected, auto-select the first available block
-        if (!this.game.selectedBlock && this.game.blockManager.currentBlocks.length > 0) {
-            this.game.autoSelectNextBlock();
-        }
-        
+        // Only show hints for the currently selected block
+        // Don't auto-select - let the user choose which block to get hints for
         if (!this.game.selectedBlock) return;
         
         this.validPositions = [];

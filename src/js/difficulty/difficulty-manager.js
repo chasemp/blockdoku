@@ -267,7 +267,7 @@ export class DifficultyManager {
             const countdownDuration = baseSettings.countdownDuration || 3; // Default 3 minutes
             
             if (enableTimer && countdownDuration) {
-                console.log(`⏱️ Countdown timer enabled: ${countdownDuration} minutes (${countdownDuration * 60} seconds)`);
+                // Countdown timer is enabled - return duration in seconds
                 return countdownDuration * 60; // Convert minutes to seconds
             }
         }
