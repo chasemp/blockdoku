@@ -52,14 +52,7 @@ export class HintSystem {
         // Find valid positions for the selected block
         this.findValidPositions();
         
-        // Debug logging to help identify hint issues
-        console.log('🔍 Hint System Debug:', {
-            selectedBlock: this.game.selectedBlock,
-            blockShape: this.game.selectedBlock?.shape,
-            blockName: this.game.selectedBlock?.name,
-            validPositions: this.validPositions.length,
-            availableBlocks: this.game.blockManager.currentBlocks.map(b => ({ id: b.id, name: b.name, shape: b.shape }))
-        });
+        // Debug logging removed to prevent console spam
         
         // Trigger immediate redraw to show hints
         this.game.drawBoard();

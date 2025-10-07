@@ -86,16 +86,7 @@ export class DifficultySettingsManager {
         const defaults = this.difficultyDefaults[difficulty] || {};
         const userOverrides = this.getUserOverrides(difficulty);
         
-        // Debug logging for hints issue
-        if (difficulty === 'hard') {
-            console.log('🔍 Hard Difficulty Settings Debug:', {
-                difficulty,
-                defaultHints: defaults.enableHints,
-                userOverrides,
-                userHintsOverride: userOverrides.enableHints,
-                finalHints: { ...defaults, ...userOverrides }.enableHints
-            });
-        }
+        // Debug logging removed to prevent console spam
         
         // Merge defaults with user overrides
         return { ...defaults, ...userOverrides };
