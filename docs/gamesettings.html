@@ -140,11 +140,11 @@
     <meta property="twitter:title" content="Blockdoku - Block Puzzle Game">
     <meta property="twitter:description" content="A modern take on the classic block puzzle game. Play anywhere, anytime!">
     <meta property="twitter:image" content="https://blockdoku.523.life/icons/icon-512x512.png">
-  <script type="module" crossorigin src="./assets/gamesettings-CubLIdlA.js"></script>
+  <script type="module" crossorigin src="./assets/gamesettings-CV69CUo5.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/modulepreload-polyfill-B5Qt9EMX.js">
   <link rel="modulepreload" crossorigin href="./assets/difficulty-settings-manager-BW40esTg.js">
-  <link rel="modulepreload" crossorigin href="./assets/confirmation-dialog-C_sDWQ13.js">
-  <link rel="stylesheet" crossorigin href="./assets/main-oj4GEAfb.css">
+  <link rel="modulepreload" crossorigin href="./assets/confirmation-dialog-DHeRndj-.js">
+  <link rel="stylesheet" crossorigin href="./assets/main-BBnhX9cF.css">
   <link rel="stylesheet" crossorigin href="./assets/wood-36S1T1G_.css">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
@@ -209,6 +209,14 @@
                             <span class="setting-bubble" data-setting="speedTimer">⚡ speed</span>
                         </label>
                         <p class="setting-description">Display speed timer in the utility bar when speed mode is active</p>
+                    </div>
+                    <div class="setting-item" id="speed-timer-duration-container" style="margin-left: 2rem; display: none;">
+                        <label for="speed-timer-duration" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span>Speed Timer Duration:</span>
+                            <span id="speed-timer-duration-value" style="font-weight: bold; color: var(--primary-color);">10s</span>
+                        </label>
+                        <input type="range" id="speed-timer-duration" min="10" max="30" value="10" step="1" style="width: 100%; margin-bottom: 0.5rem;">
+                        <p class="setting-description" style="margin: 0; font-size: 0.8rem; color: var(--text-color-secondary);">10 = 10 seconds, 30 = 30 seconds (maximum duration for speed bonuses/punishments)</p>
                     </div>
                     
                     <!-- Link to difficulty defaults -->
@@ -316,23 +324,6 @@
                     </label>
                     <p class="setting-description">Play audio feedback for game actions and events</p>
                 </div>
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="animations-enabled" />
-                        Master animations
-                        <span class="setting-bubble" data-setting="animations">✨</span>
-                    </label>
-                    <p class="setting-description">Enable smooth transitions and visual effects during gameplay</p>
-                </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="haptic-enabled" />
-                            Haptic feedback
-                            <span class="setting-bubble" data-setting="haptic">📳</span>
-                        </label>
-                        <p class="setting-description">Vibrate device for tactile feedback on supported devices</p>
-                    </div>
                     
                     <div class="setting-item">
                         <label>
@@ -341,42 +332,6 @@
                             <span class="setting-bubble" data-setting="autoSave">💾</span>
                         </label>
                         <p class="setting-description">Automatically save your progress so you can resume later</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="show-points" />
-                            Show block points
-                            <span class="setting-bubble" data-setting="showPoints">🔢</span>
-                        </label>
-                        <p class="setting-description">Display point values on each block to help with scoring strategy</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="show-placement-points" />
-                            Show placement points
-                            <span class="setting-bubble" data-setting="placementPoints">➕</span>
-                        </label>
-                        <p class="setting-description">Show floating point notifications when placing blocks (can be noisy if enabled)</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="enable-prize-recognition" checked />
-                            Enable prize recognition
-                            <span class="setting-bubble" data-setting="prizeRecognition">🏆</span>
-                        </label>
-                        <p class="setting-description">Automatically detect and highlight special prize patterns for bonus points</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="success-mode-enabled" />
-                            Enable success mode
-                            <span class="setting-bubble" data-setting="successMode">🎉</span>
-                        </label>
-                        <p class="setting-description">Show enhanced success animations and effects when achieving combos</p>
                     </div>
                 </div>
                 
@@ -445,114 +400,6 @@
                             <span class="setting-bubble" data-setting="autoRotate">🔄 smart</span>
                         </label>
                         <p class="setting-description">Automatically rotate blocks when there's only one valid orientation for placement. Saves time and reduces frustration!</p>
-                    </div>
-                </div>
-                
-            <!-- Enhanced Animation Controls -->
-            <div class="animation-settings settings-section-container" id="animation-settings">
-                    <h3 style="text-align: center;">Enhanced Animation Controls</h3>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="block-hover-effects" />
-                            Block hover effects
-                            <span class="setting-bubble" data-setting="blockHover">🖱️</span>
-                        </label>
-                        <p class="setting-description">Highlight blocks when you move your cursor over them</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="block-selection-glow" />
-                            Block selection glow
-                            <span class="setting-bubble" data-setting="selectionGlow">✨</span>
-                        </label>
-                        <p class="setting-description">Add a glowing outline to the currently selected block</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="block-entrance-animations" />
-                            Block entrance animations
-                            <span class="setting-bubble" data-setting="blockEntrance">📥</span>
-                        </label>
-                        <p class="setting-description">Animate new blocks sliding in when they appear</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="block-placement-animations" />
-                            Block placement animations
-                            <span class="setting-bubble" data-setting="blockPlacement">📍</span>
-                        </label>
-                        <p class="setting-description">Smooth transition when placing blocks on the grid</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="line-clear-animations" />
-                            Line clear animations
-                            <span class="setting-bubble" data-setting="lineClear">💥</span>
-                        </label>
-                        <p class="setting-description">Visual effects when rows or columns are cleared</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="score-animations" />
-                            Score animations
-                            <span class="setting-bubble" data-setting="scoreAnim">💯</span>
-                        </label>
-                        <p class="setting-description">Animate score changes and point notifications</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="combo-animations" />
-                            Combo animations
-                            <span class="setting-bubble" data-setting="combo">🔥</span>
-                        </label>
-                        <p class="setting-description">Special effects when achieving combo multipliers</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="particle-effects" />
-                            Particle effects
-                            <span class="setting-bubble" data-setting="particles">⭐</span>
-                        </label>
-                        <p class="setting-description">Show particle effects when clearing lines and achieving combos</p>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <h4 style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            Animation Speed
-                            <span class="setting-bubble animation-speed-bubble" data-setting="animationSpeed">🎬 speed</span>
-                        </h4>
-                        <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0; text-align: center;">Control the speed of visual effects and transitions throughout the game.</p>
-                        <div class="animation-speed-options">
-                            <label class="animation-speed-option">
-                                <input type="radio" name="animation-speed" value="slow" id="animation-speed-slow" />
-                                <span class="animation-speed-label">
-                                    <strong>Slow</strong>
-                                    <small>Relaxed pace for detailed viewing</small>
-                                </span>
-                            </label>
-                            <label class="animation-speed-option">
-                                <input type="radio" name="animation-speed" value="normal" id="animation-speed-normal" checked />
-                                <span class="animation-speed-label">
-                                    <strong>Normal</strong>
-                                    <small>Balanced speed for most players</small>
-                                </span>
-                            </label>
-                            <label class="animation-speed-option">
-                                <input type="radio" name="animation-speed" value="fast" id="animation-speed-fast" />
-                                <span class="animation-speed-label">
-                                    <strong>Fast</strong>
-                                    <small>Quick animations for faster gameplay</small>
-                                </span>
-                            </label>
-                        </div>
                     </div>
                 </div>
                 

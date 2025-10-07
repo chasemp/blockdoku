@@ -102,16 +102,36 @@ export class SettingsManager {
             particleEffects.checked = this.settings.particleEffects !== false;
         }
         
-        const animationSpeed = document.getElementById('animation-speed');
-        if (animationSpeed) {
-            animationSpeed.value = this.settings.animationSpeed || 'normal';
+        const blockPlacementAnimations = document.getElementById('block-placement-animations');
+        if (blockPlacementAnimations) {
+            blockPlacementAnimations.checked = this.settings.blockPlacementAnimations !== false;
         }
         
-        // Haptic feedback
-        const hapticEnabled = document.getElementById('haptic-enabled');
-        if (hapticEnabled) {
-            hapticEnabled.checked = this.settings.hapticEnabled !== false; // Default to true
+        const lineClearAnimations = document.getElementById('line-clear-animations');
+        if (lineClearAnimations) {
+            lineClearAnimations.checked = this.settings.lineClearAnimations !== false;
         }
+        
+        const scoreAnimations = document.getElementById('score-animations');
+        if (scoreAnimations) {
+            scoreAnimations.checked = this.settings.scoreAnimations !== false;
+        }
+        
+        const comboAnimations = document.getElementById('combo-animations');
+        if (comboAnimations) {
+            comboAnimations.checked = this.settings.comboAnimations !== false;
+        }
+        
+        // Animation speed radio buttons
+        const animationSpeedSlow = document.getElementById('animation-speed-slow');
+        const animationSpeedNormal = document.getElementById('animation-speed-normal');
+        const animationSpeedFast = document.getElementById('animation-speed-fast');
+        const currentSpeed = this.settings.animationSpeed || 'normal';
+        if (animationSpeedSlow) animationSpeedSlow.checked = currentSpeed === 'slow';
+        if (animationSpeedNormal) animationSpeedNormal.checked = currentSpeed === 'normal';
+        if (animationSpeedFast) animationSpeedFast.checked = currentSpeed === 'fast';
+        
+        // Haptic feedback (already handled below, don't duplicate)
         
         // Game settings
         const enableHints = document.getElementById('enable-hints');
@@ -477,10 +497,55 @@ export class SettingsManager {
             });
         }
         
+        const blockPlacementAnimations = document.getElementById('block-placement-animations');
+        if (blockPlacementAnimations) {
+            blockPlacementAnimations.addEventListener('change', (e) => {
+                this.updateSetting('blockPlacementAnimations', e.target.checked);
+            });
+        }
+        
+        const lineClearAnimations = document.getElementById('line-clear-animations');
+        if (lineClearAnimations) {
+            lineClearAnimations.addEventListener('change', (e) => {
+                this.updateSetting('lineClearAnimations', e.target.checked);
+            });
+        }
+        
+        const scoreAnimations = document.getElementById('score-animations');
+        if (scoreAnimations) {
+            scoreAnimations.addEventListener('change', (e) => {
+                this.updateSetting('scoreAnimations', e.target.checked);
+            });
+        }
+        
+        const comboAnimations = document.getElementById('combo-animations');
+        if (comboAnimations) {
+            comboAnimations.addEventListener('change', (e) => {
+                this.updateSetting('comboAnimations', e.target.checked);
+            });
+        }
+        
+        // Animation speed radio buttons
+        const animationSpeedInputs = document.querySelectorAll('input[name="animation-speed"]');
+        animationSpeedInputs.forEach(input => {
+            input.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    this.updateSetting('animationSpeed', e.target.value);
+                }
+            });
+        });
+        
         const animationSpeed = document.getElementById('animation-speed');
         if (animationSpeed) {
             animationSpeed.addEventListener('change', (e) => {
                 this.updateSetting('animationSpeed', e.target.value);
+            });
+        }
+        
+        const hapticEnabled = document.getElementById('haptic-enabled');
+        if (hapticEnabled) {
+            hapticEnabled.addEventListener('change', (e) => {
+                this.updateSetting('hapticEnabled', e.target.checked);
             });
         }
         
@@ -556,14 +621,7 @@ export class SettingsManager {
             });
         }
         
-        // Effects settings
-        
-        const hapticEnabled = document.getElementById('haptic-enabled');
-        if (hapticEnabled) {
-            hapticEnabled.addEventListener('change', (e) => {
-                this.updateSetting('hapticEnabled', e.target.checked);
-            });
-        }
+        // Effects settings (haptic handled above)
         
         // Share button
         const shareButton = document.getElementById('share-button');

@@ -41,9 +41,6 @@ export class GameSettingsManager {
         // Load basic settings
         this.loadBasicSettings();
         
-        // Load animation settings
-        this.loadAnimationSettings();
-        
         // Load additional settings
         this.loadAdditionalSettings();
         
@@ -149,12 +146,6 @@ export class GameSettingsManager {
             soundCheckbox.checked = this.settings.soundEnabled === true;
         }
         
-        // Master animations
-        const animationsCheckbox = document.getElementById('animations-enabled');
-        if (animationsCheckbox) {
-            animationsCheckbox.checked = this.settings.animationsEnabled !== false; // Default to true
-        }
-        
         // Piece timeout
         const pieceTimeoutCheckbox = document.getElementById('piece-timeout-enabled');
         if (pieceTimeoutCheckbox) {
@@ -162,42 +153,9 @@ export class GameSettingsManager {
         }
     }
     
-    loadAnimationSettings() {
-        // Individual animation settings
-        const animationSettings = [
-            'block-hover-effects',
-            'block-selection-glow',
-            'block-entrance-animations',
-            'block-placement-animations',
-            'line-clear-animations',
-            'score-animations',
-            'combo-animations',
-            'particle-effects'
-        ];
-        
-        animationSettings.forEach(settingId => {
-            const checkbox = document.getElementById(settingId);
-            if (checkbox) {
-                checkbox.checked = this.settings[settingId] !== false; // Default to true for most
-            }
-        });
-        
-        // Animation speed
-        const animationSpeed = this.settings.animationSpeed || 'normal';
-        const animationSpeedRadio = document.getElementById(`animation-speed-${animationSpeed}`);
-        if (animationSpeedRadio) {
-            animationSpeedRadio.checked = true;
-        }
-    }
-    
     loadAdditionalSettings() {
         const additionalSettings = [
-            { id: 'haptic-enabled', key: 'hapticEnabled' },
-            { id: 'auto-save', key: 'autoSave' },
-            { id: 'show-points', key: 'showPoints' },
-            { id: 'show-placement-points', key: 'showPlacementPoints' },
-            { id: 'enable-prize-recognition', key: 'enablePrizeRecognition' },
-            { id: 'success-mode-enabled', key: 'successModeEnabled' }
+            { id: 'auto-save', key: 'autoSave' }
         ];
         
         additionalSettings.forEach(({ id, key }) => {
@@ -240,6 +198,23 @@ export class GameSettingsManager {
             countdownDuration.value = duration;
             countdownDurationValue.textContent = `${duration}:00`;
         }
+        
+        // Handle speed timer duration slider
+        const speedTimerCheckbox = document.getElementById('show-speed-timer');
+        const speedTimerDuration = document.getElementById('speed-timer-duration');
+        const speedTimerDurationValue = document.getElementById('speed-timer-duration-value');
+        const speedTimerContainer = document.getElementById('speed-timer-duration-container');
+        
+        if (speedTimerCheckbox && speedTimerContainer) {
+            // Show/hide duration slider based on speed timer checkbox
+            speedTimerContainer.style.display = this.settings.showSpeedTimer ? 'block' : 'none';
+        }
+        
+        if (speedTimerDuration && speedTimerDurationValue) {
+            const duration = this.settings.speedTimerDuration || 10;
+            speedTimerDuration.value = duration;
+            speedTimerDurationValue.textContent = `${duration}s`;
+        }
     }
     
     setupEventListeners() {
@@ -254,9 +229,6 @@ export class GameSettingsManager {
         
         // Basic settings
         this.setupBasicSettingsListeners();
-        
-        // Animation settings
-        this.setupAnimationListeners();
         
         // Additional settings
         this.setupAdditionalSettingsListeners();
@@ -518,14 +490,6 @@ export class GameSettingsManager {
             });
         }
         
-        // Master animations
-        const animationsCheckbox = document.getElementById('animations-enabled');
-        if (animationsCheckbox) {
-            animationsCheckbox.addEventListener('change', () => {
-                this.saveSetting('animationsEnabled', animationsCheckbox.checked);
-            });
-        }
-        
         // Piece timeout
         const pieceTimeoutCheckbox = document.getElementById('piece-timeout-enabled');
         if (pieceTimeoutCheckbox) {
@@ -535,47 +499,9 @@ export class GameSettingsManager {
         }
     }
     
-    setupAnimationListeners() {
-        // Individual animation settings
-        const animationSettings = [
-            'block-hover-effects',
-            'block-selection-glow',
-            'block-entrance-animations',
-            'block-placement-animations',
-            'line-clear-animations',
-            'score-animations',
-            'combo-animations',
-            'particle-effects'
-        ];
-        
-        animationSettings.forEach(settingId => {
-            const checkbox = document.getElementById(settingId);
-            if (checkbox) {
-                checkbox.addEventListener('change', () => {
-                    this.saveSetting(settingId, checkbox.checked);
-                });
-            }
-        });
-        
-        // Animation speed
-        const animationSpeedRadios = document.querySelectorAll('input[name="animation-speed"]');
-        animationSpeedRadios.forEach(radio => {
-            radio.addEventListener('change', () => {
-                if (radio.checked) {
-                    this.saveSetting('animationSpeed', radio.value);
-                }
-            });
-        });
-    }
-    
     setupAdditionalSettingsListeners() {
         const additionalSettings = [
-            { id: 'haptic-enabled', key: 'hapticEnabled' },
-            { id: 'auto-save', key: 'autoSave' },
-            { id: 'show-points', key: 'showPoints' },
-            { id: 'show-placement-points', key: 'showPlacementPoints' },
-            { id: 'enable-prize-recognition', key: 'enablePrizeRecognition' },
-            { id: 'success-mode-enabled', key: 'successModeEnabled' }
+            { id: 'auto-save', key: 'autoSave' }
         ];
         
         additionalSettings.forEach(({ id, key }) => {
@@ -583,11 +509,6 @@ export class GameSettingsManager {
             if (checkbox) {
                 checkbox.addEventListener('change', () => {
                     this.saveSetting(key, checkbox.checked);
-                    
-                    // Special handling for show-points setting
-                    if (id === 'show-points') {
-                        this.updateBlockPointsDisplay();
-                    }
                 });
             }
         });
@@ -654,6 +575,38 @@ export class GameSettingsManager {
                         if (countdownContainer) {
                             countdownContainer.style.display = checkbox.checked ? 'block' : 'none';
                         }
+                    } else if (id === 'show-speed-timer') {
+                        // Special handling for speed timer checkbox - show warning if enabling mid-game
+                        const wasEnabled = this.settings[key] === true;
+                        const willBeEnabled = checkbox.checked;
+                        
+                        // Show warning if enabling speed timer mid-game
+                        if (!wasEnabled && willBeEnabled && this.isGameInProgress()) {
+                            const confirmed = await this.confirmationDialog.show(
+                                `⚠️ Speed Timer Change\n\nEnabling the speed timer mid-game will reset your current score to 0.\n\nThis ensures fair scoring since the speed timer affects the game's scoring system and bonus calculations.\n\nDo you want to continue?`
+                            );
+                            
+                            if (!confirmed) {
+                                // Revert checkbox state
+                                checkbox.checked = wasEnabled;
+                                return;
+                            }
+                            
+                            // Save setting BEFORE resetting game so scoring system can initialize correctly
+                            this.saveSetting(key, checkbox.checked);
+                            
+                            // Reset the game score (this will reinitialize the scoring system)
+                            this.resetCurrentGameScore();
+                        } else {
+                            // Save setting for non-game-in-progress case or disabling
+                            this.saveSetting(key, checkbox.checked);
+                        }
+                        
+                        // Show/hide duration slider
+                        const speedTimerContainer = document.getElementById('speed-timer-duration-container');
+                        if (speedTimerContainer) {
+                            speedTimerContainer.style.display = checkbox.checked ? 'block' : 'none';
+                        }
                     } else {
                         this.saveSetting(key, checkbox.checked);
                     }
@@ -706,6 +659,43 @@ export class GameSettingsManager {
                 const durationValue = document.getElementById('countdown-duration-value');
                 if (durationValue) {
                     durationValue.textContent = `${newDuration}:00`;
+                }
+            });
+        }
+        
+        // Speed timer duration slider
+        const speedTimerDuration = document.getElementById('speed-timer-duration');
+        if (speedTimerDuration) {
+            speedTimerDuration.addEventListener('input', async () => {
+                const newDuration = parseInt(speedTimerDuration.value);
+                const currentDuration = this.settings.speedTimerDuration || 10;
+                
+                // Show warning if changing duration mid-game and speed timer is enabled
+                if (newDuration !== currentDuration && this.isGameInProgress() && this.settings.showSpeedTimer) {
+                    const confirmed = await this.confirmationDialog.show(
+                        `⚠️ Speed Timer Duration Change\n\nChanging the speed timer duration mid-game will reset your current score to 0.\n\nThis ensures fair scoring since the speed timer affects the game's scoring system and bonus calculations.\n\nDo you want to continue?`
+                    );
+                    
+                    if (!confirmed) {
+                        // Revert slider value
+                        speedTimerDuration.value = currentDuration;
+                        return;
+                    }
+                    
+                    // Save setting BEFORE resetting game so scoring system can use new duration
+                    this.saveSetting('speedTimerDuration', newDuration);
+                    
+                    // Reset the game score (this will reinitialize the scoring system)
+                    this.resetCurrentGameScore();
+                } else {
+                    // Save setting for non-game-in-progress case
+                    this.saveSetting('speedTimerDuration', newDuration);
+                }
+                
+                // Update display value
+                const durationValue = document.getElementById('speed-timer-duration-value');
+                if (durationValue) {
+                    durationValue.textContent = `${newDuration}s`;
                 }
             });
         }

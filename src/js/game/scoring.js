@@ -4,7 +4,7 @@
  */
 
 export class ScoringSystem {
-    constructor(petrificationManager = null, difficultyManager = null) {
+    constructor(petrificationManager = null, difficultyManager = null, game = null) {
         this.score = 0;
         this.level = 1;
         this.linesCleared = 0;
@@ -14,6 +14,9 @@ export class ScoringSystem {
         
         // Difficulty manager (optional)
         this.difficultyManager = difficultyManager;
+        
+        // Game reference for accessing settings
+        this.game = game;
         
         // Dual combo tracking system
         this.combo = 0;                    // Current streak combo
@@ -63,12 +66,7 @@ export class ScoringSystem {
         // Mode: 'bonus' (faster = more points), 'punishment' (faster = less points), 'ignored' (no speed tracking)
         this.speedConfig = {
             mode: 'bonus',  // 'bonus', 'punishment', or 'ignored'
-            thresholds: [
-                { maxTime: 500, bonus: 2, label: 'Lightning Fast' },     // < 0.5s - reduced from 10 to 2
-                { maxTime: 1000, bonus: 1, label: 'Very Fast' },         // < 1.0s - reduced from 5 to 1
-                { maxTime: 2000, bonus: 0.5, label: 'Fast' },            // < 2.0s - reduced from 2 to 0.5
-                { maxTime: 3000, bonus: 0.25, label: 'Quick' }           // < 3.0s - reduced from 1 to 0.25
-            ],
+            thresholds: this.generateSpeedThresholds(),
             maxBonus: 5,            // Maximum speed bonus per placement - reduced from 50 to 5
             streakMultiplier: 1.2   // Multiplier for consecutive fast placements - reduced from 1.5 to 1.2
         };
@@ -115,6 +113,28 @@ export class ScoringSystem {
             return this.difficultyManager.getCurrentDifficulty();
         }
         return 'normal'; // Default to normal if no difficulty manager
+    }
+    
+    // Generate speed thresholds based on configurable duration
+    generateSpeedThresholds() {
+        // Get speed timer duration from settings (default 10 seconds)
+        let maxDuration = 10000; // 10 seconds in milliseconds (default)
+        if (this.game && this.game.storage) {
+            const settings = this.game.storage.loadSettings();
+            maxDuration = (settings.speedTimerDuration || 10) * 1000; // Convert to milliseconds
+        }
+        
+        // Generate thresholds that scale with the max duration
+        // Fastest 10% gets highest bonus, next 20% gets medium bonus, etc.
+        const thresholds = [
+            { maxTime: Math.round(maxDuration * 0.1), bonus: 2, label: 'Lightning Fast' },     // Top 10%
+            { maxTime: Math.round(maxDuration * 0.3), bonus: 1, label: 'Very Fast' },         // Top 30%
+            { maxTime: Math.round(maxDuration * 0.5), bonus: 0.5, label: 'Fast' },            // Top 50%
+            { maxTime: Math.round(maxDuration * 0.7), bonus: 0.25, label: 'Quick' },          // Top 70%
+            { maxTime: maxDuration, bonus: 0, label: 'Normal' }                               // Within time limit
+        ];
+        
+        return thresholds;
     }
     
     // Check for completed lines without clearing them
@@ -517,8 +537,14 @@ export class ScoringSystem {
     
     // Calculate speed bonus based on placement interval
     calculateSpeedBonus(intervalMs) {
+        // Regenerate thresholds in case settings changed
+        this.speedConfig.thresholds = this.generateSpeedThresholds();
+        
         // Skip calculation if mode is ignored or invalid interval
         if (this.speedConfig.mode === 'ignored' || intervalMs <= 0) return 0;
+        
+        // Get the maximum duration from the last threshold
+        const maxDuration = this.speedConfig.thresholds[this.speedConfig.thresholds.length - 1].maxTime;
         
         if (this.speedConfig.mode === 'bonus') {
             // Bonus mode: give points for fast placements
@@ -539,10 +565,10 @@ export class ScoringSystem {
             return 0;
         } else if (this.speedConfig.mode === 'punishment') {
             // Punishment mode: subtract points for slow placements
-            // Any second in excess of 1 subtracts a point per second
-            const oneSecond = 1000; // 1 second in milliseconds
-            if (intervalMs > oneSecond) {
-                const excessSeconds = (intervalMs - oneSecond) / 1000; // Convert to seconds
+            // Any time in excess of the max duration subtracts points
+            if (intervalMs > maxDuration) {
+                const excessTime = intervalMs - maxDuration;
+                const excessSeconds = excessTime / 1000; // Convert to seconds
                 let penalty = Math.floor(excessSeconds); // 1 point per second in excess
                 
                 // Scale penalty with level (each level adds ~3% to the penalty)
@@ -551,7 +577,7 @@ export class ScoringSystem {
                 
                 // Cap the penalty (doubled for punishment mode)
                 const maxPenalty = this.speedConfig.maxBonus * 2;
-                return Math.min(penalty, maxPenalty);
+                return -Math.min(penalty, maxPenalty); // Return negative value for penalty
             }
             return 0;
         }

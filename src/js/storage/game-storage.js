@@ -154,6 +154,7 @@ export class GameStorage {
             enableHints: false,
             enableTimer: false,
             countdownDuration: 3, // Default countdown duration in minutes (3-10 range)
+            speedTimerDuration: 10, // Default speed timer duration in seconds (10-30 range)
             enablePetrification: false,
             enableDeadPixels: false,
             deadPixelsIntensity: 0,
