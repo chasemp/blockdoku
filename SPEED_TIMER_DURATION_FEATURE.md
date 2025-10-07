@@ -1,16 +1,16 @@
 # Speed Timer Duration Feature
 **Date:** 2025-10-07  
-**Feature:** Configurable Speed Timer Duration (10-30 seconds)  
+**Feature:** Configurable Speed Timer Duration (1-20 seconds)  
 **Status:** ✅ IMPLEMENTED
 
 ---
 
 ## 🎯 Feature Overview
 
-Added a configurable speed timer duration setting that allows users to set the maximum time limit for speed bonuses and punishments. The speed timer now supports a range of 10-30 seconds with 10 seconds as the default.
+Added a configurable speed timer duration setting that allows users to set the maximum time limit for speed bonuses and punishments. The speed timer now supports a range of 1-20 seconds with 10 seconds as the default.
 
 ### **Key Features:**
-- **Range:** 10-30 seconds (configurable via slider)
+- **Range:** 1-20 seconds (configurable via slider)
 - **Default:** 10 seconds
 - **Dynamic Thresholds:** Speed bonus/punishment thresholds scale with the selected duration
 - **Both Modes:** Works with both bonus and punishment speed modes
@@ -25,7 +25,7 @@ Added a configurable speed timer duration setting that allows users to set the m
 
 Added new setting to default configuration:
 ```javascript
-speedTimerDuration: 10, // Default speed timer duration in seconds (10-30 range)
+speedTimerDuration: 10, // Default speed timer duration in seconds (1-20 range)
 ```
 
 ### **2. UI Layer**
@@ -137,7 +137,7 @@ The speed timer duration setting dynamically generates bonus/punishment threshol
 
 ### **Settings Page**
 1. **Enable Speed Timer** checkbox
-2. **Duration Slider** appears when enabled (10-30 seconds)
+2. **Duration Slider** appears when enabled (1-20 seconds)
 3. **Real-time value display** shows current setting
 4. **Mid-game protection** warns about score reset
 
@@ -162,7 +162,7 @@ The speed timer duration setting dynamically generates bonus/punishment threshol
 3. If enabling mid-game → show warning → reset score if confirmed
 
 ### **Duration Change:**
-1. User moves slider (10-30 seconds)
+1. User moves slider (1-20 seconds)
 2. Update display value in real-time
 3. If mid-game → show warning → reset score if confirmed
 4. Save setting to storage
@@ -211,7 +211,7 @@ The speed timer duration setting dynamically generates bonus/punishment threshol
 
 | Setting | Range | Default | Description |
 |---------|-------|---------|-------------|
-| `speedTimerDuration` | 10-30 seconds | 10 seconds | Maximum time for speed bonuses/punishments |
+| `speedTimerDuration` | 1-20 seconds | 10 seconds | Maximum time for speed bonuses/punishments |
 | `showSpeedTimer` | true/false | false | Enable speed timer display in utility bar |
 | `speedMode` | bonus/punishment/ignored | bonus | How speed affects scoring |
 
@@ -237,7 +237,7 @@ The speed timer duration setting dynamically generates bonus/punishment threshol
 
 ## 🎉 Summary
 
-The Speed Timer Duration feature provides users with fine-grained control over the speed-based scoring system. By allowing configuration from 10-30 seconds, players can adjust the difficulty and pressure of speed-based gameplay to match their skill level and preferences.
+The Speed Timer Duration feature provides users with fine-grained control over the speed-based scoring system. By allowing configuration from 1-20 seconds, players can adjust the difficulty and pressure of speed-based gameplay to match their skill level and preferences.
 
 The implementation ensures fair scoring through mid-game change warnings and maintains game balance through dynamically scaled thresholds that work consistently across all speed modes.
 

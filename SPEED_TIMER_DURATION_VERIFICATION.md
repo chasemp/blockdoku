@@ -47,17 +47,17 @@
 | 25.0s | 0 | -5 (5s over) |
 | 30.0s | 0 | -10 (capped at 20s) |
 
-### **30 Second Duration:**
+### **20 Second Duration:**
 | Time | Bonus Mode | Punishment Mode |
 |------|------------|-----------------|
-| 1.5s | +2 (Lightning) | 0 |
-| 6.0s | +1 (Very Fast) | 0 |
-| 15.0s | +0.5 (Fast) | 0 |
-| 21.0s | +0.25 (Quick) | 0 |
-| 30.0s | 0 (Normal) | 0 |
-| 32.0s | 0 | -2 (2s over) |
-| 35.0s | 0 | -5 (5s over) |
-| 40.0s | 0 | -10 (capped at 30s) |
+| 1.0s | +2 (Lightning) | 0 |
+| 4.0s | +1 (Very Fast) | 0 |
+| 10.0s | +0.5 (Fast) | 0 |
+| 14.0s | +0.25 (Quick) | 0 |
+| 20.0s | 0 (Normal) | 0 |
+| 22.0s | 0 | -2 (2s over) |
+| 25.0s | 0 | -5 (5s over) |
+| 30.0s | 0 | -10 (capped at 20s) |
 
 ---
 

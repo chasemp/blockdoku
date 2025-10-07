@@ -117,7 +117,7 @@ export class ScoringSystem {
     
     // Generate speed thresholds based on configurable duration
     generateSpeedThresholds() {
-        // Get speed timer duration from settings (default 10 seconds)
+        // Get speed timer duration from settings (default 10 seconds, range 1-20)
         let maxDuration = 10000; // 10 seconds in milliseconds (default)
         if (this.game && this.game.storage) {
             const settings = this.game.storage.loadSettings();
