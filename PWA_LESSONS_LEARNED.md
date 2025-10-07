@@ -447,7 +447,144 @@ window.addEventListener('focus', () => {
 - Provide clear examples of good vs bad patterns
 - Include troubleshooting guides for common issues
 
+## 🎯 Current Feature Status & Roadmap
+
+### ✅ Completed Features (2025)
+- **Expert Mode Uniform Piece Colors** - Additional mental challenge with uniform styling
+- **Speed Timer Duration Configuration** - Configurable 1-20 second speed timer ranges
+- **Sound Customization System** - 16 customizable sound effects with 8 presets each
+- **Magic Blocks System** - Special blocks with unique properties (line-clear, bomb, lightning, ghost)
+- **Wild Block Shapes** - Creative block geometries (pentominos, hexominos, crosses, etc.)
+- **Auto-Rotate Smart Placement** - Automatic block rotation for optimal placement
+- **Efficiency Metrics** - Points per piece tracking and display
+- **Cascade Effect** - Sequential animation for multiple line clears
+- **Comprehensive Testing Suite** - MCP Playwright testing with 20+ regression tests
+
+### 🚧 In Progress Features
+- **Zen Mode** - Relaxing game mode with no scoring pressure
+- **Enhanced Visual Effects** - Improved animations and particle systems
+- **Advanced Statistics** - Detailed game analytics and trends
+
+### 📋 Planned Features
+- **Multiplayer Support** - Real-time multiplayer gameplay
+- **Custom Themes** - User-created theme system
+- **Achievement System** - Unlockable achievements and rewards
+- **Tournament Mode** - Competitive gameplay with leaderboards
+
 ## 🎯 Future Improvements
+
+## 🚀 Feature Implementation Lessons
+
+### Speed Timer Duration Configuration (2025-10-07)
+**Feature:** Configurable speed timer duration (1-20 seconds) for speed bonuses/punishments
+
+**Key Implementation Lessons:**
+1. **Dynamic Threshold Generation:** Speed bonus thresholds must scale with user-defined duration
+2. **Mid-Game Protection:** Changing speed settings mid-game requires score reset to maintain fairness
+3. **UI Consistency:** Duration sliders should follow established patterns (like countdown duration)
+4. **Scoring System Integration:** Speed timer settings must be accessible to scoring calculations
+
+**Technical Pattern:**
+```javascript
+// ✅ Good: Dynamic threshold generation based on user settings
+generateSpeedThresholds() {
+    const maxDuration = (this.game.settings.speedTimerDuration || 10) * 1000;
+    return [
+        { maxTime: Math.round(maxDuration * 0.1), bonus: 2, label: 'Lightning Fast' },
+        { maxTime: Math.round(maxDuration * 0.3), bonus: 1, label: 'Very Fast' },
+        // ... more thresholds
+    ];
+}
+```
+
+### Expert Mode Uniform Piece Colors (2025-10-07)
+**Feature:** All pieces same color in Expert mode for additional mental challenge
+
+**Key Implementation Lessons:**
+1. **Difficulty-Specific Styling:** Use CSS classes on body element for difficulty-specific visual changes
+2. **Visual Distinction:** Maintain clear indicators for unplaceable pieces even with uniform colors
+3. **CSS Specificity:** Expert mode rules must override default block styling
+4. **JavaScript Integration:** Apply difficulty classes during settings loading and difficulty changes
+
+**Technical Pattern:**
+```css
+/* ✅ Good: Expert mode uniform styling with clear unplaceable distinction */
+.expert-mode .block-item {
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+    border-color: #718096;
+    color: #e2e8f0;
+}
+
+.expert-mode .block-item.unplaceable {
+    filter: grayscale(95%) brightness(0.3) opacity(0.2);
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+}
+
+.expert-mode .block-item.unplaceable::after {
+    content: '✕';
+    color: #ff6b6b;
+    font-size: 1.8rem;
+    text-shadow: 0 0 5px rgba(255, 107, 107, 0.8);
+}
+```
+
+### Sound Customization System (2025-09-XX)
+**Feature:** 16 customizable sound effects with 8 preset options each
+
+**Key Implementation Lessons:**
+1. **Preset System Design:** Create reusable sound preset system rather than hardcoded sounds
+2. **Web Audio API:** Use Web Audio API for consistent cross-platform sound generation
+3. **Mobile PWA Support:** Ensure sound system works in mobile browsers and installed PWAs
+4. **Preview Functionality:** Allow users to test sounds before committing to changes
+
+**Technical Pattern:**
+```javascript
+// ✅ Good: Preset-based sound system
+class SoundManager {
+    constructor() {
+        this.soundPresets = {
+            'default': { frequency: 440, duration: 0.1, type: 'sine' },
+            'click': { frequency: 800, duration: 0.05, type: 'square' },
+            // ... more presets
+        };
+        this.userMappings = this.loadSoundMappings();
+    }
+    
+    playSound(soundType) {
+        const preset = this.userMappings[soundType] || 'default';
+        const soundConfig = this.soundPresets[preset];
+        this.generateTone(soundConfig);
+    }
+}
+```
+
+### Game Modes and Special Mechanics
+**Features:** Magic blocks, wild block shapes, petrification, dead pixels, zen mode
+
+**Key Implementation Lessons:**
+1. **Modular Game Mode System:** Each game mode should be independently toggleable
+2. **Visual Effect System:** Centralized effects manager for consistent animations and feedback
+3. **Settings Integration:** Game modes should integrate cleanly with existing settings system
+4. **Performance Considerations:** Special effects should not impact game performance
+
+**Technical Pattern:**
+```javascript
+// ✅ Good: Modular game mode system
+class GameModeManager {
+    constructor() {
+        this.modes = {
+            magicBlocks: new MagicBlockMode(),
+            wildShapes: new WildShapeMode(),
+            petrification: new PetrificationMode(),
+            deadPixels: new DeadPixelMode()
+        };
+    }
+    
+    isModeActive(modeName) {
+        return this.settings[`enable${modeName}`] && this.modes[modeName].isActive();
+    }
+}
+```
 
 ## 🧪 MCP Playwright Testing Strategy
 
