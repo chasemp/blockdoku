@@ -215,6 +215,22 @@ export class GameSettingsManager {
             speedTimerDuration.value = duration;
             speedTimerDurationValue.textContent = `${duration}s`;
         }
+        
+        // Handle speed timer precision
+        const speedTimerPrecision = document.getElementById('speed-timer-precision');
+        const speedTimerPrecisionValue = document.getElementById('speed-timer-precision-value');
+        const speedTimerPrecisionContainer = document.getElementById('speed-timer-precision-container');
+        
+        if (speedTimerCheckbox && speedTimerPrecisionContainer) {
+            // Show/hide precision selector based on speed timer checkbox
+            speedTimerPrecisionContainer.style.display = this.settings.showSpeedTimer ? 'block' : 'none';
+        }
+        
+        if (speedTimerPrecision && speedTimerPrecisionValue) {
+            const precision = this.settings.speedTimerPrecision || 'seconds';
+            speedTimerPrecision.value = precision;
+            speedTimerPrecisionValue.textContent = precision === 'milliseconds' ? 'Milliseconds' : 'Seconds';
+        }
     }
     
     setupEventListeners() {
@@ -602,10 +618,14 @@ export class GameSettingsManager {
                             this.saveSetting(key, checkbox.checked);
                         }
                         
-                        // Show/hide duration slider
+                        // Show/hide duration slider and precision selector
                         const speedTimerContainer = document.getElementById('speed-timer-duration-container');
                         if (speedTimerContainer) {
                             speedTimerContainer.style.display = checkbox.checked ? 'block' : 'none';
+                        }
+                        const speedTimerPrecisionContainer = document.getElementById('speed-timer-precision-container');
+                        if (speedTimerPrecisionContainer) {
+                            speedTimerPrecisionContainer.style.display = checkbox.checked ? 'block' : 'none';
                         }
                     } else {
                         this.saveSetting(key, checkbox.checked);
@@ -699,6 +719,23 @@ export class GameSettingsManager {
                 }
             });
         }
+        
+        // Speed timer precision selector
+        const speedTimerPrecision = document.getElementById('speed-timer-precision');
+        if (speedTimerPrecision) {
+            speedTimerPrecision.addEventListener('change', () => {
+                const newPrecision = speedTimerPrecision.value;
+                
+                // Save setting
+                this.saveSetting('speedTimerPrecision', newPrecision);
+                
+                // Update display value
+                const precisionValue = document.getElementById('speed-timer-precision-value');
+                if (precisionValue) {
+                    precisionValue.textContent = newPrecision === 'milliseconds' ? 'Milliseconds' : 'Seconds';
+                }
+            });
+        }
     }
     
     setupResetStatisticsListener() {
@@ -740,7 +777,7 @@ export class GameSettingsManager {
         const difficultySpecificSettings = [
             'enableHints', 'showPoints', 'enableTimer', 'enablePetrification', 
             'enableDeadPixels', 'showPersonalBests', 'showSpeedTimer', 'speedMode',
-            'animationsEnabled', 'soundEnabled', 'enableWildBlocks'
+            'animationsEnabled', 'soundEnabled', 'enableWildBlocks', 'enableMagicBlocks', 'enableWildShapes', 'speedTimerPrecision'
         ];
         
         if (difficultySpecificSettings.includes(key)) {

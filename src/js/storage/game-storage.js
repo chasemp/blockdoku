@@ -165,6 +165,7 @@ export class GameStorage {
             comboDisplayMode: 'cumulative', // 'streak' or 'cumulative'
             speedMode: 'bonus', // 'bonus', 'punishment', or 'ignored'
             speedDisplayMode: 'timer', // 'timer' or 'points'
+            speedTimerPrecision: 'seconds', // 'milliseconds' or 'seconds' for speed timer display
             pieceTimeoutEnabled: false, // Enable piece timeout (15s warning, 30s timeout)
             enableMagicBlocks: false, // Enable magic blocks that can clear lines when placed
             enableWildShapes: false, // Enable wild block shapes with creative geometries
