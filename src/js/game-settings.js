@@ -1078,35 +1078,35 @@ export class GameSettingsManager {
         // Reset to defaults for current difficulty
         const resetCurrentDifficultyBtn = document.getElementById('reset-current-difficulty');
         if (resetCurrentDifficultyBtn) {
-            resetCurrentDifficultyBtn.addEventListener('click', () => {
+            resetCurrentDifficultyBtn.addEventListener('click', async () => {
                 const capitalizedDifficulty = this.currentDifficulty.charAt(0).toUpperCase() + this.currentDifficulty.slice(1);
-                this.confirmationDialog.show(
-                    `Reset ${capitalizedDifficulty} settings to defaults?`,
-                    'This will reset all settings for the current difficulty level to their default values. Your customizations will be lost.',
-                    () => {
-                        this.difficultySettings.resetToDefaults(this.currentDifficulty);
-                        this.loadSettings();
-                        this.updateUI();
-                        this.showNotification(`Settings reset to defaults for ${capitalizedDifficulty} difficulty`);
-                    }
+                const confirmed = await this.confirmationDialog.show(
+                    `Reset ${capitalizedDifficulty} settings to defaults?`
                 );
+                
+                if (confirmed) {
+                    this.difficultySettings.resetToDefaults(this.currentDifficulty);
+                    this.loadSettings();
+                    this.updateUI();
+                    this.showNotification(`Settings reset to defaults for ${capitalizedDifficulty} difficulty`);
+                }
             });
         }
         
         // Reset all difficulties to defaults
         const resetAllDifficultiesBtn = document.getElementById('reset-all-difficulties');
         if (resetAllDifficultiesBtn) {
-            resetAllDifficultiesBtn.addEventListener('click', () => {
-                this.confirmationDialog.show(
-                    'Reset ALL difficulty settings to defaults?',
-                    'This will reset all settings for ALL difficulty levels to their default values. All your customizations will be lost.',
-                    () => {
-                        this.difficultySettings.resetAllToDefaults();
-                        this.loadSettings();
-                        this.updateUI();
-                        this.showNotification('All difficulty settings reset to defaults');
-                    }
+            resetAllDifficultiesBtn.addEventListener('click', async () => {
+                const confirmed = await this.confirmationDialog.show(
+                    'Reset ALL difficulty settings to defaults?'
                 );
+                
+                if (confirmed) {
+                    this.difficultySettings.resetAllToDefaults();
+                    this.loadSettings();
+                    this.updateUI();
+                    this.showNotification('All difficulty settings reset to defaults');
+                }
             });
         }
         
