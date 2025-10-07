@@ -3027,6 +3027,9 @@ class BlockdokuGame {
             this.enableMagicBlocks = difficultySettings.enableMagicBlocks || false;
             this.enableWildShapes = difficultySettings.enableWildShapes || false;
             
+            // Apply difficulty-specific visual settings (like expert mode styling)
+            this.applyDifficultySettings();
+            
             // Log difficulty settings application
             console.log(`🎮 Difficulty level game settings applied for: ${this.difficulty.toUpperCase()}`);
             console.log('Applied settings:', {
@@ -3676,6 +3679,9 @@ class BlockdokuGame {
         console.log(`🎮 App.js: calling loadSettings()...`);
         this.loadSettings();
         
+        // Apply difficulty-specific visual settings (like expert mode styling)
+        this.applyDifficultySettings();
+        
         console.log(`🎮 App.js: calling updateDifficultyUI()...`);
         this.updateDifficultyUI();
         
@@ -3749,24 +3755,28 @@ class BlockdokuGame {
                 this.enableTimer = false;
                 this.moveLimit = null;
                 this.timeLimit = null;
+                document.body.classList.remove('expert-mode');
                 break;
             case 'normal':
                 // Don't override enableHints - let user setting take precedence
                 this.enableTimer = false;
                 this.moveLimit = null;
                 this.timeLimit = null;
+                document.body.classList.remove('expert-mode');
                 break;
             case 'hard':
                 // Don't override enableHints - let user setting take precedence
                 this.enableTimer = false;
                 this.moveLimit = 50; // Limited moves
                 this.timeLimit = null;
+                document.body.classList.remove('expert-mode');
                 break;
             case 'expert':
                 // Don't override enableHints - let user setting take precedence
                 this.enableTimer = true;
                 this.moveLimit = 30; // Very limited moves
                 this.timeLimit = 300; // 5 minutes
+                document.body.classList.add('expert-mode');
                 break;
         }
     }
@@ -4715,6 +4725,9 @@ class BlockdokuGame {
     updatePlaceabilityIndicators() {
         if (!this.blockManager || !this.blockPalette) return;
         if (!this.blockManager.currentBlocks || this.blockManager.currentBlocks.length === 0) return;
+        
+        // Clear any existing placeability state before setting new state
+        this.blockPalette.clearPlaceability();
         
         const placeableById = this.computePlaceabilityMap();
         const placeableIds = Object.keys(placeableById).filter(id => placeableById[id]);

@@ -60,7 +60,8 @@ export class DifficultyManager {
                 hintsEnabled: false,
                 blockGenerationDelay: 800, // 0.8 seconds between new blocks
                 visualHints: false,
-                moveLimit: 50 // Limited moves
+                moveLimit: 50, // Limited moves
+                uniformPieceColors: true // All pieces same color for mental challenge
             }
         };
     }
