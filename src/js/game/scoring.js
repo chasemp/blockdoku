@@ -249,20 +249,17 @@ export class ScoringSystem {
     // Clear lines from board without updating score
     // Returns the new board state and clear information
     clearLinesFromBoard(board, clearedLines) {
-        console.log('ScoringSystem.clearLinesFromBoard called with:', { board, clearedLines });
         let newBoard = board.map(row => [...row]); // Deep copy
         let totalCleared = 0;
         
         // Clear rows
         clearedLines.rows.forEach(row => {
-            console.log(`Clearing row ${row}`);
             newBoard[row] = new Array(board[0].length).fill(0);
             totalCleared++;
         });
         
         // Clear columns
         clearedLines.columns.forEach(col => {
-            console.log(`Clearing column ${col}`);
             for (let row = 0; row < board.length; row++) {
                 newBoard[row][col] = 0;
             }
@@ -271,7 +268,6 @@ export class ScoringSystem {
         
         // Clear 3x3 squares
         clearedLines.squares.forEach(square => {
-            console.log(`Clearing square at row ${square.row}, col ${square.col}`);
             const startRow = square.row * 3;
             const startCol = square.col * 3;
             
@@ -282,8 +278,6 @@ export class ScoringSystem {
             }
             totalCleared++;
         });
-        
-        console.log(`Total cleared: ${totalCleared}`);
         
         return {
             board: newBoard,
@@ -315,20 +309,17 @@ export class ScoringSystem {
     }
     
     applyClears(board, clearedLines, difficultyMultiplier = 1.0) {
-        console.log('ScoringSystem.applyClears called with:', { board, clearedLines });
         let newBoard = board.map(row => [...row]); // Deep copy
         let totalCleared = 0;
         
         // Clear rows
         clearedLines.rows.forEach(row => {
-            console.log(`Clearing row ${row}`);
             newBoard[row] = new Array(board[0].length).fill(0);
             totalCleared++;
         });
         
         // Clear columns
         clearedLines.columns.forEach(col => {
-            console.log(`Clearing column ${col}`);
             for (let row = 0; row < board.length; row++) {
                 newBoard[row][col] = 0;
             }
@@ -337,7 +328,6 @@ export class ScoringSystem {
         
         // Clear 3x3 squares
         clearedLines.squares.forEach(square => {
-            console.log(`Clearing square at row ${square.row}, col ${square.col}`);
             const startRow = square.row * 3;
             const startCol = square.col * 3;
             
@@ -348,8 +338,6 @@ export class ScoringSystem {
             }
             totalCleared++;
         });
-        
-        console.log(`Total cleared: ${totalCleared}`);
         
         // Check for combo
 		// Combo occurs when:

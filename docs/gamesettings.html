@@ -140,9 +140,9 @@
     <meta property="twitter:title" content="Blockdoku - Block Puzzle Game">
     <meta property="twitter:description" content="A modern take on the classic block puzzle game. Play anywhere, anytime!">
     <meta property="twitter:image" content="https://blockdoku.523.life/icons/icon-512x512.png">
-  <script type="module" crossorigin src="./assets/gamesettings-BEuhtDKf.js"></script>
+  <script type="module" crossorigin src="./assets/gamesettings-DmgoN8gY.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="modulepreload" crossorigin href="./assets/difficulty-settings-manager-BW40esTg.js">
+  <link rel="modulepreload" crossorigin href="./assets/difficulty-settings-manager-BP-zScMF.js">
   <link rel="modulepreload" crossorigin href="./assets/confirmation-dialog-DHeRndj-.js">
   <link rel="stylesheet" crossorigin href="./assets/main-C3SnmnDq.css">
   <link rel="stylesheet" crossorigin href="./assets/wood-36S1T1G_.css">
@@ -217,6 +217,15 @@
                         </label>
                         <input type="range" id="speed-timer-duration" min="1" max="20" value="10" step="1" style="width: 100%; margin-bottom: 0.5rem;">
                         <p class="setting-description" style="margin: 0; font-size: 0.8rem; color: var(--text-color-secondary);">1 = 1 second, 20 = 20 seconds (maximum duration for speed bonuses/punishments)</p>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="piece-timeout-enabled" />
+                            Enable Piece Timeout
+                            <span class="setting-bubble" data-setting="timeout">⏰ timeout</span>
+                        </label>
+                        <p class="setting-description">Auto-end game when pieces timeout (15s warning, 30s timeout)</p>
                     </div>
                     
                     <!-- Link to difficulty defaults -->

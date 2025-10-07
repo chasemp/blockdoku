@@ -475,6 +475,59 @@ window.addEventListener('focus', () => {
 
 ## 🚀 Feature Implementation Lessons
 
+### Debug Log Performance Issues (2025-01-07)
+**Feature:** Debug logging cleanup and performance optimization
+
+**Key Implementation Lessons:**
+1. **Console.log Performance Impact:** Excessive debug logging can severely impact PWA performance, especially in frequently called functions
+2. **Function Call Frequency:** Functions called in game loops, UI updates, or event handlers should have minimal or no debug logging
+3. **Debug Log Patterns:** Look for console.log statements in:
+   - `updateUI()` functions (called on every UI refresh)
+   - `update()` functions (called in game loops)
+   - Event handlers (called on user interactions)
+   - Settings change handlers (called frequently)
+
+**Performance Impact Examples:**
+- `updateHintControls()`: 6 console.log statements called on every UI update
+- `updateUI()`: Combo debug log called on every score/level change
+- `showHint()`: Debug log called every time hints are toggled
+- Scoring functions: Debug logs called on every line clear
+
+**Technical Pattern:**
+```javascript
+// ❌ BAD: Debug logs in frequently called functions
+updateUI() {
+    console.log('updateUI called');
+    console.log('score:', this.score);
+    console.log('level:', this.level);
+    // ... function logic
+}
+
+// ✅ GOOD: Conditional or removed debug logs
+updateUI() {
+    // Only log when debugging specific issues
+    if (DEBUG_MODE && this.score !== this.previousScore) {
+        console.log('Score changed:', this.previousScore, '->', this.score);
+    }
+    // ... function logic
+}
+
+// ✅ BETTER: Use proper logging levels
+updateUI() {
+    if (this.logger && this.logger.isDebugEnabled()) {
+        this.logger.debug('UI updated', { score: this.score, level: this.level });
+    }
+    // ... function logic
+}
+```
+
+**Debug Log Best Practices:**
+1. **Remove from Production:** Strip debug logs from production builds
+2. **Conditional Logging:** Use debug flags or logging levels
+3. **Performance Monitoring:** Monitor console output for spam
+4. **Function Analysis:** Identify frequently called functions and minimize their logging
+5. **Log Levels:** Implement proper logging levels (error, warn, info, debug)
+
 ### Speed Timer Duration Configuration (2025-10-07)
 **Feature:** Configurable speed timer duration (1-20 seconds) for speed bonuses/punishments
 

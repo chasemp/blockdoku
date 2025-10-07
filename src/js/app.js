@@ -2076,13 +2076,6 @@ class BlockdokuGame {
         
         // Check for combo hit based on the active display mode
         const previousTotalCombos = this.previousTotalCombos || 0;
-        console.log('🎯 Combo Debug:', { 
-            mode, 
-            currentCombo, 
-            totalCombos, 
-            previousTotalCombos, 
-            previousCombo: this.previousCombo 
-        });
         
         if (mode === 'cumulative') {
             if (totalCombos > previousTotalCombos && totalCombos >= 1) {
@@ -2409,16 +2402,9 @@ class BlockdokuGame {
         const hintControls = document.getElementById('hint-controls');
         const hintBtn = document.getElementById('hint-btn');
         
-        console.log('updateHintControls called');
-        console.log('hintControls element:', hintControls);
-        console.log('hintBtn element:', hintBtn);
-        console.log('isHintsEnabled:', this.difficultyManager.isHintsEnabled());
-        console.log('current difficulty:', this.difficultyManager.getCurrentDifficulty());
-        
         if (hintControls && hintBtn) {
             const hintsEnabled = this.difficultyManager.isHintsEnabled();
             hintControls.style.display = hintsEnabled ? 'block' : 'none';
-            console.log('Setting hint controls display to:', hintsEnabled ? 'block' : 'none');
             
             if (hintsEnabled) {
                 const hintStatus = this.hintSystem.getHintStatus();
