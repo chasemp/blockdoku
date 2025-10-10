@@ -219,6 +219,10 @@ class BlockdokuGame {
             // Redraw after resize to ensure proper alignment
             requestAnimationFrame(() => {
                 this.drawBoard();
+                // Also refresh the block palette on resize to prevent display issues
+                if (this.blockPalette && this.currentBlocks && this.currentBlocks.length > 0) {
+                    this.blockPalette.updateBlocks(this.currentBlocks);
+                }
             });
         });
     }
@@ -355,6 +359,7 @@ class BlockdokuGame {
         if (this.timerSystem) {
             const timerStillRunning = this.timerSystem.update(16);
             if (!timerStillRunning && this.timerSystem.isTimeUp() && this.isInitialized) {
+                console.log('⏰ Timer expired, triggering game over');
                 this.handleTimeUp();
             }
             this.updateTimerDisplay();
@@ -2121,6 +2126,9 @@ class BlockdokuGame {
                         if (precision === 'milliseconds') {
                             const seconds = (elapsed / 1000).toFixed(1);
                             speedTimerValueElement.textContent = `${seconds}s`;
+                        } else if (precision === 'high-precision') {
+                            const seconds = (elapsed / 1000).toFixed(2);
+                            speedTimerValueElement.textContent = `${seconds}s`;
                         } else {
                             const seconds = Math.floor(elapsed / 1000);
                             speedTimerValueElement.textContent = `${seconds}s`;
@@ -3124,6 +3132,16 @@ class BlockdokuGame {
             
             this.updateBlockPointsDisplay();
             
+            // Reinitialize timer system when settings change
+            if (this.timerSystem) {
+                this.timerSystem.reset();
+                this.timerSystem.initialize();
+                console.log('⏱️ Timer system reinitialized after settings change:', {
+                    isActive: this.timerSystem.isActive,
+                    timeLimit: this.timerSystem.timeLimit
+                });
+            }
+            
             // Update timer display to reflect countdown timer setting changes
             this.updateTimerDisplay();
             
@@ -3825,7 +3843,7 @@ class BlockdokuGame {
         if (!this.canPlaceBlock(row, col)) return;
         
         // Start countdown timer on first piece placement (if timer is enabled)
-        if (!this.firstPiecePlaced && this.timerSystem && this.timerSystem.isActive) {
+        if (!this.firstPiecePlaced && this.timerSystem && this.timerSystem.isActive && !this.timerSystem.isPaused) {
             this.timerSystem.start();
             console.log('⏱️ Countdown timer started on first piece placement');
         }
@@ -4806,6 +4824,9 @@ class BlockdokuGame {
             
             if (precision === 'milliseconds') {
                 const seconds = (elapsed / 1000).toFixed(1);
+                speedTimerValueElement.textContent = `${seconds}s`;
+            } else if (precision === 'high-precision') {
+                const seconds = (elapsed / 1000).toFixed(2);
                 speedTimerValueElement.textContent = `${seconds}s`;
             } else {
                 const seconds = Math.floor(elapsed / 1000);
