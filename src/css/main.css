@@ -127,9 +127,9 @@ body {
 }
 
 .utility-item.active .speed-timer {
-    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
-    border-color: #ff8c42;
-    box-shadow: 0 0 15px rgba(255, 107, 53, 0.4);
+    background: rgba(255, 107, 53, 0.15);
+    border-color: rgba(255, 107, 53, 0.4);
+    box-shadow: 0 0 10px rgba(255, 107, 53, 0.2);
 }
 
 .utility-item.active .hint-controls {
@@ -425,8 +425,8 @@ body {
     font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #ff6b35;
-    text-shadow: 0 0 3px #ff6b35;
+    color: #ff8c42;
+    text-shadow: 0 0 3px rgba(255, 140, 66, 0.6);
     text-align: center;
     width: 100%;
 }
@@ -629,8 +629,8 @@ body {
 [data-theme="wood"] .speed-label,
 .wood-theme .pb-label,
 [data-theme="wood"] .pb-label {
-    color: #ffaa00;
-    text-shadow: 0 0 3px #ffaa00;
+    color: #cc8800;
+    text-shadow: 0 0 3px rgba(204, 136, 0, 0.6);
 }
 
 .wood-theme .timer span:last-child,
@@ -666,8 +666,8 @@ body {
 [data-theme="dark"] .speed-label,
 .dark-theme .pb-label,
 [data-theme="dark"] .pb-label {
-    color: #00aaff;
-    text-shadow: 0 0 3px #00aaff;
+    color: #0088cc;
+    text-shadow: 0 0 3px rgba(0, 136, 204, 0.6);
 }
 
 .dark-theme .timer span:last-child,
@@ -703,8 +703,8 @@ body {
 [data-theme="light"] .speed-label,
 .light-theme .pb-label,
 [data-theme="light"] .pb-label {
-    color: #00aa00;
-    text-shadow: 0 0 3px #00aa00;
+    color: #008800;
+    text-shadow: 0 0 3px rgba(0, 136, 0, 0.6);
 }
 
 .light-theme .timer span:last-child,

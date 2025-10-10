@@ -242,9 +242,13 @@ class BlockdokuGame {
         this.loadGameState();
         
         // Only generate new blocks if no blocks were loaded from saved state
-        if (!this.blockManager.currentBlocks || this.blockManager.currentBlocks.length === 0) {
-            this.generateNewBlocks();
-        }
+        // Use setTimeout to ensure DOM is ready and block palette is rendered
+        setTimeout(() => {
+            if (!this.blockManager.currentBlocks || this.blockManager.currentBlocks.length === 0) {
+                console.log('Generating initial blocks after DOM is ready');
+                this.generateNewBlocks();
+            }
+        }, 50);
         
         // Initialize timer system for current difficulty (but don't start it yet)
         // Timer will start on first piece placement
@@ -1330,10 +1334,11 @@ class BlockdokuGame {
             }
         }
         
-        // Don't check for clears if we're already in the middle of a clearing animation
+        // If we're already clearing lines, still check for additional clears immediately
+        // This ensures that newly completed lines are detected right away
         if (this.pendingClears) {
-            console.log('Skipping line clear check - animation in progress');
-            return;
+            console.log('Line clear animation in progress - checking for additional clears immediately');
+            // Continue with the check below to detect any new completed lines
         }
         
         // Ensure board is valid before checking
@@ -1345,10 +1350,25 @@ class BlockdokuGame {
         
         // Check for completed lines (but don't clear yet)
         const clearedLines = this.scoringSystem.checkForCompletedLines(this.board);
+        console.log('Line clear check result:', {
+            rows: clearedLines.rows.length,
+            columns: clearedLines.columns.length,
+            squares: clearedLines.squares.length,
+            hasPendingClears: !!this.pendingClears,
+            hasQueuedClears: !!this.queuedClears
+        });
         
         // If any lines were cleared, start the animation sequence
         if (clearedLines.rows.length > 0 || clearedLines.columns.length > 0 || clearedLines.squares.length > 0) {
             console.log('Lines detected for clearing:', clearedLines);
+            
+            // If we're already clearing lines, queue these additional clears
+            if (this.pendingClears) {
+                console.log('Queuing additional line clears for after current animation completes');
+                // Store additional clears to be processed after current animation
+                this.queuedClears = clearedLines;
+                return;
+            }
             
             // Calculate and update score immediately (before animation)
             this.updateScoreForClears(clearedLines);
@@ -1901,7 +1921,21 @@ class BlockdokuGame {
         
         // Check for additional line clears after this one
         setTimeout(() => {
-            this.checkLineClears();
+            console.log('Checking for additional line clears after completion...');
+            // Process any queued clears first
+            if (this.queuedClears) {
+                console.log('Processing queued line clears:', this.queuedClears);
+                const queuedClears = this.queuedClears;
+                this.queuedClears = null; // Clear the queue
+                // Process the queued clears
+                this.updateScoreForClears(queuedClears);
+                this.updateUI();
+                this.showImmediateClearFeedback(queuedClears);
+                this.startLineClearAnimation(queuedClears);
+            } else {
+                // No queued clears, check for new ones
+                this.checkLineClears();
+            }
         }, 200);
     }
     
@@ -2183,10 +2217,8 @@ class BlockdokuGame {
             const difficultyLabel = this.difficulty.charAt(0).toUpperCase() + this.difficulty.slice(1);
             
             container.innerHTML = `
-                <span class="pb-item">
-                    <span class="pb-label">BEST</span>
-                    <span class="pb-value">${currentDifficultyBest.toLocaleString()}</span>
-                </span>
+                <span class="pb-label">BEST</span>
+                <span class="pb-value">${currentDifficultyBest.toLocaleString()}</span>
             `;
             container.style.display = 'inline-flex';
         } catch (e) {
@@ -2419,7 +2451,7 @@ class BlockdokuGame {
         
         if (hintControls && hintBtn) {
             const hintsEnabled = this.difficultyManager.isHintsEnabled();
-            hintControls.style.display = hintsEnabled ? 'block' : 'none';
+            hintControls.style.display = hintsEnabled ? 'flex' : 'none';
             
             if (hintsEnabled) {
                 const hintStatus = this.hintSystem.getHintStatus();
@@ -2499,12 +2531,12 @@ class BlockdokuGame {
                 console.log('🖥️ Timer display update:', {
                     timerEnabled,
                     timeLimit: this.difficultyManager.getTimeLimit(),
-                    willDisplay: timerEnabled ? 'block' : 'none',
+                    willDisplay: timerEnabled ? 'flex' : 'none',
                     timerSystemActive: this.timerSystem.isActive
                 });
             }
             
-            timerDisplay.style.display = timerEnabled ? 'block' : 'none';
+            timerDisplay.style.display = timerEnabled ? 'flex' : 'none';
             
             if (timerEnabled) {
                 const timeRemaining = this.timerSystem.getTimeRemaining();
@@ -2960,10 +2992,8 @@ class BlockdokuGame {
             }
             
             // Generate initial blocks for a fresh game (with small delay to ensure DOM is ready)
-            setTimeout(() => {
-                console.log('Generating new blocks for fresh game');
-                this.generateNewBlocks();
-            }, 10);
+            // Note: This is handled by the main init() method now to avoid conflicts
+            console.log('Fresh game - blocks will be generated by main init sequence');
         }
     }
 
@@ -3794,6 +3824,10 @@ class BlockdokuGame {
 
     // Enhanced block generation based on difficulty
     generateNewBlocks() {
+        console.log('🔄 generateNewBlocks() called');
+        console.log('BlockPalette available:', !!this.blockPalette);
+        console.log('BlockManager available:', !!this.blockManager);
+        
         let blockCount = 3;
         let blockTypes = 'all';
         
@@ -3836,6 +3870,9 @@ class BlockdokuGame {
         
         // Auto-rotate blocks to optimal orientations
         this.optimizeBlockOrientations();
+        
+        console.log('✅ generateNewBlocks() completed. Generated blocks:', this.blockManager.currentBlocks?.length || 0);
+        console.log('Block palette should now be updated with blocks');
     }
 
     // Enhanced block placement with hints
