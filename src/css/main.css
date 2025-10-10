@@ -437,17 +437,17 @@ body {
     font-size: 1.2rem;
     padding: 0.3rem 0.6rem;
     background: #000;
-    color: #ff6b35;
+    color: #cc4a2a;
     border-radius: 6px;
     border: 2px solid #333;
     box-shadow: 
-        inset 0 0 10px rgba(255, 107, 53, 0.3),
-        0 0 20px rgba(255, 107, 53, 0.2),
+        inset 0 0 10px rgba(204, 74, 42, 0.2),
+        0 0 20px rgba(204, 74, 42, 0.12),
         0 2px 4px rgba(0, 0, 0, 0.5);
     text-shadow: 
-        0 0 5px #ff6b35,
-        0 0 10px #ff6b35,
-        0 0 15px #ff6b35;
+        0 0 3px #cc4a2a,
+        0 0 6px #cc4a2a,
+        0 0 9px #cc4a2a;
     position: relative;
     overflow: hidden;
     min-width: 60px;
@@ -642,16 +642,16 @@ body {
 .wood-theme .pb-value,
 [data-theme="wood"] .pb-value {
     background: #2a1810;
-    color: #ffaa00;
+    color: #cc8800;
     border-color: #5d3a1a;
     box-shadow: 
-        inset 0 0 10px rgba(255, 170, 0, 0.3),
-        0 0 20px rgba(255, 170, 0, 0.2),
+        inset 0 0 10px rgba(204, 136, 0, 0.2),
+        0 0 20px rgba(204, 136, 0, 0.12),
         0 2px 4px rgba(0, 0, 0, 0.5);
     text-shadow: 
-        0 0 5px #ffaa00,
-        0 0 10px #ffaa00,
-        0 0 15px #ffaa00;
+        0 0 3px #cc8800,
+        0 0 6px #cc8800,
+        0 0 9px #cc8800;
 }
 
 .wood-theme .timer span:last-child::before,
@@ -679,16 +679,16 @@ body {
 .dark-theme .pb-value,
 [data-theme="dark"] .pb-value {
     background: #0a0a0a;
-    color: #00aaff;
+    color: #0088cc;
     border-color: #222;
     box-shadow: 
-        inset 0 0 10px rgba(0, 170, 255, 0.3),
-        0 0 20px rgba(0, 170, 255, 0.2),
+        inset 0 0 10px rgba(0, 136, 204, 0.2),
+        0 0 20px rgba(0, 136, 204, 0.12),
         0 2px 4px rgba(0, 0, 0, 0.5);
     text-shadow: 
-        0 0 5px #00aaff,
-        0 0 10px #00aaff,
-        0 0 15px #00aaff;
+        0 0 3px #0088cc,
+        0 0 6px #0088cc,
+        0 0 9px #0088cc;
 }
 
 .dark-theme .timer span:last-child::before,
@@ -716,16 +716,16 @@ body {
 .light-theme .pb-value,
 [data-theme="light"] .pb-value {
     background: #1a1a1a;
-    color: #00ff00;
+    color: #00cc00;
     border-color: #333;
     box-shadow: 
-        inset 0 0 10px rgba(0, 255, 0, 0.3),
-        0 0 20px rgba(0, 255, 0, 0.2),
+        inset 0 0 10px rgba(0, 204, 0, 0.2),
+        0 0 20px rgba(0, 204, 0, 0.12),
         0 2px 4px rgba(0, 0, 0, 0.5);
     text-shadow: 
-        0 0 5px #00ff00,
-        0 0 10px #00ff00,
-        0 0 15px #00ff00;
+        0 0 3px #00cc00,
+        0 0 6px #00cc00,
+        0 0 9px #00cc00;
 }
 
 .light-theme .timer span:last-child::before,

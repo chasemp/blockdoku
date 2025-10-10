@@ -4910,6 +4910,31 @@ class BlockdokuGame {
         if (speedTimerElement && speedTimerValueElement && this.speedTimerStartTime) {
             // Calculate and display elapsed time (counts UP)
             const elapsed = Date.now() - this.speedTimerStartTime;
+            
+            // Get the maximum speed timer duration from settings
+            const settings = this.storage.loadSettings();
+            const maxDuration = (settings.speedTimerDuration || 10) * 1000; // Convert to milliseconds
+            
+            // Check if we've reached the maximum duration
+            if (elapsed >= maxDuration) {
+                // Stop the timer and display the max duration
+                this.stopSpeedTimerCountdown();
+                const precision = difficultySettings.speedTimerPrecision || 'seconds';
+                
+                if (precision === 'milliseconds') {
+                    const seconds = (maxDuration / 1000).toFixed(1);
+                    speedTimerValueElement.textContent = `${seconds}s`;
+                } else if (precision === 'high-precision') {
+                    const seconds = (maxDuration / 1000).toFixed(2);
+                    speedTimerValueElement.textContent = `${seconds}s`;
+                } else {
+                    const seconds = Math.floor(maxDuration / 1000);
+                    speedTimerValueElement.textContent = `${seconds}s`;
+                }
+                return;
+            }
+            
+            // Display current elapsed time
             const precision = difficultySettings.speedTimerPrecision || 'seconds';
             
             if (precision === 'milliseconds') {
