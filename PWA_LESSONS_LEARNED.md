@@ -312,6 +312,65 @@ async testThemeConsistencyAcrossPages() {
 }
 ```
 
+### Responsive Design and Viewport Resize Testing (2025-01-07)
+
+**The Problem:**
+Available blocks would disappear when resizing the browser window from mobile to desktop width, making the game unplayable after viewport changes.
+
+**Root Cause:**
+The resize handler was calling `this.blockPalette.updateBlocks(this.currentBlocks)` but `this.currentBlocks` was `undefined` at that point, causing an error that cleared the blocks from the DOM.
+
+**The Fix:**
+```javascript
+// ❌ Before: Caused blocks to disappear
+if (this.blockPalette) {
+    this.blockPalette.updateBlocks(this.currentBlocks); // undefined!
+}
+
+// ✅ After: Safe with validation
+if (this.blockPalette && this.currentBlocks && this.currentBlocks.length > 0) {
+    this.blockPalette.updateBlocks(this.currentBlocks);
+}
+```
+
+**What We Learned:**
+- **Responsive CSS isn't enough** - JavaScript state can interfere with CSS media queries
+- **Resize handlers need validation** - Always check if data exists before using it
+- **Viewport changes are common** - Users frequently resize browser windows
+- **Mobile-to-desktop transitions** - These are the most problematic resize scenarios
+
+**Testing Strategy:**
+```javascript
+// Test multiple viewport sizes to ensure robustness
+const testResizes = [
+    { width: 320, height: 568 },  // Very small mobile
+    { width: 768, height: 1024 }, // Tablet
+    { width: 1920, height: 1080 }, // Large desktop
+    { width: 375, height: 667 },  // Standard mobile
+    { width: 1200, height: 800 }  // Standard desktop
+];
+
+// Verify blocks remain visible throughout all resizes
+for (const size of testResizes) {
+    window.resizeTo(size.width, size.height);
+    const blockCount = document.querySelectorAll('.block-item').length;
+    assert(blockCount > 0, `Blocks should be visible at ${size.width}x${size.height}`);
+}
+```
+
+**Key Insights:**
+- **CSS media queries work** - The display correctly switches from `grid` (mobile) to `flex` (desktop)
+- **JavaScript state matters** - Resize handlers must validate data before using it
+- **Error handling is critical** - One undefined variable can break the entire UI
+- **User behavior is unpredictable** - Always test edge cases like rapid resizing
+
+**Prevention for Future PWAs:**
+1. **Always validate data** in resize handlers before using it
+2. **Test viewport transitions** - especially mobile to desktop
+3. **Use defensive programming** - check for undefined/null values
+4. **Test rapid resizing** - users don't resize slowly
+5. **Monitor console errors** - resize-related errors often indicate UI issues
+
 ## 🔧 Development Process Lessons
 
 ### Pre-commit Hooks are Essential

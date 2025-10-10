@@ -229,7 +229,13 @@ export class GameSettingsManager {
         if (speedTimerPrecision && speedTimerPrecisionValue) {
             const precision = this.settings.speedTimerPrecision || 'seconds';
             speedTimerPrecision.value = precision;
-            speedTimerPrecisionValue.textContent = precision === 'milliseconds' ? 'Milliseconds' : 'Seconds';
+            if (precision === 'milliseconds') {
+                speedTimerPrecisionValue.textContent = 'Milliseconds';
+            } else if (precision === 'high-precision') {
+                speedTimerPrecisionValue.textContent = 'High Precision';
+            } else {
+                speedTimerPrecisionValue.textContent = 'Seconds';
+            }
         }
     }
     
@@ -732,7 +738,13 @@ export class GameSettingsManager {
                 // Update display value
                 const precisionValue = document.getElementById('speed-timer-precision-value');
                 if (precisionValue) {
-                    precisionValue.textContent = newPrecision === 'milliseconds' ? 'Milliseconds' : 'Seconds';
+                    if (newPrecision === 'milliseconds') {
+                        precisionValue.textContent = 'Milliseconds';
+                    } else if (newPrecision === 'high-precision') {
+                        precisionValue.textContent = 'High Precision';
+                    } else {
+                        precisionValue.textContent = 'Seconds';
+                    }
                 }
             });
         }

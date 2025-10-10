@@ -2860,6 +2860,18 @@ body {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+.score-item:nth-child(4) {
+    background: linear-gradient(135deg, #8b4513 0%, #a0522d 100%);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.score-item:nth-child(5) {
+    background: linear-gradient(135deg, #654321 0%, #8b4513 100%);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
 .rank {
     font-weight: bold;
     font-size: 1.1rem;
@@ -2876,8 +2888,24 @@ body {
 
 .score-details {
     font-size: 0.9rem;
-    color: var(--text-muted);
+    color: #333;
     flex: 1;
+    font-weight: 500;
+}
+
+/* Ensure score details have good contrast on all colored backgrounds */
+.score-item:first-child .score-details,
+.score-item:nth-child(2) .score-details {
+    color: #333;
+    font-weight: 600;
+}
+
+.score-item:nth-child(3) .score-details,
+.score-item:nth-child(4) .score-details,
+.score-item:nth-child(5) .score-details {
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    font-weight: 500;
 }
 
 /* Statistics Styles */

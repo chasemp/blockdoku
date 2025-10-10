@@ -39,6 +39,10 @@ export class TimerSystem {
     
     start() {
         if (!this.isActive || this.timeLimit === null) {
+            console.log('⏱️ Timer start skipped:', {
+                isActive: this.isActive,
+                timeLimit: this.timeLimit
+            });
             return;
         }
         
@@ -75,6 +79,17 @@ export class TimerSystem {
         const elapsed = Date.now() - this.startTime;
         this.timeRemaining = Math.max(0, this.timeLimit - Math.floor(elapsed / 1000));
         
+        // Debug logging when time is running low
+        if (this.timeRemaining <= 5 && this.timeRemaining > 0) {
+            console.log('⏱️ Timer running low:', {
+                timeRemaining: this.timeRemaining,
+                timeLimit: this.timeLimit,
+                elapsed: elapsed,
+                isActive: this.isActive,
+                startTime: this.startTime
+            });
+        }
+        
         return this.timeRemaining > 0;
     }
     
@@ -92,7 +107,16 @@ export class TimerSystem {
     }
     
     isTimeUp() {
-        return this.isActive && this.timeLimit !== null && this.startTime > 0 && this.timeRemaining <= 0;
+        const isTimeUp = this.isActive && this.timeLimit !== null && this.startTime > 0 && this.timeRemaining <= 0;
+        if (isTimeUp) {
+            console.log('⏰ Timer is up!', {
+                isActive: this.isActive,
+                timeLimit: this.timeLimit,
+                startTime: this.startTime,
+                timeRemaining: this.timeRemaining
+            });
+        }
+        return isTimeUp;
     }
     
     isWarningTime() {
@@ -185,6 +209,12 @@ export class TimerSystem {
         this.startTime = 0;
         this.pausedTime = 0;
         this.timeBonus = 0;
+        
+        console.log('⏱️ Timer reset:', {
+            timeLimit: this.timeLimit,
+            timeRemaining: this.timeRemaining,
+            isActive: this.isActive
+        });
     }
     
     // Disable timer
