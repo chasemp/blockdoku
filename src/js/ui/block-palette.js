@@ -101,7 +101,8 @@ export class BlockPalette {
     }
     
     updateBlocks(blocks, retryCount = 0) {
-        console.log('BlockPalette.updateBlocks called with blocks:', blocks);
+        console.log('🎨 BlockPalette.updateBlocks called with blocks:', blocks?.length || 0, 'blocks');
+        console.log('Block details:', blocks);
         const container = document.getElementById('blocks-container');
         console.log('blocks-container found:', !!container);
         if (!container) {
@@ -146,6 +147,8 @@ export class BlockPalette {
         
         // Reset piece timeouts for new blocks
         this.resetPieceTimeouts(blocks);
+        
+        console.log('✅ BlockPalette.updateBlocks completed. Rendered', blocks?.length || 0, 'blocks');
     }
     
     createBlockElement(block) {
