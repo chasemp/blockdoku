@@ -140,11 +140,11 @@
     <meta property="twitter:title" content="Blockdoku - Block Puzzle Game">
     <meta property="twitter:description" content="A modern take on the classic block puzzle game. Play anywhere, anytime!">
     <meta property="twitter:image" content="https://blockdoku.523.life/icons/icon-512x512.png">
-  <script type="module" crossorigin src="./assets/gamesettings-DnalEqfO.js"></script>
+  <script type="module" crossorigin src="./assets/gamesettings-BjS6Lhya.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/modulepreload-polyfill-B5Qt9EMX.js">
   <link rel="modulepreload" crossorigin href="./assets/difficulty-settings-manager-BP-zScMF.js">
   <link rel="modulepreload" crossorigin href="./assets/confirmation-dialog-C0eUIuYP.js">
-  <link rel="stylesheet" crossorigin href="./assets/main-BfCVNKuk.css">
+  <link rel="stylesheet" crossorigin href="./assets/main-Drq8G9RU.css">
   <link rel="stylesheet" crossorigin href="./assets/wood-36S1T1G_.css">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
@@ -231,14 +231,6 @@
                         <p class="setting-description" style="margin: 0; font-size: 0.8rem; color: var(--text-color-secondary);">Choose how precise the speed timer display should be</p>
                     </div>
                     
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="piece-timeout-enabled" />
-                            Enable Piece Timeout
-                            <span class="setting-bubble" data-setting="timeout">⏰ timeout</span>
-                        </label>
-                        <p class="setting-description">Auto-end game when pieces timeout (15s warning, 30s timeout)</p>
-                    </div>
                     
                     <!-- Link to difficulty defaults -->
                     <div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
@@ -336,7 +328,9 @@
                 
             <!-- Basic Game Settings -->
             <div class="basic-game-settings settings-section-container">
-                    <h3 style="text-align: center;">Basics</h3>
+                    <h3 style="text-align: center;">Basic</h3>
+                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0; text-align: center;">Essential settings and smart features to improve your gameplay experience.</p>
+                    
                 <div class="setting-item">
                     <label>
                         <input type="checkbox" id="sound-enabled" />
@@ -353,6 +347,26 @@
                             <span class="setting-bubble" data-setting="autoSave">💾</span>
                         </label>
                         <p class="setting-description">Automatically save your progress so you can resume later</p>
+                    </div>
+                    
+                    <!-- Auto-Rotate Blocks -->
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="auto-rotate-blocks" />
+                            Auto-rotate blocks
+                            <span class="setting-bubble" data-setting="autoRotate">🔄 smart</span>
+                        </label>
+                        <p class="setting-description">Automatically rotate blocks when there's only one valid orientation for placement. Saves time and reduces frustration!</p>
+                    </div>
+                    
+                    <!-- Piece Timeout -->
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="piece-timeout-enabled" />
+                            Enable Piece Timeout
+                            <span class="setting-bubble" data-setting="timeout">⏰ timeout</span>
+                        </label>
+                        <p class="setting-description">Auto-end game when pieces timeout (15s warning, 30s timeout). Prevents getting stuck with difficult pieces!</p>
                     </div>
                 </div>
                 
@@ -408,21 +422,6 @@
                     </div>
                 </div>
                 
-            <!-- Quality of Life Section -->
-            <div class="quality-of-life-settings settings-section-container">
-                    <h3>Quality of Life</h3>
-                    <p class="setting-description" style="margin-bottom: 1rem; margin-left: 0; text-align: center;">Smart features to improve your gameplay experience.</p>
-                    
-                    <!-- Auto-Rotate Blocks -->
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="auto-rotate-blocks" />
-                            Auto-rotate blocks
-                            <span class="setting-bubble" data-setting="autoRotate">🔄 smart</span>
-                        </label>
-                        <p class="setting-description">Automatically rotate blocks when there's only one valid orientation for placement. Saves time and reduces frustration!</p>
-                    </div>
-                </div>
                 
                 <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center; margin-top: 2rem; width: 100%;">
                     <button id="reset-current-difficulty" class="reset-button" style="max-width: 400px; width: 100%;">
