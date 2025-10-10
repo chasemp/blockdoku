@@ -4272,6 +4272,11 @@ class BlockdokuGame {
         const x = col * cellSize + cellSize / 2;
         const y = row * cellSize + cellSize / 2;
         
+        // Constrain popup position to stay within viewport
+        const constrainedPos = this.constrainPopupPosition(x, y, 200, 100);
+        const constrainedX = constrainedPos.x;
+        const constrainedY = constrainedPos.y;
+        
         // Create magic activation message
         const magicMessage = document.createElement('div');
         magicMessage.className = 'magic-block-activation';
@@ -4281,8 +4286,8 @@ class BlockdokuGame {
             <div class="magic-subtext">${magicBlock.name}</div>
         `;
         magicMessage.style.position = 'absolute';
-        magicMessage.style.left = `${x}px`;
-        magicMessage.style.top = `${y}px`;
+        magicMessage.style.left = `${constrainedX}px`;
+        magicMessage.style.top = `${constrainedY}px`;
         magicMessage.style.transform = 'translate(-50%, -50%)';
         magicMessage.style.color = '#ff6b6b';
         magicMessage.style.fontSize = '1rem';
@@ -4305,11 +4310,54 @@ class BlockdokuGame {
         }, 2000);
     }
     
+    // Helper method to constrain popup position within viewport
+    constrainPopupPosition(x, y, popupWidth = 200, popupHeight = 100) {
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const canvasLeft = canvasRect.left;
+        const canvasTop = canvasRect.top;
+        const canvasWidth = this.canvas.width;
+        const canvasHeight = this.canvas.height;
+        
+        // Convert canvas coordinates to viewport coordinates
+        const viewportX = canvasLeft + x;
+        const viewportY = canvasTop + y;
+        
+        // Calculate popup bounds
+        const popupLeft = viewportX - popupWidth / 2;
+        const popupRight = viewportX + popupWidth / 2;
+        const popupTop = viewportY - popupHeight / 2;
+        const popupBottom = viewportY + popupHeight / 2;
+        
+        // Constrain to canvas bounds with padding
+        const padding = 10;
+        let constrainedX = x;
+        let constrainedY = y;
+        
+        if (popupLeft < canvasLeft + padding) {
+            constrainedX = padding + popupWidth / 2;
+        } else if (popupRight > canvasLeft + canvasWidth - padding) {
+            constrainedX = canvasWidth - padding - popupWidth / 2;
+        }
+        
+        if (popupTop < canvasTop + padding) {
+            constrainedY = padding + popupHeight / 2;
+        } else if (popupBottom > canvasTop + canvasHeight - padding) {
+            constrainedY = canvasHeight - padding - popupHeight / 2;
+        }
+        
+        return { x: constrainedX, y: constrainedY };
+    }
+
     // Show detailed explanation of what magic block cleared
     showMagicBlockClearExplanation(clearedLines, row, col) {
         const cellSize = this.cellSize;
         const x = col * cellSize + cellSize / 2;
         const y = row * cellSize + cellSize / 2;
+        
+        // Constrain popup position to stay within viewport
+        const constrainedPos = this.constrainPopupPosition(x, y, 250, 120);
+        const constrainedX = constrainedPos.x;
+        const constrainedY = constrainedPos.y;
         
         // Count what was cleared
         const totalCleared = clearedLines.rows.length + clearedLines.columns.length + clearedLines.squares.length;
@@ -4336,8 +4384,8 @@ class BlockdokuGame {
             <div class="magic-clear-bonus">+${totalCleared * 50} Magic Bonus!</div>
         `;
         explanation.style.position = 'absolute';
-        explanation.style.left = `${x}px`;
-        explanation.style.top = `${y - 60}px`;
+        explanation.style.left = `${constrainedX}px`;
+        explanation.style.top = `${constrainedY - 60}px`;
         explanation.style.transform = 'translate(-50%, -50%)';
         explanation.style.color = '#ffd700';
         explanation.style.fontSize = '0.9rem';
@@ -4370,6 +4418,11 @@ class BlockdokuGame {
         const x = col * cellSize + cellSize / 2;
         const y = row * cellSize + cellSize / 2;
         
+        // Constrain popup position to stay within viewport
+        const constrainedPos = this.constrainPopupPosition(x, y, 180, 80);
+        const constrainedX = constrainedPos.x;
+        const constrainedY = constrainedPos.y;
+        
         // Create standby message
         const standbyMessage = document.createElement('div');
         standbyMessage.className = 'magic-block-standby';
@@ -4378,8 +4431,8 @@ class BlockdokuGame {
             <div class="magic-standby-subtext">Will clear any completed line</div>
         `;
         standbyMessage.style.position = 'absolute';
-        standbyMessage.style.left = `${x}px`;
-        standbyMessage.style.top = `${y - 30}px`;
+        standbyMessage.style.left = `${constrainedX}px`;
+        standbyMessage.style.top = `${constrainedY - 30}px`;
         standbyMessage.style.transform = 'translate(-50%, -50%)';
         standbyMessage.style.color = '#96ceb4';
         standbyMessage.style.fontSize = '0.8rem';
