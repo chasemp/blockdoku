@@ -1018,7 +1018,7 @@ class BlockdokuGame {
         }
         
         // Ghost blocks can overlap existing pieces (special magic power)
-        const isGhostBlock = this.selectedBlock.isWild && this.selectedBlock.wildType === 'ghost';
+        const isGhostBlock = this.selectedBlock.isMagic && this.selectedBlock.wildType === 'ghost';
         
         if (isGhostBlock) {
             // Ghost blocks only need to be within board boundaries
@@ -3905,7 +3905,7 @@ class BlockdokuGame {
         
         // Store reference to the block before placement for magic block logic
         const placedBlock = this.selectedBlock;
-        const isMagicBlock = placedBlock && placedBlock.isWild;
+        const isMagicBlock = placedBlock && placedBlock.isMagic;
         
         // Place the block on the board
         this.board = this.blockManager.placeBlock(this.selectedBlock, row, col, this.board);

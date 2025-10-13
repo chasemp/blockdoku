@@ -95,7 +95,7 @@ export class BlockManager {
                 shape: [[1]],
                 color: '#ff6b6b',
                 points: 3,
-                isWild: true,
+                isMagic: true,
                 wildType: 'lineClear',
                 description: 'Clears any line it completes'
             },
@@ -104,7 +104,7 @@ export class BlockManager {
                 shape: [[1, 1]],
                 color: '#ff6b6b',
                 points: 5,
-                isWild: true,
+                isMagic: true,
                 wildType: 'lineClear',
                 description: 'Clears any line it completes'
             },
@@ -116,7 +116,7 @@ export class BlockManager {
                 ],
                 color: '#ff6b6b',
                 points: 6,
-                isWild: true,
+                isMagic: true,
                 wildType: 'lineClear',
                 description: 'Clears any line it completes'
             },
@@ -129,7 +129,7 @@ export class BlockManager {
                 shape: [[1]],
                 color: '#ff4444',
                 points: 8,
-                isWild: true,
+                isMagic: true,
                 wildType: 'bomb',
                 description: 'Explodes to clear 3x3 area around it'
             },
@@ -138,7 +138,7 @@ export class BlockManager {
                 shape: [[1, 1]],
                 color: '#ff4444',
                 points: 12,
-                isWild: true,
+                isMagic: true,
                 wildType: 'bomb',
                 description: 'Explodes to clear 3x3 area around each cell'
             },
@@ -149,7 +149,7 @@ export class BlockManager {
                 shape: [[1]],
                 color: '#ffeb3b',
                 points: 15,
-                isWild: true,
+                isMagic: true,
                 wildType: 'lightning',
                 description: 'Clears entire row and column'
             },
@@ -160,7 +160,7 @@ export class BlockManager {
                 shape: [[1]],
                 color: '#9c27b0',
                 points: 6,
-                isWild: true,
+                isMagic: true,
                 wildType: 'ghost',
                 description: 'Can overlap existing pieces (once per game)'
             },
@@ -178,7 +178,7 @@ export class BlockManager {
                 color: '#ff6b6b',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             pentominoP: {
                 name: 'P-Pentomino',
@@ -190,7 +190,7 @@ export class BlockManager {
                 color: '#4ecdc4',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             pentominoY: {
                 name: 'Y-Pentomino',
@@ -201,7 +201,7 @@ export class BlockManager {
                 color: '#45b7d1',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             
             // Cross shapes
@@ -215,7 +215,7 @@ export class BlockManager {
                 color: '#96ceb4',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             crossLarge: {
                 name: 'Large Cross',
@@ -229,7 +229,7 @@ export class BlockManager {
                 color: '#feca57',
                 points: 9,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             
             // Hollow shapes
@@ -243,7 +243,7 @@ export class BlockManager {
                 color: '#ff9ff3',
                 points: 8,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             hollowRect: {
                 name: 'Hollow Rectangle',
@@ -255,7 +255,7 @@ export class BlockManager {
                 color: '#54a0ff',
                 points: 10,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             
             // Zigzag patterns
@@ -269,7 +269,7 @@ export class BlockManager {
                 color: '#5f27cd',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             zigzagLarge: {
                 name: 'Large Zigzag',
@@ -282,7 +282,7 @@ export class BlockManager {
                 color: '#00d2d3',
                 points: 7,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             
             // Diagonal patterns
@@ -297,7 +297,7 @@ export class BlockManager {
                 color: '#ff7675',
                 points: 4,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             
             // Spiral pattern
@@ -311,7 +311,7 @@ export class BlockManager {
                 color: '#fd79a8',
                 points: 7,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             
             // More Pentominos (completing the classic set)
@@ -327,7 +327,7 @@ export class BlockManager {
                 color: '#e17055',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             pentominoL: {
                 name: 'L-Pentomino',
@@ -340,7 +340,7 @@ export class BlockManager {
                 color: '#a29bfe',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             pentominoN: {
                 name: 'N-Pentomino',
@@ -353,7 +353,7 @@ export class BlockManager {
                 color: '#fd63c7',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             pentominoT: {
                 name: 'T-Pentomino',
@@ -365,7 +365,7 @@ export class BlockManager {
                 color: '#6c5ce7',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             pentominoU: {
                 name: 'U-Pentomino',
@@ -376,7 +376,7 @@ export class BlockManager {
                 color: '#fd79a8',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             pentominoV: {
                 name: 'V-Pentomino',
@@ -388,7 +388,7 @@ export class BlockManager {
                 color: '#fdcb6e',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             pentominoW: {
                 name: 'W-Pentomino',
@@ -400,7 +400,7 @@ export class BlockManager {
                 color: '#e84393',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             pentominoX: {
                 name: 'X-Pentomino',
@@ -412,7 +412,7 @@ export class BlockManager {
                 color: '#00b894',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             pentominoZ: {
                 name: 'Z-Pentomino',
@@ -424,7 +424,7 @@ export class BlockManager {
                 color: '#0984e3',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             
             // Hexominos (6-cell shapes) - More challenging
@@ -436,7 +436,7 @@ export class BlockManager {
                 color: '#2d3436',
                 points: 6,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             hexominoSnake: {
                 name: 'Hexomino Snake',
@@ -448,7 +448,7 @@ export class BlockManager {
                 color: '#636e72',
                 points: 6,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             hexominoArch: {
                 name: 'Hexomino Arch',
@@ -459,7 +459,7 @@ export class BlockManager {
                 color: '#74b9ff',
                 points: 6,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             hexominoStairs: {
                 name: 'Hexomino Stairs',
@@ -472,7 +472,7 @@ export class BlockManager {
                 color: '#55a3ff',
                 points: 6,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             
             // Irregular asymmetric shapes
@@ -486,7 +486,7 @@ export class BlockManager {
                 color: '#ff7675',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             asymmetricWing: {
                 name: 'Asymmetric Wing',
@@ -497,7 +497,7 @@ export class BlockManager {
                 color: '#fd79a8',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             asymmetricTail: {
                 name: 'Asymmetric Tail',
@@ -509,7 +509,7 @@ export class BlockManager {
                 color: '#fdcb6e',
                 points: 6,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             
             // More hollow/frame shapes
@@ -523,7 +523,7 @@ export class BlockManager {
                 color: '#00cec9',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             hollowT: {
                 name: 'Hollow T',
@@ -534,7 +534,7 @@ export class BlockManager {
                 color: '#6c5ce7',
                 points: 4,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             frameCorner: {
                 name: 'Frame Corner',
@@ -547,7 +547,7 @@ export class BlockManager {
                 color: '#a29bfe',
                 points: 10,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             
             // Complex patterns
@@ -561,7 +561,7 @@ export class BlockManager {
                 color: '#2d3436',
                 points: 5,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             butterfly: {
                 name: 'Butterfly',
@@ -573,7 +573,7 @@ export class BlockManager {
                 color: '#fd79a8',
                 points: 7,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             hourglass: {
                 name: 'Hourglass',
@@ -585,7 +585,7 @@ export class BlockManager {
                 color: '#fdcb6e',
                 points: 7,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             arrow: {
                 name: 'Arrow',
@@ -599,7 +599,7 @@ export class BlockManager {
                 color: '#00b894',
                 points: 11,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             diamond: {
                 name: 'Diamond',
@@ -611,7 +611,7 @@ export class BlockManager {
                 color: '#e17055',
                 points: 4,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             
             // Advanced irregular shapes
@@ -626,7 +626,7 @@ export class BlockManager {
                 color: '#fdcb6e',
                 points: 6,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             maze: {
                 name: 'Maze Pattern',
@@ -638,7 +638,7 @@ export class BlockManager {
                 color: '#636e72',
                 points: 7,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             },
             crown: {
                 name: 'Crown',
@@ -649,7 +649,7 @@ export class BlockManager {
                 color: '#feca57',
                 points: 8,
                 isWild: false,
-                isCreativeShape: true
+                isWild: true
             }
         };
     }
@@ -657,10 +657,10 @@ export class BlockManager {
     generateRandomBlocks(count = 3, difficulty = 'all', difficultyManager = null, enableMagicBlocks = false, enableWildShapes = false, magicBlocksFrequency = 1, wildShapesFrequency = 1) {
         let availableShapes = Object.keys(this.blockShapes);
         
-        // Filter out creative shapes unless wild shapes are enabled
-        // Creative shapes will be selected probabilistically based on wildShapesFrequency during block selection
-        const creativeShapes = availableShapes.filter(key => this.blockShapes[key].isCreativeShape);
-        const standardShapes = availableShapes.filter(key => !this.blockShapes[key].isCreativeShape);
+        // Filter out wild shapes unless wild shapes are enabled
+        // Wild shapes will be selected probabilistically based on wildShapesFrequency during block selection
+        const wildShapes = availableShapes.filter(key => this.blockShapes[key].isWild);
+        const standardShapes = availableShapes.filter(key => !this.blockShapes[key].isWild);
         
         if (!enableWildShapes) {
             availableShapes = standardShapes;
@@ -713,9 +713,9 @@ export class BlockManager {
             availableShapes = Object.keys(this.blockShapes);
         }
         
-        // Separate wild blocks from regular blocks
-        const wildBlocks = Object.keys(this.blockShapes).filter(key => this.blockShapes[key].isWild);
-        const regularBlocks = availableShapes.filter(key => !this.blockShapes[key].isWild);
+        // Separate magic blocks from regular blocks
+        const magicBlocks = Object.keys(this.blockShapes).filter(key => this.blockShapes[key].isMagic);
+        const regularBlocks = availableShapes.filter(key => !this.blockShapes[key].isMagic);
         
         this.currentBlocks = [];
         
@@ -725,30 +725,37 @@ export class BlockManager {
         for (let i = 0; i < count; i++) {
             let selectedKey;
             
-            // Only generate wild blocks if the setting is enabled
+            // Only generate magic blocks if the setting is enabled
             // Chance based on magicBlocksFrequency (1-10, where 1 = 10%, 10 = 100%)
-            const hasWildBlock = this.currentBlocks.some(block => block.isWild);
+            const hasMagicBlock = this.currentBlocks.some(block => block.isMagic);
             const magicChance = magicBlocksFrequency / 10; // Convert to probability
-            const shouldGenerateWild = enableMagicBlocks && !hasWildBlock && Math.random() < magicChance && wildBlocks.length > 0;
             
-            if (shouldGenerateWild) {
-                // Select a random wild block
-                const wildIndex = Math.floor(Math.random() * wildBlocks.length);
-                selectedKey = wildBlocks[wildIndex];
+            // At lower frequencies (< 5), limit to 1 magic block per set
+            // At higher frequencies (>= 5), allow multiple magic blocks based on probability
+            const allowMultipleMagic = magicBlocksFrequency >= 5;
+            const shouldGenerateMagic = enableMagicBlocks && 
+                                       (allowMultipleMagic || !hasMagicBlock) && 
+                                       Math.random() < magicChance && 
+                                       magicBlocks.length > 0;
+            
+            if (shouldGenerateMagic) {
+                // Select a random magic block
+                const magicIndex = Math.floor(Math.random() * magicBlocks.length);
+                selectedKey = magicBlocks[magicIndex];
             } else {
-                // Determine if we should select a creative shape based on wildShapesFrequency
+                // Determine if we should select a wild shape based on wildShapesFrequency
                 const wildShapeChance = wildShapesFrequency / 10; // Convert to probability
-                const shouldUseCreativeShape = enableWildShapes && 
-                                              creativeShapes.length > 0 && 
-                                              Math.random() < wildShapeChance;
+                const shouldUseWildShape = enableWildShapes && 
+                                          wildShapes.length > 0 && 
+                                          Math.random() < wildShapeChance;
                 
                 // Select from appropriate pool
                 let selectionPool;
-                if (shouldUseCreativeShape) {
-                    // Use creative shapes pool
-                    selectionPool = creativeShapes.filter(key => remainingShapes.includes(key) || remainingShapes.length === 0);
+                if (shouldUseWildShape) {
+                    // Use wild shapes pool
+                    selectionPool = wildShapes.filter(key => remainingShapes.includes(key) || remainingShapes.length === 0);
                     if (selectionPool.length === 0) {
-                        selectionPool = creativeShapes;
+                        selectionPool = wildShapes;
                     }
                 } else {
                     // Use standard shapes pool
@@ -763,7 +770,7 @@ export class BlockManager {
                 selectedKey = selectionPool[randomIndex];
                 
                 // Remove the selected shape to avoid duplicates (only for standard shapes)
-                if (!shouldUseCreativeShape && remainingShapes.includes(selectedKey)) {
+                if (!shouldUseWildShape && remainingShapes.includes(selectedKey)) {
                     const removeIndex = remainingShapes.indexOf(selectedKey);
                     remainingShapes.splice(removeIndex, 1);
                 }
