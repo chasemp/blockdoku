@@ -87,6 +87,9 @@ export class BlockPalette {
     render() {
         if (!this.container) return;
         
+        // Check if rotate button should be shown (default: false)
+        const showRotateButton = this.game?.storage?.loadSettings()?.showRotateButton === true;
+        
         this.container.innerHTML = `
             <div class="block-palette">
                 <h3>Available Blocks</h3>
@@ -94,10 +97,21 @@ export class BlockPalette {
                     <!-- Blocks will be rendered here -->
                 </div>
             </div>
-            <button id="rotate-selected" class="rotate-selected-btn" title="Rotate selected block">
+            <button id="rotate-selected" class="rotate-selected-btn ${showRotateButton ? '' : 'hidden'}" title="Rotate selected block">
                 <span>↻</span>
             </button>
         `;
+    }
+    
+    updateRotateButtonVisibility(show) {
+        const rotateBtn = document.getElementById('rotate-selected');
+        if (rotateBtn) {
+            if (show) {
+                rotateBtn.classList.remove('hidden');
+            } else {
+                rotateBtn.classList.add('hidden');
+            }
+        }
     }
     
     updateBlocks(blocks, retryCount = 0) {

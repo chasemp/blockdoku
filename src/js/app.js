@@ -2957,20 +2957,16 @@ class BlockdokuGame {
                 this.deadPixelsManager.deserialize(savedState.deadPixelsState);
             }
             
+            // Restore timer state
+            if (savedState.timerState && this.timerSystem) {
+                this.timerSystem.deserialize(savedState.timerState);
+                console.log('⏱️ Countdown timer state restored from saved game');
+            }
+            
             // Set firstPiecePlaced flag if there's already game progress
             // (score > 0 or any blocks on board)
             const hasProgress = this.score > 0 || this.board.some(row => row.some(cell => cell === 1));
             this.firstPiecePlaced = hasProgress;
-            
-            // If loading a game in progress with countdown timer enabled, start the timer
-            if (hasProgress && this.timerSystem && this.timerSystem.isActive) {
-                // Timer should already be running if game was in progress
-                // Only start if it's not already started
-                if (this.timerSystem.startTime === 0) {
-                    this.timerSystem.start();
-                    console.log('⏱️ Countdown timer resumed from saved game');
-                }
-            }
             
             // Update placeability indicators after loading game state
             this.updatePlaceabilityIndicators();
@@ -3025,7 +3021,8 @@ class BlockdokuGame {
                 pointsBreakdown: this.scoringSystem.pointsBreakdown
             },
             petrificationState: this.petrificationManager ? this.petrificationManager.serialize() : null,
-            deadPixelsState: this.deadPixelsManager ? this.deadPixelsManager.serialize() : null
+            deadPixelsState: this.deadPixelsManager ? this.deadPixelsManager.serialize() : null,
+            timerState: this.timerSystem ? this.timerSystem.serialize() : null
         };
         console.log('Saving game state:', gameState);
         this.storage.saveGameState(gameState);
