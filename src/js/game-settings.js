@@ -152,10 +152,23 @@ export class GameSettingsManager {
             pieceTimeoutCheckbox.checked = this.settings.pieceTimeoutEnabled === true;
         }
         
+        // Enable block rotation (default: true for backwards compatibility)
+        const enableRotationCheckbox = document.getElementById('enable-block-rotation');
+        if (enableRotationCheckbox) {
+            // Default to true if not set, to maintain backwards compatibility
+            enableRotationCheckbox.checked = this.settings.enableBlockRotation !== false;
+        }
+        
         // Show rotate button (default: false)
         const showRotateButtonCheckbox = document.getElementById('show-rotate-button');
         if (showRotateButtonCheckbox) {
             showRotateButtonCheckbox.checked = this.settings.showRotateButton === true;
+        }
+        
+        // Show/hide rotate button container based on rotation enabled
+        const rotateButtonContainer = document.getElementById('rotate-button-container');
+        if (rotateButtonContainer && enableRotationCheckbox) {
+            rotateButtonContainer.style.display = enableRotationCheckbox.checked ? 'block' : 'none';
         }
     }
     
@@ -526,7 +539,39 @@ export class GameSettingsManager {
             });
         }
         
-        // Show rotate button
+        // Enable block rotation (parent setting)
+        const enableRotationCheckbox = document.getElementById('enable-block-rotation');
+        const rotateButtonContainer = document.getElementById('rotate-button-container');
+        
+        if (enableRotationCheckbox) {
+            enableRotationCheckbox.addEventListener('change', () => {
+                this.saveSetting('enableBlockRotation', enableRotationCheckbox.checked);
+                
+                // Show/hide the rotate button container
+                if (rotateButtonContainer) {
+                    rotateButtonContainer.style.display = enableRotationCheckbox.checked ? 'block' : 'none';
+                }
+                
+                // If disabling rotation, also uncheck and hide the rotate button
+                const showRotateButtonCheckbox = document.getElementById('show-rotate-button');
+                if (!enableRotationCheckbox.checked && showRotateButtonCheckbox) {
+                    showRotateButtonCheckbox.checked = false;
+                    this.saveSetting('showRotateButton', false);
+                }
+                
+                // Update rotation enabled state in main game window if it exists
+                if (window.opener && window.opener.game && window.opener.game.blockPalette) {
+                    window.opener.game.blockPalette.updateRotationEnabled(enableRotationCheckbox.checked);
+                    if (window.opener.game.blockPalette.updateRotateButtonVisibility) {
+                        window.opener.game.blockPalette.updateRotateButtonVisibility(
+                            enableRotationCheckbox.checked && showRotateButtonCheckbox?.checked
+                        );
+                    }
+                }
+            });
+        }
+        
+        // Show rotate button (child setting)
         const showRotateButtonCheckbox = document.getElementById('show-rotate-button');
         if (showRotateButtonCheckbox) {
             showRotateButtonCheckbox.addEventListener('change', () => {

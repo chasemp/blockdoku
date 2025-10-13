@@ -29,6 +29,9 @@ export class BlockPalette {
         this.timeoutPaused = false; // Pause timeout when game is over or not active
         this.pieceTimeoutEnabled = false; // Whether piece timeout is enabled
         
+        // Rotation settings (default: true for backwards compatibility)
+        this.rotationEnabled = true; // Whether block rotation is enabled
+        
         // Animation settings
         this.animationSettings = {
             blockHoverEffects: true,
@@ -87,8 +90,13 @@ export class BlockPalette {
     render() {
         if (!this.container) return;
         
-        // Check if rotate button should be shown (default: false)
-        const showRotateButton = this.game?.storage?.loadSettings()?.showRotateButton === true;
+        // Check settings (defaults: rotation enabled = true, button shown = false)
+        const settings = this.game?.storage?.loadSettings() || {};
+        const rotationEnabled = settings.enableBlockRotation !== false;
+        const showRotateButton = rotationEnabled && settings.showRotateButton === true;
+        
+        // Update internal state
+        this.rotationEnabled = rotationEnabled;
         
         this.container.innerHTML = `
             <div class="block-palette">
@@ -103,10 +111,19 @@ export class BlockPalette {
         `;
     }
     
+    updateRotationEnabled(enabled) {
+        this.rotationEnabled = enabled;
+        
+        // Also update button visibility - hide if rotation is disabled
+        if (!enabled) {
+            this.updateRotateButtonVisibility(false);
+        }
+    }
+    
     updateRotateButtonVisibility(show) {
         const rotateBtn = document.getElementById('rotate-selected');
         if (rotateBtn) {
-            if (show) {
+            if (show && this.rotationEnabled) {
                 rotateBtn.classList.remove('hidden');
             } else {
                 rotateBtn.classList.add('hidden');
@@ -268,7 +285,7 @@ export class BlockPalette {
             
             if (e.target.closest('#rotate-selected')) {
                 e.preventDefault();
-                if (this.selectedBlock) {
+                if (this.selectedBlock && this.rotationEnabled) {
                     this.rotateBlock(this.selectedBlock.id);
                 }
             }
@@ -279,7 +296,9 @@ export class BlockPalette {
                 e.preventDefault();
                 const blockItem = e.target.closest('.block-item');
                 const blockId = blockItem.dataset.blockId;
-                this.rotateBlock(blockId);
+                if (this.rotationEnabled) {
+                    this.rotateBlock(blockId);
+                }
             }
         });
         
@@ -423,9 +442,11 @@ export class BlockPalette {
                     // Only handle tap events (not drags) and only if block still exists
                     // Handle double-tap detection for rotation
                     if (this.lastTapTime && (Date.now() - this.lastTapTime) < 300) {
-                        // Double tap detected - rotate the block
-                        e.preventDefault();
-                        this.rotateBlock(this.touchStartBlockId);
+                        // Double tap detected - rotate the block (if rotation enabled)
+                        if (this.rotationEnabled) {
+                            e.preventDefault();
+                            this.rotateBlock(this.touchStartBlockId);
+                        }
                         this.lastTapTime = null; // Reset to prevent triple-tap
                     } else {
                         // Single tap - select the block (but no visual highlighting)
