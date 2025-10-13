@@ -346,14 +346,22 @@
                         <p class="setting-description">Auto-end game when pieces timeout (15s warning, 30s timeout). Prevents getting stuck with difficult pieces!</p>
                     </div>
                     
-                    <!-- Rotate Button -->
+                    <!-- Block Rotation (Parent Setting) -->
                     <div class="setting-item">
                         <label>
+                            <input type="checkbox" id="enable-block-rotation" />
+                            Allow block rotation
+                            <span class="setting-bubble" data-setting="rotation">🔄</span>
+                        </label>
+                        <p class="setting-description">Enable the ability to rotate blocks by double-clicking or tapping them</p>
+                    </div>
+                    <div class="setting-item" id="rotate-button-container" style="margin-left: 2rem; display: none;">
+                        <label>
                             <input type="checkbox" id="show-rotate-button" />
-                            Enable shape rotate button
+                            Show rotate button
                             <span class="setting-bubble" data-setting="rotateButton">↻</span>
                         </label>
-                        <p class="setting-description">Show the rotate button below available blocks. Useful on desktop. You can always double-click or tap blocks to rotate them!</p>
+                        <p class="setting-description" style="font-size: 0.85rem; margin-top: 0.5rem;">Display a rotate button below available blocks. Useful on desktop as an alternative to double-click/tap.</p>
                     </div>
                 </div>
                 
