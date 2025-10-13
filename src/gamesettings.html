@@ -405,6 +405,11 @@
                         </label>
                         <p class="setting-description">Occasionally generate special magic blocks that automatically clear any line they complete when placed. Adds exciting power-up gameplay!</p>
                     </div>
+                    <div class="setting-item" id="magic-blocks-frequency-container" style="margin-left: 2rem; display: none;">
+                        <label for="magic-blocks-frequency">Magic Block Frequency: <span id="magic-blocks-frequency-value">1 in 10</span> (<span id="magic-blocks-frequency-percent">10%</span>)</label>
+                        <input type="range" id="magic-blocks-frequency" min="1" max="10" value="1" step="1" style="width: 100%; max-width: 300px; margin-top: 0.5rem;" />
+                        <p class="setting-description" style="font-size: 0.85rem; margin-top: 0.5rem;">1 = 1 in 10 blocks (10%), 10 = 10 in 10 blocks (100%)</p>
+                    </div>
                     
                     <!-- Wild Block Shapes Mode -->
                     <div class="setting-item game-mode-item">
@@ -414,6 +419,11 @@
                             <span class="setting-bubble" data-setting="wildShapes">🔥 shapes</span>
                         </label>
                         <p class="setting-description">Add creative block shapes like pentominos, crosses, hollow blocks, and zigzag patterns. Makes gameplay more varied and challenging!</p>
+                    </div>
+                    <div class="setting-item" id="wild-shapes-frequency-container" style="margin-left: 2rem; display: none;">
+                        <label for="wild-shapes-frequency">Wild Shapes Frequency: <span id="wild-shapes-frequency-value">1 in 10</span> (<span id="wild-shapes-frequency-percent">10%</span>)</label>
+                        <input type="range" id="wild-shapes-frequency" min="1" max="10" value="1" step="1" style="width: 100%; max-width: 300px; margin-top: 0.5rem;" />
+                        <p class="setting-description" style="font-size: 0.85rem; margin-top: 0.5rem;">1 = 1 in 10 blocks (10%), 10 = 10 in 10 blocks (100%)</p>
                     </div>
                 </div>
                 

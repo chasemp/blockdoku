@@ -1041,7 +1041,17 @@ class BlockdokuGame {
     }
     
     generateNewBlocks() {
-        const newBlocks = this.blockManager.generateRandomBlocks(3, 'all', this.difficultyManager);
+        const magicFrequency = this.settings?.magicBlocksFrequency || 1;
+        const wildFrequency = this.settings?.wildShapesFrequency || 1;
+        const newBlocks = this.blockManager.generateRandomBlocks(
+            3, 
+            'all', 
+            this.difficultyManager, 
+            this.enableMagicBlocks, 
+            this.enableWildShapes,
+            magicFrequency,
+            wildFrequency
+        );
         this.blockPalette.updateBlocks(newBlocks);
         // Update placeability indicators for new blocks
         this.updatePlaceabilityIndicators();
@@ -3852,7 +3862,17 @@ class BlockdokuGame {
         }
         
         
-        const newBlocks = this.blockManager.generateRandomBlocks(blockCount, blockTypes, this.difficultyManager, this.enableMagicBlocks, this.enableWildShapes);
+        const magicFrequency = this.settings?.magicBlocksFrequency || 1;
+        const wildFrequency = this.settings?.wildShapesFrequency || 1;
+        const newBlocks = this.blockManager.generateRandomBlocks(
+            blockCount, 
+            blockTypes, 
+            this.difficultyManager, 
+            this.enableMagicBlocks, 
+            this.enableWildShapes,
+            magicFrequency,
+            wildFrequency
+        );
         console.log('Generated new blocks:', newBlocks);
         console.log('BlockPalette exists:', !!this.blockPalette);
         this.blockPalette.updateBlocks(newBlocks);

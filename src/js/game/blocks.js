@@ -654,12 +654,16 @@ export class BlockManager {
         };
     }
     
-    generateRandomBlocks(count = 3, difficulty = 'all', difficultyManager = null, enableMagicBlocks = false, enableWildShapes = false) {
+    generateRandomBlocks(count = 3, difficulty = 'all', difficultyManager = null, enableMagicBlocks = false, enableWildShapes = false, magicBlocksFrequency = 1, wildShapesFrequency = 1) {
         let availableShapes = Object.keys(this.blockShapes);
         
         // Filter out creative shapes unless wild shapes are enabled
+        // Creative shapes will be selected probabilistically based on wildShapesFrequency during block selection
+        const creativeShapes = availableShapes.filter(key => this.blockShapes[key].isCreativeShape);
+        const standardShapes = availableShapes.filter(key => !this.blockShapes[key].isCreativeShape);
+        
         if (!enableWildShapes) {
-            availableShapes = availableShapes.filter(key => !this.blockShapes[key].isCreativeShape);
+            availableShapes = standardShapes;
         }
         
         // Use difficulty manager if provided
@@ -722,26 +726,47 @@ export class BlockManager {
             let selectedKey;
             
             // Only generate wild blocks if the setting is enabled
-            // 10% chance to generate a wild block (but max 1 per set)
+            // Chance based on magicBlocksFrequency (1-10, where 1 = 10%, 10 = 100%)
             const hasWildBlock = this.currentBlocks.some(block => block.isWild);
-            const shouldGenerateWild = enableMagicBlocks && !hasWildBlock && Math.random() < 0.1 && wildBlocks.length > 0;
+            const magicChance = magicBlocksFrequency / 10; // Convert to probability
+            const shouldGenerateWild = enableMagicBlocks && !hasWildBlock && Math.random() < magicChance && wildBlocks.length > 0;
             
             if (shouldGenerateWild) {
                 // Select a random wild block
                 const wildIndex = Math.floor(Math.random() * wildBlocks.length);
                 selectedKey = wildBlocks[wildIndex];
             } else {
-                // Select a regular block
-            // If we've used all available shapes, reset the pool
-            if (remainingShapes.length === 0) {
-                    remainingShapes = [...regularBlocks];
-            }
-            
-            const randomIndex = Math.floor(Math.random() * remainingShapes.length);
-                selectedKey = remainingShapes[randomIndex];
-            
-            // Remove the selected shape to avoid duplicates
-            remainingShapes.splice(randomIndex, 1);
+                // Determine if we should select a creative shape based on wildShapesFrequency
+                const wildShapeChance = wildShapesFrequency / 10; // Convert to probability
+                const shouldUseCreativeShape = enableWildShapes && 
+                                              creativeShapes.length > 0 && 
+                                              Math.random() < wildShapeChance;
+                
+                // Select from appropriate pool
+                let selectionPool;
+                if (shouldUseCreativeShape) {
+                    // Use creative shapes pool
+                    selectionPool = creativeShapes.filter(key => remainingShapes.includes(key) || remainingShapes.length === 0);
+                    if (selectionPool.length === 0) {
+                        selectionPool = creativeShapes;
+                    }
+                } else {
+                    // Use standard shapes pool
+                    // If we've used all available shapes, reset the pool
+                    if (remainingShapes.length === 0) {
+                        remainingShapes = [...regularBlocks];
+                    }
+                    selectionPool = remainingShapes;
+                }
+                
+                const randomIndex = Math.floor(Math.random() * selectionPool.length);
+                selectedKey = selectionPool[randomIndex];
+                
+                // Remove the selected shape to avoid duplicates (only for standard shapes)
+                if (!shouldUseCreativeShape && remainingShapes.includes(selectedKey)) {
+                    const removeIndex = remainingShapes.indexOf(selectedKey);
+                    remainingShapes.splice(removeIndex, 1);
+                }
             }
             
             const block = {
