@@ -93,8 +93,25 @@ export class GameSettingsManager {
         
         // Magic blocks
         const magicBlocksCheckbox = document.getElementById('enable-magic-blocks');
+        const magicBlocksFrequency = document.getElementById('magic-blocks-frequency');
+        const magicBlocksFrequencyValue = document.getElementById('magic-blocks-frequency-value');
+        const magicBlocksFrequencyPercent = document.getElementById('magic-blocks-frequency-percent');
+        const magicBlocksContainer = document.getElementById('magic-blocks-frequency-container');
+        
         if (magicBlocksCheckbox) {
             magicBlocksCheckbox.checked = this.settings.enableMagicBlocks === true;
+            
+            // Show/hide frequency slider
+            if (magicBlocksContainer) {
+                magicBlocksContainer.style.display = this.settings.enableMagicBlocks ? 'block' : 'none';
+            }
+        }
+        
+        if (magicBlocksFrequency && magicBlocksFrequencyValue && magicBlocksFrequencyPercent) {
+            const frequency = this.settings.magicBlocksFrequency || 1;
+            magicBlocksFrequency.value = frequency;
+            magicBlocksFrequencyValue.textContent = `${frequency} in 10`;
+            magicBlocksFrequencyPercent.textContent = `${frequency * 10}%`;
         }
         
         // Auto-rotate blocks
@@ -105,8 +122,25 @@ export class GameSettingsManager {
         
         // Wild block shapes
         const wildShapesCheckbox = document.getElementById('enable-wild-shapes');
+        const wildShapesFrequency = document.getElementById('wild-shapes-frequency');
+        const wildShapesFrequencyValue = document.getElementById('wild-shapes-frequency-value');
+        const wildShapesFrequencyPercent = document.getElementById('wild-shapes-frequency-percent');
+        const wildShapesContainer = document.getElementById('wild-shapes-frequency-container');
+        
         if (wildShapesCheckbox) {
             wildShapesCheckbox.checked = this.settings.enableWildShapes === true;
+            
+            // Show/hide frequency slider
+            if (wildShapesContainer) {
+                wildShapesContainer.style.display = this.settings.enableWildShapes ? 'block' : 'none';
+            }
+        }
+        
+        if (wildShapesFrequency && wildShapesFrequencyValue && wildShapesFrequencyPercent) {
+            const frequency = this.settings.wildShapesFrequency || 1;
+            wildShapesFrequency.value = frequency;
+            wildShapesFrequencyValue.textContent = `${frequency} in 10`;
+            wildShapesFrequencyPercent.textContent = `${frequency * 10}%`;
         }
         
         // Speed mode
@@ -450,9 +484,34 @@ export class GameSettingsManager {
         
         // Magic blocks
         const magicBlocksCheckbox = document.getElementById('enable-magic-blocks');
+        const magicBlocksFrequency = document.getElementById('magic-blocks-frequency');
+        const magicBlocksContainer = document.getElementById('magic-blocks-frequency-container');
+        
         if (magicBlocksCheckbox) {
             magicBlocksCheckbox.addEventListener('change', () => {
                 this.saveSetting('enableMagicBlocks', magicBlocksCheckbox.checked);
+                
+                // Show/hide frequency slider
+                if (magicBlocksContainer) {
+                    magicBlocksContainer.style.display = magicBlocksCheckbox.checked ? 'block' : 'none';
+                }
+            });
+        }
+        
+        if (magicBlocksFrequency) {
+            magicBlocksFrequency.addEventListener('input', () => {
+                const frequency = parseInt(magicBlocksFrequency.value);
+                this.saveSetting('magicBlocksFrequency', frequency);
+                
+                // Update display values
+                const frequencyValue = document.getElementById('magic-blocks-frequency-value');
+                const frequencyPercent = document.getElementById('magic-blocks-frequency-percent');
+                if (frequencyValue) {
+                    frequencyValue.textContent = `${frequency} in 10`;
+                }
+                if (frequencyPercent) {
+                    frequencyPercent.textContent = `${frequency * 10}%`;
+                }
             });
         }
         
@@ -466,9 +525,34 @@ export class GameSettingsManager {
         
         // Wild block shapes
         const wildShapesCheckbox = document.getElementById('enable-wild-shapes');
+        const wildShapesFrequency = document.getElementById('wild-shapes-frequency');
+        const wildShapesContainer = document.getElementById('wild-shapes-frequency-container');
+        
         if (wildShapesCheckbox) {
             wildShapesCheckbox.addEventListener('change', () => {
                 this.saveSetting('enableWildShapes', wildShapesCheckbox.checked);
+                
+                // Show/hide frequency slider
+                if (wildShapesContainer) {
+                    wildShapesContainer.style.display = wildShapesCheckbox.checked ? 'block' : 'none';
+                }
+            });
+        }
+        
+        if (wildShapesFrequency) {
+            wildShapesFrequency.addEventListener('input', () => {
+                const frequency = parseInt(wildShapesFrequency.value);
+                this.saveSetting('wildShapesFrequency', frequency);
+                
+                // Update display values
+                const frequencyValue = document.getElementById('wild-shapes-frequency-value');
+                const frequencyPercent = document.getElementById('wild-shapes-frequency-percent');
+                if (frequencyValue) {
+                    frequencyValue.textContent = `${frequency} in 10`;
+                }
+                if (frequencyPercent) {
+                    frequencyPercent.textContent = `${frequency * 10}%`;
+                }
             });
         }
         
