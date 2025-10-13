@@ -187,8 +187,8 @@ export class BlockPalette {
         blockDiv.className = 'block-item';
         blockDiv.dataset.blockId = block.id;
         
-        // Add special styling for wild blocks
-        if (block.isWild) {
+        // Add special styling for magic blocks
+        if (block.isMagic) {
             blockDiv.classList.add('magic-block');
             blockDiv.title = `🔮 MAGIC BLOCK: ${block.name} (${block.points} pts) - ${block.description}`;
         } else {
@@ -216,16 +216,16 @@ export class BlockPalette {
         canvas.height = block.shape.length * cellSize;
         const ctx = canvas.getContext('2d');
         
-        // Draw block with special effects for wild blocks
-        if (block.isWild) {
-            // Create gradient effect for wild blocks
+        // Draw block with special effects for magic blocks
+        if (block.isMagic) {
+            // Create gradient effect for magic blocks
             const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
             gradient.addColorStop(0, '#ff6b6b');
             gradient.addColorStop(0.5, '#ff8e8e');
             gradient.addColorStop(1, '#ff6b6b');
             ctx.fillStyle = gradient;
             ctx.strokeStyle = '#cc0000';
-            ctx.lineWidth = 3; // Thicker border for wild blocks
+            ctx.lineWidth = 3; // Thicker border for magic blocks
         } else {
             ctx.fillStyle = block.color;
             ctx.strokeStyle = this.darkenColor(block.color);
@@ -240,14 +240,14 @@ export class BlockPalette {
                     ctx.fillRect(x, y, cellSize, cellSize);
                     ctx.strokeRect(x, y, cellSize, cellSize);
                     
-                    // Add sparkle effect for wild blocks
-                    if (block.isWild) {
+                    // Add sparkle effect for magic blocks
+                    if (block.isMagic) {
                         ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
                         ctx.fillRect(x + cellSize/2 - 2, y + 4, 4, 2);
                         ctx.fillRect(x + cellSize - 6, y + cellSize/2 - 1, 2, 2);
                         ctx.fillRect(x + 4, y + cellSize - 6, 2, 2);
                         // Reset fill style for next cell
-                        if (block.isWild) {
+                        if (block.isMagic) {
                             const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
                             gradient.addColorStop(0, '#ff6b6b');
                             gradient.addColorStop(0.5, '#ff8e8e');
