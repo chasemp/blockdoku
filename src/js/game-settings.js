@@ -151,6 +151,12 @@ export class GameSettingsManager {
         if (pieceTimeoutCheckbox) {
             pieceTimeoutCheckbox.checked = this.settings.pieceTimeoutEnabled === true;
         }
+        
+        // Show rotate button (default: false)
+        const showRotateButtonCheckbox = document.getElementById('show-rotate-button');
+        if (showRotateButtonCheckbox) {
+            showRotateButtonCheckbox.checked = this.settings.showRotateButton === true;
+        }
     }
     
     loadAdditionalSettings() {
@@ -517,6 +523,19 @@ export class GameSettingsManager {
         if (pieceTimeoutCheckbox) {
             pieceTimeoutCheckbox.addEventListener('change', () => {
                 this.saveSetting('pieceTimeoutEnabled', pieceTimeoutCheckbox.checked);
+            });
+        }
+        
+        // Show rotate button
+        const showRotateButtonCheckbox = document.getElementById('show-rotate-button');
+        if (showRotateButtonCheckbox) {
+            showRotateButtonCheckbox.addEventListener('change', () => {
+                this.saveSetting('showRotateButton', showRotateButtonCheckbox.checked);
+                
+                // Update rotate button visibility in main game window if it exists
+                if (window.opener && window.opener.game && window.opener.game.blockPalette) {
+                    window.opener.game.blockPalette.updateRotateButtonVisibility(showRotateButtonCheckbox.checked);
+                }
             });
         }
     }

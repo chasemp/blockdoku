@@ -226,4 +226,37 @@ export class TimerSystem {
         this.pausedTime = 0;
         this.timeBonus = 0;
     }
+    
+    // Serialize timer state for saving
+    serialize() {
+        return {
+            timeLimit: this.timeLimit,
+            timeRemaining: this.timeRemaining,
+            isActive: this.isActive,
+            isPaused: this.isPaused,
+            startTime: this.startTime,
+            pausedTime: this.pausedTime,
+            timeBonus: this.timeBonus
+        };
+    }
+    
+    // Deserialize timer state from saved data
+    deserialize(state) {
+        if (!state) return;
+        
+        this.timeLimit = state.timeLimit;
+        this.timeRemaining = state.timeRemaining;
+        this.isActive = state.isActive;
+        this.isPaused = state.isPaused;
+        this.startTime = state.startTime;
+        this.pausedTime = state.pausedTime;
+        this.timeBonus = state.timeBonus || 0;
+        
+        console.log('⏱️ Timer state restored:', {
+            timeLimit: this.timeLimit,
+            timeRemaining: this.timeRemaining,
+            isActive: this.isActive,
+            isPaused: this.isPaused
+        });
+    }
 }
