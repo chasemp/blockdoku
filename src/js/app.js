@@ -4349,7 +4349,7 @@ class BlockdokuGame {
         magicMessage.style.textAlign = 'center';
         magicMessage.style.textShadow = '0 0 10px #ff6b6b';
         magicMessage.style.pointerEvents = 'none';
-        magicMessage.style.zIndex = '1001';
+        magicMessage.style.zIndex = '9999';
         magicMessage.style.opacity = '0';
         magicMessage.style.animation = 'magicActivation 2s ease-out forwards';
         
@@ -4447,7 +4447,7 @@ class BlockdokuGame {
         explanation.style.textAlign = 'center';
         explanation.style.textShadow = '0 0 8px #ffd700';
         explanation.style.pointerEvents = 'none';
-        explanation.style.zIndex = '1002';
+        explanation.style.zIndex = '10000';
         explanation.style.opacity = '0';
         explanation.style.animation = 'magicExplanation 3s ease-out forwards';
         explanation.style.background = 'rgba(0, 0, 0, 0.8)';
@@ -4494,7 +4494,7 @@ class BlockdokuGame {
         standbyMessage.style.textAlign = 'center';
         standbyMessage.style.textShadow = '0 0 6px #96ceb4';
         standbyMessage.style.pointerEvents = 'none';
-        standbyMessage.style.zIndex = '1000';
+        standbyMessage.style.zIndex = '9998';
         standbyMessage.style.opacity = '0';
         standbyMessage.style.animation = 'magicStandby 2s ease-out forwards';
         
