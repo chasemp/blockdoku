@@ -1018,7 +1018,7 @@ class BlockdokuGame {
         }
         
         // Ghost blocks can overlap existing pieces (special magic power)
-        const isGhostBlock = this.selectedBlock.isMagic && this.selectedBlock.wildType === 'ghost';
+        const isGhostBlock = this.selectedBlock.isMagic && this.selectedBlock.magicType === 'ghost';
         
         if (isGhostBlock) {
             // Ghost blocks only need to be within board boundaries
@@ -4054,7 +4054,7 @@ class BlockdokuGame {
         this.showMagicBlockActivationFeedback(row, col, magicBlock);
         
         // Handle different magic types
-        switch (magicBlock.wildType) {
+        switch (magicBlock.magicType) {
             case 'lineClear':
                 this.handleLineClearMagic(magicBlock, row, col);
                 break;
@@ -4068,7 +4068,7 @@ class BlockdokuGame {
                 this.handleGhostMagic(magicBlock, row, col);
                 break;
             default:
-                console.warn('Unknown magic type:', magicBlock.wildType);
+                console.warn('Unknown magic type:', magicBlock.magicType);
                 this.handleLineClearMagic(magicBlock, row, col); // Fallback
         }
     }

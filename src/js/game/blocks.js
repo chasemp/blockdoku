@@ -96,7 +96,7 @@ export class BlockManager {
                 color: '#ff6b6b',
                 points: 3,
                 isMagic: true,
-                wildType: 'lineClear',
+                magicType: 'lineClear',
                 description: 'Clears any line it completes'
             },
             wildLine2: {
@@ -105,7 +105,7 @@ export class BlockManager {
                 color: '#ff6b6b',
                 points: 5,
                 isMagic: true,
-                wildType: 'lineClear',
+                magicType: 'lineClear',
                 description: 'Clears any line it completes'
             },
             wildL: {
@@ -117,7 +117,7 @@ export class BlockManager {
                 color: '#ff6b6b',
                 points: 6,
                 isMagic: true,
-                wildType: 'lineClear',
+                magicType: 'lineClear',
                 description: 'Clears any line it completes'
             },
             
@@ -130,7 +130,7 @@ export class BlockManager {
                 color: '#ff4444',
                 points: 8,
                 isMagic: true,
-                wildType: 'bomb',
+                magicType: 'bomb',
                 description: 'Explodes to clear 3x3 area around it'
             },
             bombLine2: {
@@ -139,7 +139,7 @@ export class BlockManager {
                 color: '#ff4444',
                 points: 12,
                 isMagic: true,
-                wildType: 'bomb',
+                magicType: 'bomb',
                 description: 'Explodes to clear 3x3 area around each cell'
             },
             
@@ -150,7 +150,7 @@ export class BlockManager {
                 color: '#ffeb3b',
                 points: 15,
                 isMagic: true,
-                wildType: 'lightning',
+                magicType: 'lightning',
                 description: 'Clears entire row and column'
             },
             
@@ -161,7 +161,7 @@ export class BlockManager {
                 color: '#9c27b0',
                 points: 6,
                 isMagic: true,
-                wildType: 'ghost',
+                magicType: 'ghost',
                 description: 'Can overlap existing pieces (once per game)'
             },
             
@@ -177,7 +177,6 @@ export class BlockManager {
                 ],
                 color: '#ff6b6b',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             pentominoP: {
@@ -189,7 +188,6 @@ export class BlockManager {
                 ],
                 color: '#4ecdc4',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             pentominoY: {
@@ -200,7 +198,6 @@ export class BlockManager {
                 ],
                 color: '#45b7d1',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             
@@ -214,7 +211,6 @@ export class BlockManager {
                 ],
                 color: '#96ceb4',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             crossLarge: {
@@ -228,7 +224,6 @@ export class BlockManager {
                 ],
                 color: '#feca57',
                 points: 9,
-                isWild: false,
                 isWild: true
             },
             
@@ -242,7 +237,6 @@ export class BlockManager {
                 ],
                 color: '#ff9ff3',
                 points: 8,
-                isWild: false,
                 isWild: true
             },
             hollowRect: {
@@ -254,7 +248,6 @@ export class BlockManager {
                 ],
                 color: '#54a0ff',
                 points: 10,
-                isWild: false,
                 isWild: true
             },
             
@@ -268,7 +261,6 @@ export class BlockManager {
                 ],
                 color: '#5f27cd',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             zigzagLarge: {
@@ -281,7 +273,6 @@ export class BlockManager {
                 ],
                 color: '#00d2d3',
                 points: 7,
-                isWild: false,
                 isWild: true
             },
             
@@ -296,7 +287,6 @@ export class BlockManager {
                 ],
                 color: '#ff7675',
                 points: 4,
-                isWild: false,
                 isWild: true
             },
             
@@ -310,7 +300,6 @@ export class BlockManager {
                 ],
                 color: '#fd79a8',
                 points: 7,
-                isWild: false,
                 isWild: true
             },
             
@@ -326,7 +315,6 @@ export class BlockManager {
                 ],
                 color: '#e17055',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             pentominoL: {
@@ -339,7 +327,6 @@ export class BlockManager {
                 ],
                 color: '#a29bfe',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             pentominoN: {
@@ -352,7 +339,6 @@ export class BlockManager {
                 ],
                 color: '#fd63c7',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             pentominoT: {
@@ -364,7 +350,6 @@ export class BlockManager {
                 ],
                 color: '#6c5ce7',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             pentominoU: {
@@ -375,7 +360,6 @@ export class BlockManager {
                 ],
                 color: '#fd79a8',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             pentominoV: {
@@ -387,7 +371,6 @@ export class BlockManager {
                 ],
                 color: '#fdcb6e',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             pentominoW: {
@@ -399,7 +382,6 @@ export class BlockManager {
                 ],
                 color: '#e84393',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             pentominoX: {
@@ -411,7 +393,6 @@ export class BlockManager {
                 ],
                 color: '#00b894',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             pentominoZ: {
@@ -423,7 +404,6 @@ export class BlockManager {
                 ],
                 color: '#0984e3',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             
@@ -435,7 +415,6 @@ export class BlockManager {
                 ],
                 color: '#2d3436',
                 points: 6,
-                isWild: false,
                 isWild: true
             },
             hexominoSnake: {
@@ -447,7 +426,6 @@ export class BlockManager {
                 ],
                 color: '#636e72',
                 points: 6,
-                isWild: false,
                 isWild: true
             },
             hexominoArch: {
@@ -458,7 +436,6 @@ export class BlockManager {
                 ],
                 color: '#74b9ff',
                 points: 6,
-                isWild: false,
                 isWild: true
             },
             hexominoStairs: {
@@ -471,7 +448,6 @@ export class BlockManager {
                 ],
                 color: '#55a3ff',
                 points: 6,
-                isWild: false,
                 isWild: true
             },
             
@@ -485,7 +461,6 @@ export class BlockManager {
                 ],
                 color: '#ff7675',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             asymmetricWing: {
@@ -496,7 +471,6 @@ export class BlockManager {
                 ],
                 color: '#fd79a8',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             asymmetricTail: {
@@ -508,7 +482,6 @@ export class BlockManager {
                 ],
                 color: '#fdcb6e',
                 points: 6,
-                isWild: false,
                 isWild: true
             },
             
@@ -522,7 +495,6 @@ export class BlockManager {
                 ],
                 color: '#00cec9',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             hollowT: {
@@ -533,7 +505,6 @@ export class BlockManager {
                 ],
                 color: '#6c5ce7',
                 points: 4,
-                isWild: false,
                 isWild: true
             },
             frameCorner: {
@@ -546,7 +517,6 @@ export class BlockManager {
                 ],
                 color: '#a29bfe',
                 points: 10,
-                isWild: false,
                 isWild: true
             },
             
@@ -560,7 +530,6 @@ export class BlockManager {
                 ],
                 color: '#2d3436',
                 points: 5,
-                isWild: false,
                 isWild: true
             },
             butterfly: {
@@ -572,7 +541,6 @@ export class BlockManager {
                 ],
                 color: '#fd79a8',
                 points: 7,
-                isWild: false,
                 isWild: true
             },
             hourglass: {
@@ -584,7 +552,6 @@ export class BlockManager {
                 ],
                 color: '#fdcb6e',
                 points: 7,
-                isWild: false,
                 isWild: true
             },
             arrow: {
@@ -598,7 +565,6 @@ export class BlockManager {
                 ],
                 color: '#00b894',
                 points: 11,
-                isWild: false,
                 isWild: true
             },
             diamond: {
@@ -610,7 +576,6 @@ export class BlockManager {
                 ],
                 color: '#e17055',
                 points: 4,
-                isWild: false,
                 isWild: true
             },
             
@@ -625,7 +590,6 @@ export class BlockManager {
                 ],
                 color: '#fdcb6e',
                 points: 6,
-                isWild: false,
                 isWild: true
             },
             maze: {
@@ -637,7 +601,6 @@ export class BlockManager {
                 ],
                 color: '#636e72',
                 points: 7,
-                isWild: false,
                 isWild: true
             },
             crown: {
@@ -648,7 +611,6 @@ export class BlockManager {
                 ],
                 color: '#feca57',
                 points: 8,
-                isWild: false,
                 isWild: true
             }
         };

@@ -937,7 +937,7 @@ export class GameSettingsManager {
         const difficultySpecificSettings = [
             'enableHints', 'showPoints', 'enableTimer', 'enablePetrification', 
             'enableDeadPixels', 'showPersonalBests', 'showSpeedTimer', 'speedMode',
-            'animationsEnabled', 'soundEnabled', 'enableWildBlocks', 'enableMagicBlocks', 'enableWildShapes', 'speedTimerPrecision'
+            'animationsEnabled', 'soundEnabled', 'enableMagicBlocks', 'enableWildShapes', 'speedTimerPrecision'
         ];
         
         if (difficultySpecificSettings.includes(key)) {
@@ -1003,8 +1003,7 @@ export class GameSettingsManager {
             'showPersonalBests': 'show-personal-bests',
             'showSpeedTimer': 'show-speed-timer',
             'enablePrizeRecognition': 'enable-prize-recognition',
-            'pieceTimeoutEnabled': 'piece-timeout-enabled',
-            'enableWildBlocks': 'enable-wild-blocks'
+            'pieceTimeoutEnabled': 'piece-timeout-enabled'
         };
         
         // Add bubbles to individual settings
