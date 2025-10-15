@@ -70,7 +70,7 @@ export class GameSettingsManager {
             petrificationCheckbox.checked = this.settings.enablePetrification === true;
         }
         
-        // Dead pixels
+        // Dead grid squares (dead pixels)
         const deadPixelsCheckbox = document.getElementById('enable-dead-pixels');
         const deadPixelsIntensity = document.getElementById('dead-pixels-intensity');
         const deadPixelsIntensityValue = document.getElementById('dead-pixels-intensity-value');
@@ -453,7 +453,7 @@ export class GameSettingsManager {
             });
         }
         
-        // Dead pixels
+        // Dead grid squares (dead pixels)
         const deadPixelsCheckbox = document.getElementById('enable-dead-pixels');
         const deadPixelsIntensity = document.getElementById('dead-pixels-intensity');
         const deadPixelsContainer = document.getElementById('dead-pixels-intensity-container');
@@ -465,6 +465,23 @@ export class GameSettingsManager {
                 // Show/hide intensity slider
                 if (deadPixelsContainer) {
                     deadPixelsContainer.style.display = deadPixelsCheckbox.checked ? 'block' : 'none';
+                }
+
+                // If game window open, immediately apply without resetting game
+                if (window.opener && window.opener.game && window.opener.game.deadPixelsManager) {
+                    const game = window.opener.game;
+                    const wasEnabled = game.deadPixelsManager.isEnabled();
+                    game.deadPixelsManager.setEnabled(deadPixelsCheckbox.checked);
+                    // Regenerate or clear immediately
+                    if (deadPixelsCheckbox.checked) {
+                        game.deadPixelsManager.setIntensity(parseInt(deadPixelsIntensity?.value || game.deadPixelsIntensity || 0));
+                        game.deadPixelsManager.generateDeadPixels(game.boardSize);
+                    } else if (wasEnabled) {
+                        game.deadPixelsManager.clearDeadPixels();
+                    }
+                    // Refresh visuals and placeability
+                    if (game.updatePlaceabilityIndicators) game.updatePlaceabilityIndicators();
+                    if (game.draw) game.draw();
                 }
             });
         }
@@ -478,6 +495,17 @@ export class GameSettingsManager {
                 const intensityValue = document.getElementById('dead-pixels-intensity-value');
                 if (intensityValue) {
                     intensityValue.textContent = intensity;
+                }
+
+                // If game window open and dead squares enabled, regenerate immediately
+                if (window.opener && window.opener.game && window.opener.game.deadPixelsManager) {
+                    const game = window.opener.game;
+                    if (game.deadPixelsManager.isEnabled()) {
+                        game.deadPixelsManager.setIntensity(intensity);
+                        game.deadPixelsManager.generateDeadPixels(game.boardSize);
+                        if (game.updatePlaceabilityIndicators) game.updatePlaceabilityIndicators();
+                        if (game.draw) game.draw();
+                    }
                 }
             });
         }
@@ -1376,7 +1404,7 @@ export class GameSettingsManager {
             { key: 'showPoints', name: 'Show Block Points', description: 'Display point values on blocks' },
             { key: 'enableTimer', name: 'Enable Timer', description: 'Add time pressure' },
             { key: 'enablePetrification', name: 'Enable Petrification', description: 'Blocks petrify over time' },
-            { key: 'enableDeadPixels', name: 'Enable Dead Pixels', description: 'Add visual interference' },
+            { key: 'enableDeadPixels', name: 'Enable dead grid squares', description: 'Add unusable squares to the grid' },
             { key: 'showPersonalBests', name: 'Show Personal Bests', description: 'Display progress in utility bar' },
             { key: 'showSpeedTimer', name: 'Show Speed Timer', description: 'Track placement speed' },
             { key: 'speedMode', name: 'Speed Tracking Mode', description: 'How speed affects scoring' },

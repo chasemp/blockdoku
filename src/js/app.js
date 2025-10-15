@@ -1151,26 +1151,30 @@ class BlockdokuGame {
         // Draw dead pixels first (before filled cells)
         if (this.deadPixelsManager && this.deadPixelsManager.isEnabled()) {
             const deadPixels = this.deadPixelsManager.getDeadPixels();
-            const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--board-bg').trim();
             
             deadPixels.forEach(({ row, col }) => {
                 const x = Math.round(col * drawCellSize) + 1;
                 const y = Math.round(row * drawCellSize) + 1;
                 const size = Math.round(drawCellSize) - 2;
-                
-                // Draw dead pixel with background color and subtle pattern
-                ctx.fillStyle = bgColor;
-                ctx.fillRect(x, y, size, size);
-                
-                // Add a subtle X pattern to indicate dead pixel
+
+                // Stronger visual: tinted background + bold X pattern
                 ctx.save();
-                ctx.strokeStyle = 'rgba(128, 128, 128, 0.3)';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'; // subtle dark tint
+                ctx.fillRect(x, y, size, size);
+
+                // Border to separate from normal empty cells
+                ctx.strokeStyle = 'rgba(200, 0, 0, 0.6)';
                 ctx.lineWidth = 1;
+                ctx.strokeRect(x, y, size, size);
+
+                // Prominent X pattern
+                ctx.strokeStyle = 'rgba(200, 0, 0, 0.6)';
+                ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.moveTo(x, y);
-                ctx.lineTo(x + size, y + size);
-                ctx.moveTo(x + size, y);
-                ctx.lineTo(x, y + size);
+                ctx.moveTo(x + 2, y + 2);
+                ctx.lineTo(x + size - 2, y + size - 2);
+                ctx.moveTo(x + size - 2, y + 2);
+                ctx.lineTo(x + 2, y + size - 2);
                 ctx.stroke();
                 ctx.restore();
             });
@@ -3150,8 +3154,10 @@ class BlockdokuGame {
             this.enableHints = difficultySettings.enableHints || false;
             this.enableTimer = difficultySettings.enableTimer || false;
             this.enablePetrification = difficultySettings.enablePetrification || false;
-            this.enableDeadPixels = difficultySettings.enableDeadPixels || false;
-            this.deadPixelsIntensity = difficultySettings.deadPixelsIntensity || 0;
+            // Dead grid squares (aka dead pixels)
+            // enableDeadPixels is difficulty-specific, but intensity is a global setting
+            this.enableDeadPixels = difficultySettings.enableDeadPixels === true;
+            this.deadPixelsIntensity = baseSettings.deadPixelsIntensity || 0;
             this.showPoints = difficultySettings.showPoints || false;
             this.showPersonalBests = difficultySettings.showPersonalBests || false;
             this.showSpeedTimer = difficultySettings.showSpeedTimer || false;
@@ -3236,7 +3242,7 @@ class BlockdokuGame {
             // Apply effects settings
             this.applyEffectsSettings();
             
-            // Apply dead pixels settings
+            // Apply dead grid squares settings
             if (this.deadPixelsManager) {
                 const wasEnabled = this.deadPixelsManager.isEnabled();
                 const prevIntensity = this.deadPixelsManager.getIntensity();
@@ -3258,6 +3264,9 @@ class BlockdokuGame {
                 if (!this.enableDeadPixels && wasEnabled) {
                     this.deadPixelsManager.clearDeadPixels();
                 }
+
+                // Refresh placeability immediately to reflect new dead grid squares state
+                this.updatePlaceabilityIndicators();
             }
             
             this.updateBlockPointsDisplay();
@@ -4970,7 +4979,10 @@ class BlockdokuGame {
     canPlaceAnywhere(block) {
         for (let row = 0; row < this.boardSize; row++) {
             for (let col = 0; col < this.boardSize; col++) {
-                if (this.blockManager.canPlaceBlock(block, row, col, this.board)) {
+                // Respect dead grid squares when checking placeability map
+                const respectsDeadSquares = !this.deadPixelsManager || !this.deadPixelsManager.isEnabled()
+                    || this.deadPixelsManager.canPlaceBlockWithDeadPixels(block, row, col, this.board);
+                if (respectsDeadSquares && this.blockManager.canPlaceBlock(block, row, col, this.board)) {
                     return true;
                 }
             }
