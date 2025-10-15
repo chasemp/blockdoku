@@ -9,6 +9,14 @@ export class BlockManager {
         this.currentBlocks = [];
         this.selectedBlock = null;
         this.selectedBlockPosition = null;
+
+    // Accumulators to smooth frequencies across sets
+    // Ensures 1-in-10 (10%) actually averages out over multiple generations
+    this.magicAccumulator = 0;
+    this.wildAccumulator = 0;
+
+    // Toggle used to alternate which type yields in overlap situations
+    this.overlapRotationToggle = false;
     }
     
     defineBlockShapes() {
@@ -616,136 +624,171 @@ export class BlockManager {
         };
     }
     
-    generateRandomBlocks(count = 3, difficulty = 'all', difficultyManager = null, enableMagicBlocks = false, enableWildShapes = false, magicBlocksFrequency = 1, wildShapesFrequency = 1) {
-        let availableShapes = Object.keys(this.blockShapes);
-        
-        // Filter out wild shapes unless wild shapes are enabled
-        // Wild shapes will be selected probabilistically based on wildShapesFrequency during block selection
-        const wildShapes = availableShapes.filter(key => this.blockShapes[key].isWild);
-        const standardShapes = availableShapes.filter(key => !this.blockShapes[key].isWild);
-        
-        if (!enableWildShapes) {
-            availableShapes = standardShapes;
-        }
-        
-        // Use difficulty manager if provided
-        if (difficultyManager) {
-            const allowedShapes = difficultyManager.getAllowedShapes();
-            const sizeRange = difficultyManager.getBlockSizeRange();
-            
-            if (allowedShapes !== 'all') {
-                availableShapes = availableShapes.filter(key => allowedShapes.includes(key));
-            }
-            
-            // Filter by size range
-            availableShapes = availableShapes.filter(key => {
+  generateRandomBlocks(count = 3, difficulty = 'all', difficultyManager = null, enableMagicBlocks = false, enableWildShapes = false, magicBlocksFrequency = 1, wildShapesFrequency = 1) {
+        // Build base pools
+        const allKeys = Object.keys(this.blockShapes);
+        let magicBlocks = allKeys.filter(key => this.blockShapes[key].isMagic);
+        let wildShapesAll = allKeys.filter(key => this.blockShapes[key].isWild);
+        let standardShapesAll = allKeys.filter(key => !this.blockShapes[key].isMagic && !this.blockShapes[key].isWild);
+
+        // Apply difficulty filters
+        const applySizeRangeFilter = (keys, sizeRange) => {
+            return keys.filter(key => {
                 const shape = this.blockShapes[key].shape;
                 const maxDimension = Math.max(shape.length, shape[0].length);
                 return maxDimension >= sizeRange[0] && maxDimension <= sizeRange[1];
             });
+        };
+
+        if (difficultyManager) {
+            const allowedShapes = difficultyManager.getAllowedShapes();
+            const sizeRange = difficultyManager.getBlockSizeRange();
+
+            if (allowedShapes !== 'all') {
+                // Only filter standard and wild by explicit allowed lists; keep magic always available
+                standardShapesAll = standardShapesAll.filter(key => allowedShapes.includes(key));
+                wildShapesAll = wildShapesAll.filter(key => allowedShapes.includes(key));
+            }
+
+            // Filter all groups by size range for consistency
+            standardShapesAll = applySizeRangeFilter(standardShapesAll, sizeRange);
+            wildShapesAll = applySizeRangeFilter(wildShapesAll, sizeRange);
+            magicBlocks = applySizeRangeFilter(magicBlocks, sizeRange);
         } else {
-            // Legacy difficulty filtering
+            // Legacy difficulty filtering (applies mainly to standard shapes)
             if (difficulty === 'large') {
-                // Prefer larger, simpler blocks for easy mode
-                availableShapes = availableShapes.filter(key => {
+                standardShapesAll = standardShapesAll.filter(key => {
                     const shape = this.blockShapes[key].shape;
                     const maxDimension = Math.max(shape.length, shape[0].length);
                     return maxDimension >= 3; // 3x3 or larger
                 });
+                // Apply same filter to wild shapes for consistency
+                wildShapesAll = wildShapesAll.filter(key => {
+                    const shape = this.blockShapes[key].shape;
+                    const maxDimension = Math.max(shape.length, shape[0].length);
+                    return maxDimension >= 3;
+                });
             } else if (difficulty === 'small') {
-                // Prefer smaller blocks for hard mode
-                availableShapes = availableShapes.filter(key => {
+                standardShapesAll = standardShapesAll.filter(key => {
                     const shape = this.blockShapes[key].shape;
                     const maxDimension = Math.max(shape.length, shape[0].length);
                     return maxDimension <= 3; // 3x3 or smaller
                 });
-            } else if (difficulty === 'complex') {
-                // Prefer complex irregular shapes for expert mode
-                availableShapes = availableShapes.filter(key => {
+                wildShapesAll = wildShapesAll.filter(key => {
                     const shape = this.blockShapes[key].shape;
-                    // Look for L-shapes, T-shapes, and other complex patterns
-                    return key.includes('L') || key.includes('T') || key.includes('Z') || 
+                    const maxDimension = Math.max(shape.length, shape[0].length);
+                    return maxDimension <= 3;
+                });
+            } else if (difficulty === 'complex') {
+                // Prefer complex irregular shapes for expert mode (standard only)
+                standardShapesAll = standardShapesAll.filter(key => {
+                    return key.includes('L') || key.includes('T') || key.includes('Z') ||
                            key.includes('U') || key.includes('Cross') || key.includes('Plus');
                 });
             }
         }
-        
-        // Fallback to all shapes if filtering results in empty array
-        if (availableShapes.length === 0) {
-            availableShapes = Object.keys(this.blockShapes);
+
+        // Fallbacks if any pool ends up empty
+        if (standardShapesAll.length === 0) {
+            standardShapesAll = allKeys.filter(key => !this.blockShapes[key].isMagic && !this.blockShapes[key].isWild);
         }
-        
-        // Separate magic blocks from regular blocks
-        const magicBlocks = Object.keys(this.blockShapes).filter(key => this.blockShapes[key].isMagic);
-        const regularBlocks = availableShapes.filter(key => !this.blockShapes[key].isMagic);
-        
-        this.currentBlocks = [];
-        
-        // Create a copy of available shapes to avoid modifying the original
-        let remainingShapes = [...regularBlocks];
-        
-        for (let i = 0; i < count; i++) {
-            let selectedKey;
-            
-            // Only generate magic blocks if the setting is enabled
-            // Chance based on magicBlocksFrequency (1-10, where 1 = 10%, 10 = 100%)
-            const hasMagicBlock = this.currentBlocks.some(block => block.isMagic);
-            const magicChance = magicBlocksFrequency / 10; // Convert to probability
-            
-            // At lower frequencies (< 5), limit to 1 magic block per set
-            // At higher frequencies (>= 5), allow multiple magic blocks based on probability
-            const allowMultipleMagic = magicBlocksFrequency >= 5;
-            const shouldGenerateMagic = enableMagicBlocks && 
-                                       (allowMultipleMagic || !hasMagicBlock) && 
-                                       Math.random() < magicChance && 
-                                       magicBlocks.length > 0;
-            
-            if (shouldGenerateMagic) {
-                // Select a random magic block
-                const magicIndex = Math.floor(Math.random() * magicBlocks.length);
-                selectedKey = magicBlocks[magicIndex];
-            } else {
-                // Determine if we should select a wild shape based on wildShapesFrequency
-                const wildShapeChance = wildShapesFrequency / 10; // Convert to probability
-                const shouldUseWildShape = enableWildShapes && 
-                                          wildShapes.length > 0 && 
-                                          Math.random() < wildShapeChance;
-                
-                // Select from appropriate pool
-                let selectionPool;
-                if (shouldUseWildShape) {
-                    // Use wild shapes pool
-                    selectionPool = wildShapes.filter(key => remainingShapes.includes(key) || remainingShapes.length === 0);
-                    if (selectionPool.length === 0) {
-                        selectionPool = wildShapes;
-                    }
-                } else {
-                    // Use standard shapes pool
-                    // If we've used all available shapes, reset the pool
-                    if (remainingShapes.length === 0) {
-                        remainingShapes = [...regularBlocks];
-                    }
-                    selectionPool = remainingShapes;
+        if (enableWildShapes && wildShapesAll.length === 0) {
+            wildShapesAll = allKeys.filter(key => this.blockShapes[key].isWild);
+        }
+        if (enableMagicBlocks && magicBlocks.length === 0) {
+            magicBlocks = allKeys.filter(key => this.blockShapes[key].isMagic);
+        }
+
+        // Determine desired counts per set using accumulators for fairness over time
+        const pm = enableMagicBlocks ? Math.max(0, Math.min(1, magicBlocksFrequency / 10)) : 0;
+        const pw = enableWildShapes ? Math.max(0, Math.min(1, wildShapesFrequency / 10)) : 0;
+
+        const magicFloat = pm * count;
+        const wildFloat = pw * count;
+
+        let magicCount = Math.floor(magicFloat + this.magicAccumulator);
+        let wildCount = Math.floor(wildFloat + this.wildAccumulator);
+
+        // Update accumulators with the fractional remainders
+        this.magicAccumulator = (magicFloat + this.magicAccumulator) - magicCount;
+        this.wildAccumulator = (wildFloat + this.wildAccumulator) - wildCount;
+
+        // Clamp counts by availability and settings
+        if (!enableMagicBlocks || magicBlocks.length === 0) magicCount = 0;
+        if (!enableWildShapes || wildShapesAll.length === 0) wildCount = 0;
+
+        // If totals exceed available slots, alternate which type yields the excess (round-robin)
+        let totalSpecial = magicCount + wildCount;
+        if (totalSpecial > count) {
+            let excess = totalSpecial - count;
+            if (this.overlapRotationToggle) {
+                // Reduce magic first this time
+                const reduceMagic = Math.min(excess, magicCount);
+                magicCount -= reduceMagic;
+                excess -= reduceMagic;
+                if (excess > 0) {
+                    const reduceWild = Math.min(excess, wildCount);
+                    wildCount -= reduceWild;
+                    excess -= reduceWild;
                 }
-                
-                const randomIndex = Math.floor(Math.random() * selectionPool.length);
-                selectedKey = selectionPool[randomIndex];
-                
-                // Remove the selected shape to avoid duplicates (only for standard shapes)
-                if (!shouldUseWildShape && remainingShapes.includes(selectedKey)) {
-                    const removeIndex = remainingShapes.indexOf(selectedKey);
-                    remainingShapes.splice(removeIndex, 1);
+            } else {
+                // Reduce wild first this time
+                const reduceWild = Math.min(excess, wildCount);
+                wildCount -= reduceWild;
+                excess -= reduceWild;
+                if (excess > 0) {
+                    const reduceMagic = Math.min(excess, magicCount);
+                    magicCount -= reduceMagic;
+                    excess -= reduceMagic;
                 }
             }
-            
-            const block = {
-                ...this.blockShapes[selectedKey],
-                id: `block_${i}_${Date.now()}`,
-                rotation: 0
-            };
-            this.currentBlocks.push(block);
+            this.overlapRotationToggle = !this.overlapRotationToggle;
         }
-        
+
+        // Ensure non-negative
+        magicCount = Math.max(0, Math.min(count, magicCount));
+        wildCount = Math.max(0, Math.min(count - magicCount, wildCount));
+
+        // Compose the set
+        const selectedKeys = [];
+        const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+        // Add magic blocks
+        for (let m = 0; m < magicCount; m++) {
+            if (magicBlocks.length > 0) selectedKeys.push(getRandom(magicBlocks));
+        }
+
+        // Add wild shapes
+        for (let w = 0; w < wildCount; w++) {
+            if (wildShapesAll.length > 0) selectedKeys.push(getRandom(wildShapesAll));
+        }
+
+        // Fill the rest with standard shapes, avoiding duplicates when possible
+        let remainingStandard = [...standardShapesAll];
+        const needStandard = count - selectedKeys.length;
+        for (let s = 0; s < needStandard; s++) {
+            if (remainingStandard.length === 0) {
+                remainingStandard = [...standardShapesAll];
+            }
+            const pickIndex = Math.floor(Math.random() * remainingStandard.length);
+            const chosen = remainingStandard[pickIndex];
+            selectedKeys.push(chosen);
+            remainingStandard.splice(pickIndex, 1);
+        }
+
+        // Shuffle final order to avoid grouping by type
+        for (let i = selectedKeys.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [selectedKeys[i], selectedKeys[j]] = [selectedKeys[j], selectedKeys[i]];
+        }
+
+        // Build block objects
+        this.currentBlocks = selectedKeys.map((key, idx) => ({
+            ...this.blockShapes[key],
+            id: `block_${idx}_${Date.now()}`,
+            rotation: 0
+        }));
+
         return this.currentBlocks;
     }
     
