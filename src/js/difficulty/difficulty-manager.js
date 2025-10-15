@@ -90,7 +90,7 @@ export class DifficultyManager {
         if (defaults.showPoints) enabledFeatures.push('Show Block Points');
         if (defaults.enableTimer) enabledFeatures.push('Enable Timer');
         if (defaults.enablePetrification) enabledFeatures.push('Enable Petrification');
-        if (defaults.enableDeadPixels) enabledFeatures.push('Enable Dead Pixels');
+        if (defaults.enableDeadPixels) enabledFeatures.push('Enable dead grid squares');
         if (defaults.showPersonalBests) enabledFeatures.push('Enable Personal Best');
         if (defaults.showSpeedTimer) enabledFeatures.push('Show Speed Timer');
         if (defaults.enablePrizeRecognition) enabledFeatures.push('Enable Prize Recognition');
