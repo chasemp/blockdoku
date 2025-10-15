@@ -377,6 +377,8 @@ class BlockdokuGame {
     }
     
     draw() {
+        // Suspend normal drawing when a terminal animation is playing
+        if (this.meltAnimationInProgress) return;
         this.drawBoard();
         this.effectsManager.render();
     }
@@ -2581,9 +2583,100 @@ class BlockdokuGame {
     }
     
     handleTimeUp() {
-        // Game over due to time up
-        this.effectsManager.onError();
-        this.gameOver();
+        // Prevent re-entrancy
+        if (this.timeUpInProgress) return;
+
+        // Respect animation preferences: master animations AND complex animations must be on
+        const allowCinematic = this.animationsEnabled !== false && this.complexAnimationsEnabled === true;
+
+        if (allowCinematic) {
+            this.timeUpInProgress = true;
+            this.startMeltOutThenGameOver();
+        } else {
+            // Immediate game over when complex animations are disabled
+            this.effectsManager.onError();
+            this.gameOver();
+        }
+    }
+
+    /**
+     * Plays a melt-out animation of the current board, then finalizes game over.
+     * Respects animation speed preference and complexAnimationsEnabled setting.
+     */
+    startMeltOutThenGameOver() {
+        if (!this.canvas || !this.ctx) {
+            this.effectsManager.onError();
+            this.gameOver();
+            return;
+        }
+
+        // Snapshot current canvas to an offscreen buffer
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+        const snapshot = document.createElement('canvas');
+        snapshot.width = width;
+        snapshot.height = height;
+        const sctx = snapshot.getContext('2d');
+        sctx.drawImage(this.canvas, 0, 0);
+
+        // Suspend regular rendering during the animation
+        this.meltAnimationInProgress = true;
+
+        // Determine duration from animation speed preference
+        let duration = 1200; // ms
+        if (this.animationSpeed === 'fast') duration = 800;
+        if (this.animationSpeed === 'slow') duration = 1800;
+
+        const sliceWidth = Math.max(6, Math.floor(width / 64));
+        const numSlices = Math.ceil(width / sliceWidth);
+        // Precompute a drip amplitude per slice for an organic look
+        const maxDrip = Math.floor(height * 0.4);
+        const amplitudes = Array.from({ length: numSlices }, (_, i) => {
+            // Stable pseudo-random based on index for repeatability in this run
+            const r = Math.sin(i * 12.9898) * 43758.5453;
+            const normalized = r - Math.floor(r);
+            return Math.floor((0.25 + 0.75 * normalized) * maxDrip);
+        });
+
+        const startTime = Date.now();
+        const ease = (t) => 1 - Math.pow(1 - t, 3); // easeOutCubic
+
+        const step = () => {
+            const elapsed = Date.now() - startTime;
+            const rawProgress = Math.min(1, elapsed / duration);
+            const p = ease(rawProgress);
+
+            // Clear frame
+            this.ctx.clearRect(0, 0, width, height);
+
+            // Draw each vertical slice with a downward offset to simulate melting
+            for (let si = 0; si < numSlices; si++) {
+                const sx = si * sliceWidth;
+                const sw = Math.min(sliceWidth, width - sx);
+                const dy = Math.floor(p * amplitudes[si]);
+                // Slight lateral wobble for organic feel
+                const wobble = Math.floor(Math.sin((si + p * 10) * 0.6) * 2);
+                this.ctx.drawImage(snapshot, sx, 0, sw, height, sx + wobble, dy, sw, height);
+            }
+
+            // Subtle fade-out overlay
+            this.ctx.save();
+            this.ctx.globalAlpha = 0.4 * p;
+            this.ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--background-color') || '#000';
+            this.ctx.fillRect(0, 0, width, height);
+            this.ctx.restore();
+
+            if (rawProgress < 1) {
+                requestAnimationFrame(step);
+            } else {
+                // End of animation
+                this.meltAnimationInProgress = false;
+                this.effectsManager.onError();
+                this.gameOver();
+            }
+        };
+
+        requestAnimationFrame(step);
     }
     
     showTimeBonus(bonusSeconds) {
