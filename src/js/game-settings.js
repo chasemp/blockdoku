@@ -142,6 +142,8 @@ export class GameSettingsManager {
             wildShapesFrequencyValue.textContent = `${frequency} in 10`;
             wildShapesFrequencyPercent.textContent = `${frequency * 10}%`;
         }
+        // Initialize overlap visualization on load
+        this.updateFrequencyOverlapVisualization();
         
         // Speed mode
         const speedMode = this.settings.speedMode || 'ignored';
@@ -495,6 +497,8 @@ export class GameSettingsManager {
                 if (magicBlocksContainer) {
                     magicBlocksContainer.style.display = magicBlocksCheckbox.checked ? 'block' : 'none';
                 }
+                // Refresh overlap visuals when enabling/disabling magic blocks
+                this.updateFrequencyOverlapVisualization();
             });
         }
         
@@ -512,6 +516,8 @@ export class GameSettingsManager {
                 if (frequencyPercent) {
                     frequencyPercent.textContent = `${frequency * 10}%`;
                 }
+                // Update overlap visuals when the magic slider moves
+                this.updateFrequencyOverlapVisualization();
             });
         }
         
@@ -536,6 +542,8 @@ export class GameSettingsManager {
                 if (wildShapesContainer) {
                     wildShapesContainer.style.display = wildShapesCheckbox.checked ? 'block' : 'none';
                 }
+                // Refresh overlap visuals when enabling/disabling wild shapes
+                this.updateFrequencyOverlapVisualization();
             });
         }
         
@@ -553,6 +561,8 @@ export class GameSettingsManager {
                 if (frequencyPercent) {
                     frequencyPercent.textContent = `${frequency * 10}%`;
                 }
+                // Update overlap visuals when the wild slider moves
+                this.updateFrequencyOverlapVisualization();
             });
         }
         
@@ -1127,7 +1137,57 @@ export class GameSettingsManager {
         setTimeout(() => {
             this.updateIndividualSettingBubbles(); // Now just cleans up existing bubbles
             this.updateSettingStateBubbles();
+            this.updateFrequencyOverlapVisualization();
         }, 100); // Small delay to ensure difficulty manager is loaded
+    }
+    
+    // Visually gray out overlapping portions of magic/wild frequency sliders
+    updateFrequencyOverlapVisualization() {
+        try {
+            const magicEnabled = document.getElementById('enable-magic-blocks')?.checked || false;
+            const wildEnabled = document.getElementById('enable-wild-shapes')?.checked || false;
+
+            const magicSlider = document.getElementById('magic-blocks-frequency');
+            const wildSlider = document.getElementById('wild-shapes-frequency');
+
+            if (!magicSlider || !wildSlider) return;
+
+            const magicVal = magicEnabled ? parseInt(magicSlider.value || '1', 10) : 0;
+            const wildVal = wildEnabled ? parseInt(wildSlider.value || '1', 10) : 0;
+
+            const total = 10;
+            const allowedWildMax = wildEnabled ? Math.max(0, total - (magicEnabled ? magicVal : 0)) : total;
+            const allowedMagicMax = magicEnabled ? Math.max(0, total - (wildEnabled ? wildVal : 0)) : total;
+
+            this.styleSliderOverlap(wildSlider, allowedWildMax, wildVal);
+            this.styleSliderOverlap(magicSlider, allowedMagicMax, magicVal);
+        } catch (e) {
+            // No-op: visualization is cosmetic
+        }
+    }
+
+    styleSliderOverlap(slider, allowedMaxSteps, currentSteps) {
+        if (!slider) return;
+        const total = 10;
+        const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+        const allowedPct = clamp((allowedMaxSteps / total) * 100, 0, 100);
+        const valuePct = clamp((currentSteps / total) * 100, 0, 100);
+        const primary = 'var(--primary-color, #8d6e63)';
+        const gray = 'var(--muted-color, #6c757d)';
+        const track = 'var(--border-color, #cccccc)';
+
+        let background;
+        if (currentSteps <= allowedMaxSteps) {
+            // No overlap: fill to value with primary
+            background = `linear-gradient(to right, ${primary} 0% ${valuePct}%, ${track} ${valuePct}% 100%)`;
+            slider.title = '';
+        } else {
+            // Overlap exists: allowed part primary, overlapping segment gray, rest track
+            background = `linear-gradient(to right, ${primary} 0% ${allowedPct}%, ${gray} ${allowedPct}% ${valuePct}%, ${track} ${valuePct}% 100%)`;
+            slider.title = 'Overlapping portion will be alternated between types';
+        }
+
+        slider.style.background = background;
     }
     
     updateSettingStateBubbles() {
