@@ -635,6 +635,10 @@ export class BlockPalette {
     }
     
     rotateBlock(blockId) {
+        // Respect rotation setting: do nothing if rotation is disabled
+        if (!this.rotationEnabled) {
+            return;
+        }
         const block = this.blockManager.getBlockById(blockId);
         if (!block) return;
         
