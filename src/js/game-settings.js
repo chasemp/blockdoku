@@ -189,8 +189,8 @@ export class GameSettingsManager {
         // Enable block rotation (default: true for backwards compatibility)
         const enableRotationCheckbox = document.getElementById('enable-block-rotation');
         if (enableRotationCheckbox) {
-            // Default to true if not set, to maintain backwards compatibility
-            enableRotationCheckbox.checked = this.settings.enableBlockRotation !== false;
+            // Default to false - rotation should be opt-in
+            enableRotationCheckbox.checked = this.settings.enableBlockRotation === true;
         }
         
         // Show rotate button (default: false)

@@ -29,8 +29,8 @@ export class BlockPalette {
         this.timeoutPaused = false; // Pause timeout when game is over or not active
         this.pieceTimeoutEnabled = false; // Whether piece timeout is enabled
         
-        // Rotation settings (default: true for backwards compatibility)
-        this.rotationEnabled = true; // Whether block rotation is enabled
+        // Rotation settings (default: false - rotation should be opt-in)
+        this.rotationEnabled = false; // Whether block rotation is enabled
         
         // Animation settings
         this.animationSettings = {
@@ -90,9 +90,9 @@ export class BlockPalette {
     render() {
         if (!this.container) return;
         
-        // Check settings (defaults: rotation enabled = true, button shown = false)
+        // Check settings (defaults: rotation enabled = false, button shown = false)
         const settings = this.game?.storage?.loadSettings() || {};
-        const rotationEnabled = settings.enableBlockRotation !== false;
+        const rotationEnabled = settings.enableBlockRotation === true;
         const showRotateButton = rotationEnabled && settings.showRotateButton === true;
         
         // Update internal state
