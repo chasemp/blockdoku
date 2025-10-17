@@ -1944,9 +1944,21 @@ class BlockdokuGame {
                 this.updateUI();
                 this.showImmediateClearFeedback(queuedClears);
                 this.startLineClearAnimation(queuedClears);
+                
+                // Generate new blocks if needed after processing queued clears
+                if (this.blockManager.currentBlocks.length === 0) {
+                    console.log('Generating new blocks after queued line clear processing...');
+                    this.generateNewBlocks();
+                }
             } else {
                 // No queued clears, check for new ones
                 this.checkLineClears();
+                
+                // Generate new blocks if needed after line clears are complete
+                if (this.blockManager.currentBlocks.length === 0) {
+                    console.log('Generating new blocks after line clear completion...');
+                    this.generateNewBlocks();
+                }
             }
         }, 200);
     }
@@ -4069,8 +4081,8 @@ class BlockdokuGame {
             this.saveGameState();
         }
         
-        // Generate new blocks if needed
-        if (this.blockManager.currentBlocks.length === 0) {
+        // Generate new blocks if needed (but only if no line clears are pending)
+        if (this.blockManager.currentBlocks.length === 0 && !this.pendingClears) {
             this.generateNewBlocks();
         }
         
