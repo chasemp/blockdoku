@@ -82,6 +82,11 @@ export class DifficultySelector {
         option.className = 'difficulty-option';
         option.dataset.difficulty = difficulty.key;
         
+        // Special handling for Progress Mode
+        if (difficulty.key === 'progress') {
+            option.classList.add('progress-mode-option');
+        }
+        
         // Check if this is the current difficulty
         if (difficulty.key === this.difficultyManager.getCurrentDifficulty()) {
             option.classList.add('selected');
@@ -200,13 +205,21 @@ export class DifficultySelector {
             easy: '😊',
             normal: '😐',
             hard: '😤',
-            expert: '🔥'
+            expert: '🔥',
+            progress: '📈'
         };
         return icons[difficulty] || '🎮';
     }
     
     async selectDifficulty(difficulty) {
         console.log(`🎯 DifficultySelector: selectDifficulty called with difficulty: ${difficulty}`);
+        
+        // Special handling for Progress Mode
+        if (difficulty === 'progress') {
+            this.hide();
+            window.location.href = 'progress.html';
+            return;
+        }
         
         // Update difficulty manager
         const success = this.difficultyManager.setDifficulty(difficulty);

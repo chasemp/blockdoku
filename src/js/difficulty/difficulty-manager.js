@@ -343,10 +343,21 @@ export class DifficultyManager {
     
     // Get available difficulties for UI
     getAvailableDifficulties() {
-        return Object.keys(this.difficultySettings).map(key => ({
+        const difficulties = Object.keys(this.difficultySettings).map(key => ({
             key,
             ...this.difficultySettings[key]
         }));
+        
+        // Add Progress Mode as a special option
+        difficulties.push({
+            key: 'progress',
+            name: 'Progress Mode',
+            shortDescription: 'Structured levels with objectives',
+            description: 'Complete structured levels with specific objectives and rewards',
+            isSpecialMode: true
+        });
+        
+        return difficulties;
     }
     
     // Reset difficulty to default

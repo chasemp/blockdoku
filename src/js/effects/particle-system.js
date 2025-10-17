@@ -121,6 +121,125 @@ export class ParticleSystem {
         this.particles.push(new EmptyGridBonusTextParticle(x, y));
     }
     
+    // Create multiplier chain effect
+    createMultiplierChainEffect(x, y, multiplier) {
+        if (!this.isEnabled) return;
+        
+        // Create multiplier-specific particles
+        for (let i = 0; i < multiplier * 3; i++) {
+            this.particles.push(new MultiplierChainParticle(x, y, multiplier));
+        }
+        
+        // Create multiplier text
+        this.particles.push(new MultiplierChainTextParticle(x, y, multiplier));
+    }
+    
+    // Create pattern bonus effect
+    createPatternBonusEffect(x, y, patternType, patternName) {
+        if (!this.isEnabled) return;
+        
+        // Create pattern-specific particles
+        for (let i = 0; i < 15; i++) {
+            this.particles.push(new PatternBonusParticle(x, y, patternType));
+        }
+        
+        // Create pattern text
+        this.particles.push(new PatternBonusTextParticle(x, y, patternName));
+        
+        // Create pattern-specific shape particles
+        this.createPatternShapeEffect(x, y, patternType);
+    }
+    
+    // Create pattern shape effect
+    createPatternShapeEffect(x, y, patternType) {
+        const shapeParticles = {
+            cross: () => this.createCrossShapeEffect(x, y),
+            lShape: () => this.createLShapeEffect(x, y),
+            diamond: () => this.createDiamondShapeEffect(x, y),
+            spiral: () => this.createSpiralShapeEffect(x, y),
+            checkerboard: () => this.createCheckerboardShapeEffect(x, y)
+        };
+        
+        const createShape = shapeParticles[patternType];
+        if (createShape) {
+            createShape();
+        }
+    }
+    
+    // Create cross shape effect
+    createCrossShapeEffect(x, y) {
+        const positions = [
+            { x: x, y: y },           // Center
+            { x: x - 20, y: y },      // Left
+            { x: x + 20, y: y },      // Right
+            { x: x, y: y - 20 },      // Top
+            { x: x, y: y + 20 }       // Bottom
+        ];
+        
+        positions.forEach(pos => {
+            this.particles.push(new PatternShapeParticle(pos.x, pos.y, '#ff6b6b'));
+        });
+    }
+    
+    // Create L-shape effect
+    createLShapeEffect(x, y) {
+        const positions = [
+            { x: x, y: y },
+            { x: x + 15, y: y },
+            { x: x, y: y + 15 }
+        ];
+        
+        positions.forEach(pos => {
+            this.particles.push(new PatternShapeParticle(pos.x, pos.y, '#4ecdc4'));
+        });
+    }
+    
+    // Create diamond shape effect
+    createDiamondShapeEffect(x, y) {
+        const positions = [
+            { x: x, y: y - 15 },      // Top
+            { x: x + 15, y: y },      // Right
+            { x: x, y: y + 15 },      // Bottom
+            { x: x - 15, y: y }       // Left
+        ];
+        
+        positions.forEach(pos => {
+            this.particles.push(new PatternShapeParticle(pos.x, pos.y, '#45b7d1'));
+        });
+    }
+    
+    // Create spiral shape effect
+    createSpiralShapeEffect(x, y) {
+        const positions = [
+            { x: x, y: y },
+            { x: x + 10, y: y },
+            { x: x + 20, y: y },
+            { x: x + 20, y: y + 10 },
+            { x: x + 20, y: y + 20 },
+            { x: x + 10, y: y + 20 },
+            { x: x, y: y + 20 },
+            { x: x, y: y + 10 }
+        ];
+        
+        positions.forEach(pos => {
+            this.particles.push(new PatternShapeParticle(pos.x, pos.y, '#f39c12'));
+        });
+    }
+    
+    // Create checkerboard shape effect
+    createCheckerboardShapeEffect(x, y) {
+        const positions = [
+            { x: x - 10, y: y - 10 },
+            { x: x + 10, y: y - 10 },
+            { x: x - 10, y: y + 10 },
+            { x: x + 10, y: y + 10 }
+        ];
+        
+        positions.forEach(pos => {
+            this.particles.push(new PatternShapeParticle(pos.x, pos.y, '#9b59b6'));
+        });
+    }
+    
     // Create combo effect
     createComboEffect(x, y, combo) {
         if (!this.isEnabled) return;
@@ -489,6 +608,186 @@ class EmptyGridBonusTextParticle extends Particle {
         ctx.shadowColor = 'rgba(0, 255, 136, 0.8)';
         ctx.shadowBlur = 6;
         ctx.fillText(this.text, this.x, this.y);
+        ctx.restore();
+    }
+}
+
+// Multiplier chain particle
+class MultiplierChainParticle extends Particle {
+    constructor(x, y, multiplier) {
+        super(x, y);
+        this.vx = (Math.random() - 0.5) * 8;
+        this.vy = (Math.random() - 0.5) * 8;
+        this.maxLife = 1.5;
+        this.life = this.maxLife;
+        this.size = Math.random() * 4 + 2;
+        this.multiplier = multiplier;
+        
+        // Color based on multiplier
+        const colors = ['#ff6b6b', '#ff8e8e', '#ffa8a8', '#ffc2c2'];
+        this.color = colors[Math.min(multiplier - 1, colors.length - 1)];
+        
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.4;
+    }
+    
+    update() {
+        super.update();
+        this.rotation += this.rotationSpeed;
+        this.vy += 0.1; // Gravity
+        this.size *= 0.98; // Shrink over time
+    }
+    
+    render(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 8;
+        ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+        ctx.restore();
+    }
+}
+
+// Multiplier chain text particle
+class MultiplierChainTextParticle extends Particle {
+    constructor(x, y, multiplier) {
+        super(x, y);
+        this.vx = 0;
+        this.vy = -2;
+        this.maxLife = 2.0;
+        this.life = this.maxLife;
+        this.text = `${multiplier}x CHAIN!`;
+        this.color = '#ff6b6b';
+        this.fontSize = 20;
+        this.multiplier = multiplier;
+    }
+    
+    update() {
+        super.update();
+        this.fontSize += 0.3;
+    }
+    
+    render(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.font = `bold ${this.fontSize}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(255, 107, 107, 0.8)';
+        ctx.shadowBlur = 6;
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.restore();
+    }
+}
+
+// Pattern bonus particle
+class PatternBonusParticle extends Particle {
+    constructor(x, y, patternType) {
+        super(x, y);
+        this.vx = (Math.random() - 0.5) * 6;
+        this.vy = (Math.random() - 0.5) * 6;
+        this.maxLife = 1.2;
+        this.life = this.maxLife;
+        this.size = Math.random() * 3 + 2;
+        this.patternType = patternType;
+        
+        // Color based on pattern type
+        const colors = {
+            cross: '#ff6b6b',
+            lShape: '#4ecdc4',
+            diamond: '#45b7d1',
+            spiral: '#f39c12',
+            checkerboard: '#9b59b6'
+        };
+        this.color = colors[patternType] || '#ff6b6b';
+        
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.3;
+    }
+    
+    update() {
+        super.update();
+        this.rotation += this.rotationSpeed;
+        this.vy += 0.08; // Gravity
+        this.size *= 0.99; // Shrink over time
+    }
+    
+    render(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 6;
+        ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+        ctx.restore();
+    }
+}
+
+// Pattern bonus text particle
+class PatternBonusTextParticle extends Particle {
+    constructor(x, y, patternName) {
+        super(x, y);
+        this.vx = 0;
+        this.vy = -1.5;
+        this.maxLife = 1.8;
+        this.life = this.maxLife;
+        this.text = `${patternName.toUpperCase()} BONUS!`;
+        this.color = '#ff6b6b';
+        this.fontSize = 18;
+    }
+    
+    update() {
+        super.update();
+        this.fontSize += 0.2;
+    }
+    
+    render(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.font = `bold ${this.fontSize}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(255, 107, 107, 0.8)';
+        ctx.shadowBlur = 6;
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.restore();
+    }
+}
+
+// Pattern shape particle
+class PatternShapeParticle extends Particle {
+    constructor(x, y, color) {
+        super(x, y);
+        this.vx = 0;
+        this.vy = 0;
+        this.maxLife = 2.0;
+        this.life = this.maxLife;
+        this.size = 8;
+        this.color = color;
+        this.rotation = 0;
+        this.rotationSpeed = 0.1;
+    }
+    
+    update() {
+        super.update();
+        this.rotation += this.rotationSpeed;
+        this.size *= 0.98; // Shrink over time
+    }
+    
+    render(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 8;
+        ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
         ctx.restore();
     }
 }

@@ -408,6 +408,137 @@ body {
     letter-spacing: 0.5px;
 }
 
+/* MULTIPLIER CHAIN DISPLAY */
+.multiplier-chain-display {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.multiplier-chain-display.active {
+    opacity: 1;
+}
+
+.multiplier-display {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 50px;
+    font-size: 2.5rem;
+    font-weight: 900;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    box-shadow: 
+        0 8px 25px rgba(255, 107, 107, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    animation: multiplierPulse 0.6s ease-out;
+}
+
+.multiplier-progress {
+    width: 200px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.multiplier-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4ecdc4, #44a08d);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.multiplier-progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: progressShine 2s infinite;
+}
+
+.multiplier-text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    text-align: center;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes multiplierPulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes progressShine {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Multiplier chain in game info */
+.multiplier-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.6rem 0.6rem;
+    background: linear-gradient(135deg, var(--card-bg) 0%, var(--highlight) 100%);
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    min-height: 50px;
+    position: relative;
+    z-index: 1;
+}
+
+.multiplier-info span:first-child {
+    font-size: 1.125rem;
+    opacity: 0.95;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-weight: 600;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.multiplier-info span:last-child {
+    font-size: 2.25rem;
+    font-weight: 900;
+    color: #ff6b6b;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* Speed timer styling - LED-style consistency */
 .speed-timer {
     display: flex;
@@ -4444,18 +4575,277 @@ html.light-theme .settings-section .difficulty-option.selected {
     opacity: 1;
 }
 
-/* Progress Mode Styles */
-.progress-mode-content {
-    max-width: 800px;
-    max-height: 90vh;
-    overflow-y: auto;
+/* Progress Mode Page Styles */
+.progress-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
 }
 
-.progress-mode-body {
+.difficulty-section,
+.levels-section,
+.level-details {
+    margin-bottom: 2rem;
+}
+
+.difficulty-section h2,
+.levels-section h2 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.difficulty-options {
     display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.difficulty-option {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.difficulty-option:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
+}
+
+.difficulty-option.selected {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color), var(--highlight));
+    color: white;
+}
+
+.difficulty-option.progress-mode-option {
+    background: linear-gradient(135deg, #6f42c1, #8e44ad);
+    border-color: #6f42c1;
+    color: white;
+}
+
+.difficulty-option.progress-mode-option:hover {
+    background: linear-gradient(135deg, #5a32a3, #7d3c98);
+    border-color: #5a32a3;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(111, 66, 193, 0.3);
+}
+
+.difficulty-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.difficulty-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.difficulty-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.difficulty-badge.easy {
+    background: #28a745;
+    color: white;
+}
+
+.difficulty-badge.normal {
+    background: #007bff;
+    color: white;
+}
+
+.difficulty-badge.hard {
+    background: #ffc107;
+    color: #212529;
+}
+
+.difficulty-badge.expert {
+    background: #dc3545;
+    color: white;
+}
+
+.difficulty-option p {
+    margin: 0.5rem 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.difficulty-stats {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.levels-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.levels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+.level-button {
+    aspect-ratio: 1;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--card-bg);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.level-button:hover:not(.locked) {
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
+}
+
+.level-button.completed {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border-color: #28a745;
+    color: white;
+}
+
+.level-button.locked {
+    background: var(--disabled-bg);
+    border-color: var(--disabled-border);
+    color: var(--disabled-text);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.level-number {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.level-status {
+    font-size: 1rem;
+}
+
+.level-details {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.level-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.level-details-header h3 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.5rem;
+}
+
+.level-info h4 {
+    color: var(--primary-color);
+    margin: 1rem 0 0.5rem 0;
+    font-size: 1.1rem;
+}
+
+.level-info ul {
+    margin: 0.5rem 0 1rem 1rem;
+    padding: 0;
+}
+
+.level-info li {
+    margin: 0.5rem 0;
+    color: var(--text-color);
+}
+
+.level-actions {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.progress-stats {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.progress-stats h2 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
     padding: 1rem;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    margin-right: 1rem;
+}
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.stat-content p {
+    margin: 0.25rem 0 0 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
 }
 
 .difficulty-selector h3,
@@ -4769,6 +5159,89 @@ html.light-theme .settings-section .difficulty-option.selected {
 .objective-value {
     font-weight: bold;
     color: var(--primary-color);
+}
+
+/* Progress Mode Mobile Responsive */
+@media (max-width: 768px) {
+    .progress-container {
+        padding: 0.5rem;
+    }
+    
+    .difficulty-options {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .difficulty-option {
+        padding: 1rem;
+    }
+    
+    .difficulty-header h3 {
+        font-size: 1.25rem;
+    }
+    
+    .levels-grid {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .level-button {
+        min-height: 60px;
+    }
+    
+    .level-number {
+        font-size: 1rem;
+    }
+    
+    .level-status {
+        font-size: 0.9rem;
+    }
+    
+    .level-details-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .level-details-header h3 {
+        font-size: 1.25rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .stat-card {
+        padding: 0.75rem;
+    }
+    
+    .stat-icon {
+        font-size: 1.5rem;
+        margin-right: 0.75rem;
+    }
+    
+    .stat-content h3 {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .levels-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+    
+    .level-button {
+        min-height: 50px;
+    }
+    
+    .level-number {
+        font-size: 0.9rem;
+    }
+    
+    .level-status {
+        font-size: 0.8rem;
+    }
 }
 
 /* Responsive Design */

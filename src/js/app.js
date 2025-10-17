@@ -73,15 +73,16 @@ class BlockdokuGame {
         this.deadPixelsManager = new DeadPixelsManager();
         
         this.blockPalette = new BlockPalette('block-palette', this.blockManager, this);
-        this.scoringSystem = new ScoringSystem(this.petrificationManager, this.difficultyManager, this);
         this.storage = new GameStorage();
         this.difficultySettings = new DifficultySettingsManager(this.storage);
+        
+        // Difficulty system (initialize before scoring system)
+        this.difficultyManager = new DifficultyManager(this);
+        this.scoringSystem = new ScoringSystem(this.petrificationManager, this.difficultyManager, this);
+        
         // this.effectsSystem = new EffectsSystem(this.canvas, this.ctx);
         this.pwaInstallManager = new PWAInstallManager();
         this.offlineManager = new OfflineManager();
-        
-        // Difficulty system
-        this.difficultyManager = new DifficultyManager(this);
         this.hintSystem = new HintSystem(this, this.difficultyManager);
         this.timerSystem = new TimerSystem(this.difficultyManager);
         this.difficultySelector = new DifficultySelector(this, this.difficultyManager);
@@ -240,6 +241,10 @@ class BlockdokuGame {
         console.log('Board state at start of init():', this.board ? 'VALID' : 'UNDEFINED', 'Length:', this.board?.length);
         this.setupEventListeners();
         this.registerServiceWorker();
+        
+        // Check for Progress Mode URL parameters
+        this.handleProgressModeURL();
+        
         // this.loadSettings();
         
         // Ensure BlockPalette is rendered BEFORE loading game state
@@ -255,8 +260,18 @@ class BlockdokuGame {
             if (!this.blockManager.currentBlocks || this.blockManager.currentBlocks.length === 0) {
                 console.log('Generating initial blocks after DOM is ready');
                 this.generateNewBlocks();
+            } else {
+                console.log('Blocks already loaded from saved state:', this.blockManager.currentBlocks.length);
             }
         }, 50);
+        
+        // Fallback: Ensure blocks are generated even if the above fails
+        setTimeout(() => {
+            if (!this.blockManager.currentBlocks || this.blockManager.currentBlocks.length === 0) {
+                console.log('Fallback: Generating blocks after 200ms delay');
+                this.generateNewBlocks();
+            }
+        }, 200);
         
         // Initialize timer system for current difficulty (but don't start it yet)
         // Timer will start on first piece placement
@@ -476,22 +491,6 @@ class BlockdokuGame {
             console.error('New game button not found!');
         }
         
-        // Progress Mode button
-        const progressModeBtn = document.getElementById('progress-mode-btn');
-        if (progressModeBtn) {
-            const handleProgressModeClick = () => {
-                this.effectsManager.onButtonClick();
-                this.showProgressModeSelection();
-            };
-            
-            progressModeBtn.addEventListener('click', handleProgressModeClick);
-            progressModeBtn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                handleProgressModeClick();
-            }, { passive: false });
-        } else {
-            console.error('Progress Mode button not found!');
-        }
         
         // Difficulty button
         const difficultyBtn = document.getElementById('difficulty-btn');
@@ -2189,6 +2188,9 @@ class BlockdokuGame {
             comboElement.textContent = currentCombo;
         }
         
+        // Update multiplier chain display
+        this.updateMultiplierChainDisplay();
+        
         // Update speed timer display in utility bar
         if (speedTimerElement && speedTimerValueElement) {
             const settings = this.storage.loadSettings();
@@ -2250,6 +2252,102 @@ class BlockdokuGame {
         this.updateHintControls();
         // Keep personal bests fresh if score changed
         this.renderPersonalBests();
+    }
+    
+    updateMultiplierChainDisplay() {
+        const multiplierElement = document.getElementById('multiplier');
+        const multiplierDisplay = document.getElementById('multiplier-display');
+        const multiplierProgressBar = document.getElementById('multiplier-progress-bar');
+        const multiplierText = document.getElementById('multiplier-text');
+        const multiplierChainDisplay = document.getElementById('multiplier-chain-display');
+        
+        if (!multiplierElement || !this.scoringSystem) return;
+        
+        const status = this.scoringSystem.getMultiplierChainStatus();
+        const lastResult = this.scoringSystem.getLastMultiplierResult();
+        
+        // Update multiplier in game info
+        multiplierElement.textContent = `${status.currentMultiplier}x`;
+        
+        // Update floating multiplier display
+        if (multiplierDisplay) {
+            multiplierDisplay.textContent = `${status.currentMultiplier}x`;
+        }
+        
+        // Update progress bar
+        if (multiplierProgressBar) {
+            const progress = status.currentMultiplier > 1 ? status.getProgress() : 0;
+            multiplierProgressBar.style.width = `${progress * 100}%`;
+        }
+        
+        // Update chain text
+        if (multiplierText) {
+            multiplierText.textContent = `Chain: ${status.consecutiveClears}`;
+        }
+        
+        // Show/hide floating display based on multiplier
+        if (multiplierChainDisplay) {
+            if (status.currentMultiplier > 1) {
+                multiplierChainDisplay.classList.add('active');
+            } else {
+                multiplierChainDisplay.classList.remove('active');
+            }
+        }
+        
+        // Show multiplier chain effects if there was a result
+        if (lastResult && lastResult.chainContinued) {
+            this.showMultiplierChainEffect(lastResult);
+        }
+        
+        // Show pattern detection effects
+        this.showPatternDetectionEffects();
+    }
+    
+    showMultiplierChainEffect(multiplierResult) {
+        if (!this.effectsManager) return;
+        
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+        
+        // Create multiplier chain particle effect
+        this.effectsManager.particles.createMultiplierChainEffect(centerX, centerY, multiplierResult.multiplier);
+        
+        // Play sound effect
+        if (this.effectsManager.settings.sound) {
+            this.effectsManager.sound.play('combo');
+        }
+        
+        // Haptic feedback
+        this.effectsManager.haptic.onCombo(multiplierResult.consecutiveClears);
+    }
+    
+    showPatternDetectionEffects() {
+        if (!this.effectsManager || !this.scoringSystem) return;
+        
+        const detectedPatterns = this.scoringSystem.detectPatterns(this.board);
+        
+        if (detectedPatterns.length > 0) {
+            const centerX = this.canvas.width / 2;
+            const centerY = this.canvas.height / 2;
+            
+            // Show effects for each detected pattern
+            detectedPatterns.forEach(pattern => {
+                this.effectsManager.particles.createPatternBonusEffect(
+                    centerX, 
+                    centerY, 
+                    pattern.type, 
+                    pattern.name
+                );
+            });
+            
+            // Play sound effect
+            if (this.effectsManager.settings.sound) {
+                this.effectsManager.sound.play('levelUp');
+            }
+            
+            // Haptic feedback
+            this.effectsManager.haptic.onLevelUp();
+        }
     }
 
     renderPersonalBests() {
@@ -3969,7 +4067,7 @@ class BlockdokuGame {
         let blockTypes = 'all';
         
         // Get current difficulty from difficulty manager (source of truth)
-        const currentDifficulty = this.difficultyManager.getCurrentDifficulty();
+        const currentDifficulty = this.difficultyManager ? this.difficultyManager.getCurrentDifficulty() : 'normal';
         
         // Adjust block generation based on difficulty
         switch (currentDifficulty) {
@@ -5098,6 +5196,21 @@ class BlockdokuGame {
     }
     
     // Progress Mode Methods
+    
+    /**
+     * Handle Progress Mode URL parameters
+     */
+    handleProgressModeURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+        const level = urlParams.get('level');
+        const difficulty = urlParams.get('difficulty');
+        
+        if (mode === 'progress' && level && difficulty) {
+            console.log(`🎮 Starting Progress Mode from URL: Level ${level}, Difficulty ${difficulty}`);
+            this.startProgressModeLevel(parseInt(level), difficulty);
+        }
+    }
     
     /**
      * Set the current game mode
