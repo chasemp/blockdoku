@@ -701,7 +701,22 @@ export class BlockManager {
 
         // Determine desired counts per set using accumulators for fairness over time
         const pm = enableMagicBlocks ? Math.max(0, Math.min(1, magicBlocksFrequency / 10)) : 0;
-        const pw = enableWildShapes ? Math.max(0, Math.min(1, wildShapesFrequency / 10)) : 0;
+        
+        // For wild shapes, use different logic based on frequency
+        // Low frequencies (1-4): At most 1 wild block per set, probability based on frequency
+        // High frequencies (5-10): Allow multiple wild blocks, probability per block
+        let pw;
+        if (enableWildShapes) {
+            if (wildShapesFrequency < 5) {
+                // Low frequency: 10%-40% chance of 1 wild block per set
+                pw = Math.max(0, Math.min(1, wildShapesFrequency / 10));
+            } else {
+                // High frequency: 50%-100% chance per block (can result in multiple)
+                pw = Math.max(0, Math.min(1, wildShapesFrequency / 10));
+            }
+        } else {
+            pw = 0;
+        }
 
         const magicFloat = pm * count;
         const wildFloat = pw * count;
@@ -712,6 +727,11 @@ export class BlockManager {
         // Update accumulators with the fractional remainders
         this.magicAccumulator = (magicFloat + this.magicAccumulator) - magicCount;
         this.wildAccumulator = (wildFloat + this.wildAccumulator) - wildCount;
+
+        // For low frequencies, cap wild blocks at 1 per set
+        if (enableWildShapes && wildShapesFrequency < 5) {
+            wildCount = Math.min(1, wildCount);
+        }
 
         // Clamp counts by availability and settings
         if (!enableMagicBlocks || magicBlocks.length === 0) magicCount = 0;
