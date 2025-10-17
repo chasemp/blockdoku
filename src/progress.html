@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Mode - Blockdoku</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/themes/light.css" id="theme-css">
+    <meta name="theme-color" content="#007bff">
+    <meta name="description" content="Blockdoku PWA - Progress Mode with structured levels and challenges">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Blockdoku">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <div class="logo-container">
+                <img src="assets/images/logo_transparent_bg.png" alt="Blockdoku" class="app-logo">
+                <h1>Progress Mode</h1>
+            </div>
+            <div class="controls">
+                <button id="back-to-game" class="btn btn-secondary" title="Back to Game">← Back</button>
+            </div>
+        </header>
+        
+        <main class="main">
+            <div class="progress-container">
+                <!-- Difficulty Selection -->
+                <section class="difficulty-section">
+                    <h2>Select Difficulty</h2>
+                    <div class="difficulty-options">
+                        <button class="difficulty-option" data-difficulty="easy">
+                            <div class="difficulty-header">
+                                <h3>Easy</h3>
+                                <span class="difficulty-badge easy">EASY</span>
+                            </div>
+                            <p>Perfect for beginners</p>
+                            <div class="difficulty-stats">
+                                <span id="easy-completed">0/30</span> completed
+                            </div>
+                        </button>
+                        <button class="difficulty-option" data-difficulty="normal">
+                            <div class="difficulty-header">
+                                <h3>Normal</h3>
+                                <span class="difficulty-badge normal">NORMAL</span>
+                            </div>
+                            <p>Balanced challenge</p>
+                            <div class="difficulty-stats">
+                                <span id="normal-completed">0/30</span> completed
+                            </div>
+                        </button>
+                        <button class="difficulty-option" data-difficulty="hard">
+                            <div class="difficulty-header">
+                                <h3>Hard</h3>
+                                <span class="difficulty-badge hard">HARD</span>
+                            </div>
+                            <p>For experienced players</p>
+                            <div class="difficulty-stats">
+                                <span id="hard-completed">0/30</span> completed
+                            </div>
+                        </button>
+                        <button class="difficulty-option" data-difficulty="expert">
+                            <div class="difficulty-header">
+                                <h3>Expert</h3>
+                                <span class="difficulty-badge expert">EXPERT</span>
+                            </div>
+                            <p>Ultimate challenge</p>
+                            <div class="difficulty-stats">
+                                <span id="expert-completed">0/30</span> completed
+                            </div>
+                        </button>
+                    </div>
+                </section>
+                
+                <!-- Level Selection -->
+                <section class="levels-section" id="levels-section" style="display: none;">
+                    <div class="levels-header">
+                        <h2 id="selected-difficulty-title">Levels</h2>
+                        <button id="change-difficulty" class="btn btn-secondary">Change Difficulty</button>
+                    </div>
+                    
+                    <div class="levels-grid" id="levels-grid">
+                        <!-- Levels will be populated dynamically -->
+                    </div>
+                </section>
+                
+                <!-- Level Details -->
+                <section class="level-details" id="level-details" style="display: none;">
+                    <div class="level-details-header">
+                        <h3 id="level-name">Level 1</h3>
+                        <button id="back-to-levels" class="btn btn-secondary">← Back to Levels</button>
+                    </div>
+                    
+                    <div class="level-info">
+                        <div class="level-description">
+                            <h4>Description</h4>
+                            <p id="level-description-text">Complete the objectives to advance to the next level.</p>
+                        </div>
+                        
+                        <div class="level-objectives">
+                            <h4>Objectives</h4>
+                            <ul id="level-objectives-list">
+                                <!-- Objectives will be populated dynamically -->
+                            </ul>
+                        </div>
+                        
+                        <div class="level-rewards">
+                            <h4>Rewards</h4>
+                            <ul id="level-rewards-list">
+                                <!-- Rewards will be populated dynamically -->
+                            </ul>
+                        </div>
+                        
+                        <div class="level-actions">
+                            <button id="start-level-btn" class="btn btn-primary">Start Level</button>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Progress Statistics -->
+                <section class="progress-stats">
+                    <h2>Your Progress</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">🎯</div>
+                            <div class="stat-content">
+                                <h3 id="total-completed">0</h3>
+                                <p>Levels Completed</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🏆</div>
+                            <div class="stat-content">
+                                <h3 id="total-achievements">0</h3>
+                                <p>Achievements</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🎁</div>
+                            <div class="stat-content">
+                                <h3 id="total-rewards">0</h3>
+                                <p>Rewards Unlocked</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+        
+        <footer class="footer">
+            <p>Complete levels to unlock rewards and track your progress!</p>
+        </footer>
+    </div>
+    
+    <script type="module" src="js/progress.js"></script>
+</body>
+</html>

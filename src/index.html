@@ -27,7 +27,6 @@
                 <img src="assets/images/logo_transparent_bg.png" alt="Blockdoku" class="app-logo">
                 <div class="game-controls">
                     <button id="new-game" class="btn btn-primary new-game-btn">New Game</button>
-                    <button id="progress-mode-btn" class="btn btn-secondary progress-mode-btn">Progress Mode</button>
                     <button id="difficulty-btn" class="btn btn-secondary difficulty-btn">Normal</button>
                 </div>
             </div>
@@ -52,6 +51,10 @@
             <div class="combo">
                 <span id="combo-label">Combo</span>
                 <span id="combo">0</span>
+            </div>
+            <div class="multiplier-info">
+                <span>Multiplier</span>
+                <span id="multiplier">1x</span>
             </div>
         </div>
         
@@ -102,6 +105,15 @@
                     <div class="game-board-container">
                         <canvas id="game-board" width="450" height="450"></canvas>
                         <div class="board-overlay" id="board-overlay"></div>
+                        
+                        <!-- Multiplier Chain Display -->
+                        <div id="multiplier-chain-display" class="multiplier-chain-display">
+                            <div class="multiplier-display" id="multiplier-display">2x</div>
+                            <div class="multiplier-progress">
+                                <div class="multiplier-progress-bar" id="multiplier-progress-bar"></div>
+                            </div>
+                            <div class="multiplier-text" id="multiplier-text">Chain: 1</div>
+                        </div>
                     </div>
                 </div>
                 

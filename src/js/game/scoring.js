@@ -3,6 +3,9 @@
  * MVT Milestone 3: Add line clearing logic (rows, columns, 3x3 squares)
  */
 
+import { MultiplierChainManager } from './multiplier-chain-manager.js';
+import { PatternDetectionManager } from './pattern-detection-manager.js';
+
 export class ScoringSystem {
     constructor(petrificationManager = null, difficultyManager = null, game = null) {
         this.score = 0;
@@ -53,6 +56,12 @@ export class ScoringSystem {
         // Empty grid bonus tracking
         this.lastEmptyGridBonusLevel = 0; // Track the last level we gave empty grid bonus for
         this.emptyGridBonusThreshold = 5; // Every 5 levels
+        
+        // Multiplier chain system
+        this.multiplierChainManager = new MultiplierChainManager();
+        
+        // Pattern detection system
+        this.patternDetectionManager = new PatternDetectionManager();
         
         // Scoring multipliers
         this.basePoints = {
@@ -440,12 +449,36 @@ export class ScoringSystem {
             scoreGained += streakBonus;
         }
         
+        // Process multiplier chain
+        const clearResult = {
+            totalClears: totalClears,
+            scoreGained: scoreGained,
+            isComboEvent: isComboEvent
+        };
+        
+        const multiplierResult = this.multiplierChainManager.processLineClear(clearResult, difficultyMultiplier);
+        
+        // Apply multiplier chain bonus
+        let multiplierBonus = 0;
+        if (multiplierResult.bonusPoints > 0) {
+            multiplierBonus = multiplierResult.bonusPoints;
+            scoreGained += multiplierBonus;
+        }
+        
+        // Detect patterns and apply pattern bonuses
+        const detectedPatterns = this.patternDetectionManager.detectPatterns(board);
+        let patternBonus = 0;
+        if (detectedPatterns.length > 0) {
+            patternBonus = this.patternDetectionManager.calculatePatternBonus(detectedPatterns, difficultyMultiplier);
+            scoreGained += patternBonus;
+        }
+        
         // Apply difficulty multiplier only (no level multiplier)
         const baseScoreGained = linePointsAdded + squarePointsAdded;
         const multipliedBaseScore = Math.floor(baseScoreGained * difficultyMultiplier);
         const multipliedComboBonus = Math.floor(comboBonus * difficultyMultiplier);
         const multipliedStreakBonus = Math.floor(streakBonus * difficultyMultiplier);
-        scoreGained = multipliedBaseScore + multipliedComboBonus + multipliedStreakBonus;
+        scoreGained = multipliedBaseScore + multipliedComboBonus + multipliedStreakBonus + multiplierBonus;
         
         // Update tracking variables
         this.pointsBreakdown.linePoints += Math.floor(linePointsAdded * difficultyMultiplier);
@@ -455,6 +488,9 @@ export class ScoringSystem {
         
         this.score += scoreGained;
         this.lastScoreGained = scoreGained;
+        
+        // Store multiplier chain result for effects
+        this.lastMultiplierResult = multiplierResult;
 
         // Update level using compounding thresholds
         this.updateLevelFromScore();
@@ -465,6 +501,15 @@ export class ScoringSystem {
         const gained = Math.max(0, points | 0);
         if (gained === 0) return;
         
+        // Process multiplier chain for non-clearing placement
+        const clearResult = {
+            totalClears: 0,
+            scoreGained: 0,
+            isComboEvent: false
+        };
+        
+        const multiplierResult = this.multiplierChainManager.processLineClear(clearResult, difficultyMultiplier);
+        
         // Placement points are not level-multiplied but can be difficulty-multiplied
         const adjustedPoints = Math.floor(gained * difficultyMultiplier);
         this.score += adjustedPoints;
@@ -472,6 +517,9 @@ export class ScoringSystem {
         
         // Track placement points in breakdown
         this.pointsBreakdown.placementPoints += adjustedPoints;
+        
+        // Store multiplier chain result for effects
+        this.lastMultiplierResult = multiplierResult;
 
         // Update level using compounding thresholds
         this.updateLevelFromScore();
@@ -881,6 +929,89 @@ export class ScoringSystem {
         return 100 + (streakCount - 10) * 100;
     }
 
+    // Multiplier chain methods
+    getMultiplierChainStatus() {
+        return this.multiplierChainManager.getStatus();
+    }
+    
+    getMultiplierChainStatistics() {
+        return this.multiplierChainManager.getStatistics();
+    }
+    
+    getLastMultiplierResult() {
+        return this.lastMultiplierResult || null;
+    }
+    
+    setMultiplierChainEnabled(enabled) {
+        this.multiplierChainManager.setEnabled(enabled);
+    }
+    
+    isMultiplierChainEnabled() {
+        return this.multiplierChainManager.isEnabled;
+    }
+    
+    resetMultiplierChain() {
+        this.multiplierChainManager.reset();
+    }
+    
+    // Pattern detection methods
+    getPatternDetectionStatus() {
+        return this.patternDetectionManager.getVisualFeedback();
+    }
+    
+    getPatternDetectionStatistics() {
+        return this.patternDetectionManager.getStatistics();
+    }
+    
+    setPatternDetectionEnabled(enabled) {
+        this.patternDetectionManager.setEnabled(enabled);
+    }
+    
+    isPatternDetectionEnabled() {
+        return this.patternDetectionManager.isEnabled;
+    }
+    
+    resetPatternDetection() {
+        this.patternDetectionManager.reset();
+    }
+    
+    detectPatterns(board) {
+        return this.patternDetectionManager.detectPatterns(board);
+    }
+    
+    resetAll() {
+        this.score = 0;
+        this.level = 1;
+        this.linesCleared = 0;
+        this.combo = 0;
+        this.maxCombo = 0;
+        this.totalCombos = 0;
+        this.maxTotalCombos = 0;
+        this.streakCount = 0;
+        this.maxStreakCount = 0;
+        this.totalStreakBonus = 0;
+        this.rowsClearedCount = 0;
+        this.columnsClearedCount = 0;
+        this.squaresClearedCount = 0;
+        this.comboActivations = 0;
+        this.placementTimes = [];
+        this.speedBonuses = [];
+        this.totalSpeedBonus = 0;
+        this.fastestPlacement = null;
+        this.averagePlacementSpeed = 0;
+        this.pointsBreakdown = {
+            linePoints: 0,
+            squarePoints: 0,
+            comboBonusPoints: 0,
+            placementPoints: 0,
+            streakBonusPoints: 0,
+            emptyGridBonusPoints: 0
+        };
+        this.lastEmptyGridBonusLevel = 0;
+        this.multiplierChainManager.resetAll();
+        this.patternDetectionManager.reset();
+    }
+
     getStats() {
         return {
             score: this.score,
@@ -905,7 +1036,9 @@ export class ScoringSystem {
                 streakBonusPoints: this.pointsBreakdown.streakBonusPoints,
                 emptyGridBonusPoints: this.pointsBreakdown.emptyGridBonusPoints
             },
-            speedStats: this.getSpeedStats()
+            speedStats: this.getSpeedStats(),
+            multiplierChainStats: this.getMultiplierChainStatistics(),
+            patternDetectionStats: this.getPatternDetectionStatistics()
         };
     }
 }
