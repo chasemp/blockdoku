@@ -25,6 +25,8 @@ import { EffectsManager } from './effects/effects-manager.js';
 import { ConfirmationDialog } from './ui/confirmation-dialog.js';
 import { PetrificationManager } from './game/petrification-manager.js';
 import { DeadPixelsManager } from './game/dead-pixels-manager.js';
+import { LevelManager } from './level/level-manager.js';
+import { ProgressModeUI } from './ui/progress-mode-ui.js';
 
 
 class BlockdokuGame {
@@ -88,6 +90,12 @@ class BlockdokuGame {
         this.effectsManager = new EffectsManager(this.canvas, this.ctx);
         this.confirmationDialog = new ConfirmationDialog();
         this.preGameOverPending = false;
+        
+        // Progress Mode system
+        this.levelManager = new LevelManager(this, this.storage);
+        this.progressModeUI = new ProgressModeUI(this, this.levelManager);
+        this.gameMode = 'classic'; // 'classic', 'progress', 'countdown'
+        this.currentProgressLevel = null;
         this.selectedBlock = null;
         this.previewPosition = null;
         this.isGameOver = false;
@@ -466,6 +474,23 @@ class BlockdokuGame {
             }, { passive: false });
         } else {
             console.error('New game button not found!');
+        }
+        
+        // Progress Mode button
+        const progressModeBtn = document.getElementById('progress-mode-btn');
+        if (progressModeBtn) {
+            const handleProgressModeClick = () => {
+                this.effectsManager.onButtonClick();
+                this.showProgressModeSelection();
+            };
+            
+            progressModeBtn.addEventListener('click', handleProgressModeClick);
+            progressModeBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                handleProgressModeClick();
+            }, { passive: false });
+        } else {
+            console.error('Progress Mode button not found!');
         }
         
         // Difficulty button
@@ -5070,6 +5095,204 @@ class BlockdokuGame {
                 speedTimerValueElement.textContent = `${seconds}s`;
             }
         }
+    }
+    
+    // Progress Mode Methods
+    
+    /**
+     * Set the current game mode
+     */
+    setGameMode(mode) {
+        this.gameMode = mode;
+        console.log(`🎮 Game mode set to: ${mode}`);
+    }
+    
+    /**
+     * Start a Progress Mode level
+     */
+    startProgressModeLevel(levelNum, difficulty) {
+        console.log(`🎮 Starting Progress Mode level ${levelNum} on ${difficulty} difficulty`);
+        
+        this.setGameMode('progress');
+        this.currentProgressLevel = levelNum;
+        
+        // Get level definition
+        const levelDef = this.levelManager.getLevelDefinition(levelNum, difficulty);
+        
+        // Apply level-specific settings
+        this.applyLevelSettings(levelDef);
+        
+        // Start new game
+        this.newGame();
+        
+        // Show progress display
+        this.progressModeUI.showProgressDisplay();
+    }
+    
+    /**
+     * Apply level-specific settings
+     */
+    applyLevelSettings(levelDef) {
+        // Set difficulty
+        this.selectDifficulty(levelDef.difficulty);
+        
+        // Apply level mechanics
+        const mechanics = levelDef.mechanics;
+        
+        // Block complexity
+        this.setBlockComplexity(mechanics.blockComplexity);
+        
+        // Time pressure
+        this.setTimePressure(mechanics.timePressure);
+        
+        // Board constraints
+        this.setBoardConstraints(mechanics.boardConstraints);
+        
+        // Special mechanics
+        this.setSpecialMechanics(mechanics.specialMechanics);
+    }
+    
+    /**
+     * Set block complexity for the level
+     */
+    setBlockComplexity(complexity) {
+        // This would modify the block generation system
+        // For now, we'll store it for the block manager to use
+        this.currentBlockComplexity = complexity;
+        console.log(`🎮 Block complexity set to: ${complexity}`);
+    }
+    
+    /**
+     * Set time pressure for the level
+     */
+    setTimePressure(pressure) {
+        // This would modify the timer system
+        this.currentTimePressure = pressure;
+        console.log(`🎮 Time pressure set to: ${pressure}`);
+    }
+    
+    /**
+     * Set board constraints for the level
+     */
+    setBoardConstraints(constraints) {
+        // This would modify the board setup
+        this.currentBoardConstraints = constraints;
+        console.log(`🎮 Board constraints set to: ${constraints}`);
+    }
+    
+    /**
+     * Set special mechanics for the level
+     */
+    setSpecialMechanics(mechanics) {
+        // Enable/disable special mechanics based on level
+        this.enableMagicBlocks = mechanics.includes('magicBlocks');
+        this.enableWildShapes = mechanics.includes('wildShapes');
+        this.enablePetrification = mechanics.includes('petrification');
+        this.enableDeadPixels = mechanics.includes('deadPixels');
+        
+        console.log(`🎮 Special mechanics enabled:`, mechanics);
+    }
+    
+    /**
+     * Check if current level objectives are met
+     */
+    checkLevelObjectives() {
+        if (this.gameMode !== 'progress' || !this.currentProgressLevel) {
+            return null;
+        }
+        
+        const levelDef = this.levelManager.getLevelDefinition(this.currentProgressLevel, this.difficulty);
+        const objectives = levelDef.objectives;
+        
+        const results = {
+            score: this.score,
+            movesUsed: this.moveCount,
+            timeUsed: this.getElapsedTime(),
+            combos: this.scoringSystem?.totalCombos || 0,
+            objectives: {
+                scoreMet: this.score >= objectives.scoreTarget,
+                movesMet: this.moveCount <= objectives.maxMoves,
+                timeMet: !objectives.timeLimit || this.getElapsedTime() <= objectives.timeLimit,
+                combosMet: this.scoringSystem?.totalCombos >= objectives.comboRequirement
+            }
+        };
+        
+        // Check if all primary objectives are met
+        results.allObjectivesMet = Object.values(results.objectives).every(met => met);
+        
+        return results;
+    }
+    
+    /**
+     * Complete the current Progress Mode level
+     */
+    completeProgressLevel() {
+        if (this.gameMode !== 'progress' || !this.currentProgressLevel) {
+            return;
+        }
+        
+        const results = this.checkLevelObjectives();
+        if (!results || !results.allObjectivesMet) {
+            console.log('🎮 Level objectives not met, cannot complete level');
+            return;
+        }
+        
+        console.log(`🎮 Completing Progress Mode level ${this.currentProgressLevel}`);
+        
+        // Complete the level in the level manager
+        this.levelManager.completeLevel(this.currentProgressLevel, results);
+        
+        // Show completion UI
+        this.progressModeUI.onLevelCompleted(results);
+        
+        // Reset current level
+        this.currentProgressLevel = null;
+    }
+    
+    /**
+     * Get elapsed time in seconds
+     */
+    getElapsedTime() {
+        if (this.gameStartTime) {
+            return Math.floor((Date.now() - this.gameStartTime) / 1000);
+        }
+        return 0;
+    }
+    
+    /**
+     * Show Progress Mode level selection
+     */
+    showProgressModeSelection() {
+        this.progressModeUI.showLevelSelection();
+    }
+    
+    /**
+     * Override game over to handle Progress Mode
+     */
+    progressModeGameOver() {
+        if (this.gameMode !== 'progress') {
+            this.gameOver();
+            return;
+        }
+        
+        // Check if we can complete the level despite game over
+        const results = this.checkLevelObjectives();
+        if (results && results.allObjectivesMet) {
+            this.completeProgressLevel();
+        } else {
+            // Show failure message for Progress Mode
+            this.showProgressModeFailure();
+        }
+    }
+    
+    /**
+     * Show Progress Mode failure message
+     */
+    showProgressModeFailure() {
+        // This would show a failure modal with retry option
+        console.log('🎮 Progress Mode level failed');
+        // For now, just show regular game over
+        this.gameOver();
     }
 }
 

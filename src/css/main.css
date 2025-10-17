@@ -4443,3 +4443,355 @@ html.light-theme .settings-section .difficulty-option.selected {
 .setting-bubble.global-setting:hover::after {
     opacity: 1;
 }
+
+/* Progress Mode Styles */
+.progress-mode-content {
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.progress-mode-body {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+    padding: 1rem;
+}
+
+.difficulty-selector h3,
+.level-grid h3 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.difficulty-options {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.difficulty-option {
+    padding: 0.75rem;
+    border: 2px solid var(--border-color);
+    background: var(--cell-bg);
+    color: var(--text-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.difficulty-option:hover {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: white;
+}
+
+.difficulty-option.active {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: white;
+}
+
+.levels-container {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--cell-bg);
+}
+
+.level-item {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--bg-color);
+    position: relative;
+}
+
+.level-item:hover {
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.level-item.accessible {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: white;
+}
+
+.level-item.completed {
+    background: var(--success-color, #4CAF50);
+    border-color: var(--success-color, #4CAF50);
+    color: white;
+}
+
+.level-item.locked {
+    background: var(--disabled-bg, #666);
+    border-color: var(--disabled-bg, #666);
+    color: var(--disabled-text, #999);
+    cursor: not-allowed;
+}
+
+.level-number {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.level-status {
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.level-info {
+    background: var(--cell-bg);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.level-info h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.level-info p {
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+.level-objectives,
+.level-rewards {
+    margin-bottom: 1rem;
+}
+
+.level-objectives h5,
+.level-rewards h5 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.level-objectives ul,
+.level-rewards ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.level-objectives li,
+.level-rewards li {
+    padding: 0.25rem 0;
+    color: var(--text-color);
+}
+
+.progress-stats {
+    background: var(--cell-bg);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-top: 1rem;
+}
+
+.progress-stats h4 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Level Completion Modal */
+.level-completion-content {
+    max-width: 600px;
+}
+
+.completion-body {
+    padding: 1rem;
+}
+
+.completion-stats {
+    background: var(--cell-bg);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.stat-row .stat-label {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.stat-row .stat-value {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.achievements-earned,
+.rewards-earned {
+    margin-bottom: 1.5rem;
+}
+
+.achievements-earned h4,
+.rewards-earned h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.achievements-earned ul,
+.rewards-earned ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.achievements-earned li,
+.rewards-earned li {
+    padding: 0.25rem 0;
+    color: var(--text-color);
+}
+
+.next-level-info {
+    background: var(--cell-bg);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.next-level-info h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+/* Progress Mode In-Game Display */
+.progress-mode-display {
+    background: var(--cell-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 0.5rem;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.level-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.level-label {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.level-value {
+    font-weight: bold;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.objectives-info {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.objective-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.objective-label {
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.objective-value {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .progress-mode-body {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .levels-container {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .difficulty-options {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .objectives-info {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}

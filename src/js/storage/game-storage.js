@@ -360,4 +360,35 @@ export class GameStorage {
             return false;
         }
     }
+
+    // Progress Mode Data Management
+    loadProgressModeData() {
+        try {
+            const data = localStorage.getItem('blockdoku_progress_mode');
+            return data ? JSON.parse(data) : null;
+        } catch (error) {
+            console.error('Failed to load progress mode data:', error);
+            return null;
+        }
+    }
+
+    saveProgressModeData(progressData) {
+        try {
+            localStorage.setItem('blockdoku_progress_mode', JSON.stringify(progressData));
+            return true;
+        } catch (error) {
+            console.error('Failed to save progress mode data:', error);
+            return false;
+        }
+    }
+
+    clearProgressModeData() {
+        try {
+            localStorage.removeItem('blockdoku_progress_mode');
+            return true;
+        } catch (error) {
+            console.error('Failed to clear progress mode data:', error);
+            return false;
+        }
+    }
 }
