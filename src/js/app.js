@@ -3179,6 +3179,16 @@ class BlockdokuGame {
             if (savedState.currentBlocks) {
                 this.blockManager.currentBlocks = savedState.currentBlocks;
                 this.blockPalette.updateBlocks(savedState.currentBlocks);
+                
+                // If no blocks are available, generate new ones
+                if (this.blockManager.currentBlocks.length === 0) {
+                    console.log('No blocks available after loading saved state, generating new blocks');
+                    this.generateNewBlocks();
+                }
+            } else {
+                // No saved blocks, generate new ones
+                console.log('No saved blocks found, generating new blocks');
+                this.generateNewBlocks();
             }
             
             if (savedState.selectedBlock) {
