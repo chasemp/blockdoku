@@ -3463,15 +3463,12 @@ class BlockdokuGame {
     
     applyEffectsSettings() {
         if (this.effectsManager) {
-            const settings = {
+            this.effectsManager.updateSettings({
                 particles: this.particlesEnabled !== false,
                 sound: this.soundEnabled === true,
                 haptic: this.hapticEnabled !== false,
                 blockPlacementAnimations: this.blockPlacementAnimations === true
-            };
-            console.log('App.js applying effects settings:', settings);
-            console.log('App.js blockPlacementAnimations value:', this.blockPlacementAnimations);
-            this.effectsManager.updateSettings(settings);
+            });
         }
     }
 
@@ -4213,8 +4210,8 @@ class BlockdokuGame {
         // Show placement points feedback if enabled
         this.showPlacementPointsFeedback(this.scoringSystem.basePoints.single, row, col);
         
-        // Show speed timer feedback if earned
-        if (speedBonusGained > 0) {
+        // Show speed timer feedback if earned (only if speed mode is not 'ignored')
+        if (speedBonusGained > 0 && this.scoringSystem.speedConfig.mode !== 'ignored') {
             this.showSpeedTimerFeedback(speedBonusGained, row, col);
         }
         

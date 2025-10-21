@@ -530,8 +530,11 @@ export class ScoringSystem {
         const currentTime = Date.now();
         this.placementTimes.push(currentTime);
         
+        console.log('Speed bonus calculation:', { mode: this.speedConfig.mode, placementTimes: this.placementTimes.length });
+        
         // Skip speed tracking if mode is 'ignored'
         if (this.speedConfig.mode === 'ignored') {
+            console.log('Speed tracking ignored, returning early');
             return;
         }
         
