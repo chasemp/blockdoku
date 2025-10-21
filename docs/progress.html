@@ -31,12 +31,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Blockdoku">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-  <script type="module" crossorigin src="./assets/progress-BLjZMr2Z.js"></script>
+  <script type="module" crossorigin src="./assets/progress-C5Kyevsl.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/modulepreload-polyfill-B5Qt9EMX.js">
   <link rel="modulepreload" crossorigin href="./assets/level-manager-BX9v6P63.js">
   <link rel="modulepreload" crossorigin href="./assets/game-storage-DL9oYqbD.js">
-  <link rel="stylesheet" crossorigin href="./assets/progress-C8Ssgxnu.css">
-  <link rel="stylesheet" crossorigin href="./assets/main-BuUIUM-6.css">
+  <link rel="stylesheet" crossorigin href="./assets/main-CeyXPRJx.css">
+  <link rel="stylesheet" crossorigin href="./assets/wood-36S1T1G_.css">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
     <div id="app">
@@ -56,6 +56,7 @@
                 <!-- Difficulty Selection -->
                 <section class="difficulty-section">
                     <h2>Select Difficulty</h2>
+                    <p class="section-description">Choose a difficulty to view and manage your levels</p>
                     <div class="difficulty-options">
                         <button class="difficulty-option" data-difficulty="easy">
                             <div class="difficulty-header">
@@ -103,9 +104,10 @@
                 <!-- Level Selection -->
                 <section class="levels-section" id="levels-section" style="display: none;">
                     <div class="levels-header">
-                        <h2 id="selected-difficulty-title">Levels</h2>
+                        <h2 id="selected-difficulty-title">Level Management</h2>
                         <button id="change-difficulty" class="btn btn-secondary">Change Difficulty</button>
                     </div>
+                    <p class="section-description">Click on any unlocked level to view details and start playing</p>
                     
                     <div class="levels-grid" id="levels-grid">
                         <!-- Levels will be populated dynamically -->

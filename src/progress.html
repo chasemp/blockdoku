@@ -7,7 +7,7 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/themes/light.css" id="theme-css">
+    <link rel="stylesheet" href="css/themes/wood.css" id="theme-css">
     <meta name="theme-color" content="#007bff">
     <meta name="description" content="Blockdoku PWA - Progress Mode with structured levels and challenges">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -33,6 +33,7 @@
                 <!-- Difficulty Selection -->
                 <section class="difficulty-section">
                     <h2>Select Difficulty</h2>
+                    <p class="section-description">Choose a difficulty to view and manage your levels</p>
                     <div class="difficulty-options">
                         <button class="difficulty-option" data-difficulty="easy">
                             <div class="difficulty-header">
@@ -80,9 +81,10 @@
                 <!-- Level Selection -->
                 <section class="levels-section" id="levels-section" style="display: none;">
                     <div class="levels-header">
-                        <h2 id="selected-difficulty-title">Levels</h2>
+                        <h2 id="selected-difficulty-title">Level Management</h2>
                         <button id="change-difficulty" class="btn btn-secondary">Change Difficulty</button>
                     </div>
+                    <p class="section-description">Click on any unlocked level to view details and start playing</p>
                     
                     <div class="levels-grid" id="levels-grid">
                         <!-- Levels will be populated dynamically -->
