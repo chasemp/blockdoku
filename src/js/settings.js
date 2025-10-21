@@ -102,6 +102,11 @@ export class SettingsManager {
             particleEffects.checked = this.settings.particleEffects !== false;
         }
         
+        const patternDetection = document.getElementById('pattern-detection');
+        if (patternDetection) {
+            patternDetection.checked = this.settings.enablePatternDetection === true;
+        }
+        
         const blockPlacementAnimations = document.getElementById('block-placement-animations');
         if (blockPlacementAnimations) {
             blockPlacementAnimations.checked = this.settings.blockPlacementAnimations === true;
@@ -497,6 +502,13 @@ export class SettingsManager {
             });
         }
         
+        const patternDetection = document.getElementById('pattern-detection');
+        if (patternDetection) {
+            patternDetection.addEventListener('change', (e) => {
+                this.updateSetting('enablePatternDetection', e.target.checked);
+            });
+        }
+        
         const blockPlacementAnimations = document.getElementById('block-placement-animations');
         if (blockPlacementAnimations) {
             blockPlacementAnimations.addEventListener('change', (e) => {
@@ -669,12 +681,68 @@ export class SettingsManager {
             });
         }
         
+        // Check for Upgrade button
+        const checkUpgradeBtn = document.getElementById('check-upgrade-button');
+        if (checkUpgradeBtn) {
+            checkUpgradeBtn.addEventListener('click', async () => {
+                try {
+                    this.showNotification('Checking for updates...');
+                    
+                    // Check if service worker is supported
+                    if ('serviceWorker' in navigator) {
+                        // Get the current service worker registration
+                        const registration = await navigator.serviceWorker.getRegistration();
+                        
+                        if (registration) {
+                            // Check for updates
+                            await registration.update();
+                            
+                            // Check if there's a waiting service worker
+                            if (registration.waiting) {
+                                // There's an update available
+                                this.showNotification('Update available! Installing...');
+                                
+                                // Tell the waiting service worker to skip waiting and activate
+                                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                                
+                                // Listen for the controlling service worker to change
+                                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                                    this.showNotification('Update installed! Reloading...');
+                                    setTimeout(() => {
+                                        window.location.reload(true);
+                                    }, 1000);
+                                });
+                                
+                                // Fallback: reload after 3 seconds if controllerchange doesn't fire
+                                setTimeout(() => {
+                                    this.showNotification('Update installed! Reloading...');
+                                    window.location.reload(true);
+                                }, 3000);
+                                
+                            } else {
+                                // No update available
+                                this.showNotification('App is up to date!');
+                            }
+                        } else {
+                            this.showNotification('No service worker found. App may not be installed.');
+                        }
+                    } else {
+                        this.showNotification('Service workers not supported in this browser.');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error checking for updates:', error);
+                    this.showNotification('Error checking for updates. Check console for details.');
+                }
+            });
+        }
+        
         // Clear Cache & Reset Service Worker button
         const clearCacheBtn = document.getElementById('clear-cache-button');
         if (clearCacheBtn) {
             clearCacheBtn.addEventListener('click', async () => {
                 const confirmed = await this.confirmationDialog.show(
-                    '🧹 Clear Cache & Reset Service Workers\n\nThis will:\n• Unregister all service workers\n• Clear all service worker caches\n• Force a fresh reload of all files\n\nUseful for development or fixing issues.\n\nYour game data and settings will NOT be affected.\n\nContinue?'
+                    'Reset Factory Defaults\n\nThis will:\n• Clear ALL game data (saved games, high scores, settings, statistics)\n• Unregister all service workers\n• Clear all service worker caches\n• Force a fresh reload of all files\n\n⚠️ ALL GAME DATA WILL BE PERMANENTLY DELETED!\n\nThis action cannot be undone. Continue?'
                 );
                 if (!confirmed) return;
                 
@@ -697,7 +765,11 @@ export class SettingsManager {
                         }
                     }
                     
-                    this.showNotification('Cache cleared! Reloading page...');
+                    // Clear all game data
+                    this.storage.clearAllData();
+                    console.log('All game data cleared from localStorage');
+                    
+                    this.showNotification('Factory defaults restored! Reloading page...');
                     
                     // Reload the page after a short delay
                     setTimeout(() => {
@@ -1418,8 +1490,15 @@ export class SettingsManager {
     }
     
     showNotification(message) {
+        // Remove any existing notification
+        const existingNotification = document.querySelector('.settings-notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+        
         // Create a temporary notification
         const notification = document.createElement('div');
+        notification.className = 'settings-notification';
         notification.style.cssText = `
             position: fixed;
             top: 20px;
@@ -1435,22 +1514,26 @@ export class SettingsManager {
         `;
         notification.textContent = message;
         
-        // Add animation keyframes
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-        `;
-        document.head.appendChild(style);
+        // Add animation keyframes (only if not already added)
+        if (!document.querySelector('#settings-notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'settings-notification-styles';
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
         
         document.body.appendChild(notification);
         
         // Remove after 3 seconds
         setTimeout(() => {
-            notification.remove();
-            style.remove();
+            if (notification.parentNode) {
+                notification.remove();
+            }
         }, 3000);
     }
     

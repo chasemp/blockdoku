@@ -56,6 +56,12 @@ class BlockdokuGame {
         this.previousTotalCombos = 0;
         this.pendingClears = null; // Track blocks that are about to be cleared
         
+        // Notification queue system
+        this.notificationQueue = [];
+        this.currentNotification = null;
+        this.notificationTimeout = null;
+        this.lastNotifiedMultiplier = 0;
+        
         // Difficulty settings
         this.difficulty = 'normal';
         this.enableHints = false;
@@ -1419,9 +1425,15 @@ class BlockdokuGame {
             this.startLineClearAnimation(clearedLines);
         } else {
             console.log('No lines detected for clearing');
-            // Reset streak and combo when no clears occur after block placement
-            this.scoringSystem.resetStreak();
-            // Update UI to reflect combo reset
+            // Only reset streak and multiplier chain if this is a fresh check (not after animation completion)
+            if (!this.checkingAdditionalClears) {
+                // Reset streak and combo when no clears occur after block placement
+                this.scoringSystem.resetStreak();
+                // Reset multiplier chain when no clears occur
+                this.scoringSystem.resetMultiplierChain();
+                console.log('Reset multiplier chain due to no clears');
+            }
+            // Update UI to reflect combo and multiplier reset
             this.updateUI();
         }
     }
@@ -1958,6 +1970,7 @@ class BlockdokuGame {
         // Check for additional line clears after this one
         setTimeout(() => {
             console.log('Checking for additional line clears after completion...');
+            this.checkingAdditionalClears = true; // Set flag to prevent multiplier reset
             // Process any queued clears first
             if (this.queuedClears) {
                 console.log('Processing queued line clears:', this.queuedClears);
@@ -1984,6 +1997,7 @@ class BlockdokuGame {
                     this.generateNewBlocks();
                 }
             }
+            this.checkingAdditionalClears = false; // Reset flag
         }, 200);
     }
     
@@ -2266,6 +2280,7 @@ class BlockdokuGame {
         const status = this.scoringSystem.getMultiplierChainStatus();
         const lastResult = this.scoringSystem.getLastMultiplierResult();
         
+        
         // Update multiplier in game info
         multiplierElement.textContent = `${status.currentMultiplier}x`;
         
@@ -2276,7 +2291,7 @@ class BlockdokuGame {
         
         // Update progress bar
         if (multiplierProgressBar) {
-            const progress = status.currentMultiplier > 1 ? status.getProgress() : 0;
+            const progress = status.currentMultiplier > 1 ? this.scoringSystem.multiplierChainManager.getProgress() : 0;
             multiplierProgressBar.style.width = `${progress * 100}%`;
         }
         
@@ -2298,9 +2313,36 @@ class BlockdokuGame {
         if (lastResult && lastResult.chainContinued) {
             this.showMultiplierChainEffect(lastResult);
         }
+
+        // Queue multiplier notification only when multiplier changes and > 1
+        if (status.currentMultiplier > 1 && status.currentMultiplier !== this.lastNotifiedMultiplier) {
+            this.queueNotification('multiplier', {
+                multiplier: status.currentMultiplier,
+                chain: status.consecutiveClears
+            }, 1000);
+            this.lastNotifiedMultiplier = status.currentMultiplier;
+        } else if (status.currentMultiplier <= 1) {
+            // Reset the last notified multiplier when chain breaks
+            this.lastNotifiedMultiplier = 0;
+            // Hide any existing multiplier notification when chain breaks
+            this.hideCurrentNotification();
+        }
         
         // Show pattern detection effects
         this.showPatternDetectionEffects();
+        
+        // Queue pattern detection notifications
+        if (this.enablePatternDetection) {
+            const detectedPatterns = this.scoringSystem.detectPatterns(this.board);
+            if (detectedPatterns.length > 0) {
+                detectedPatterns.forEach(pattern => {
+                    this.queueNotification('pattern', {
+                        pattern: pattern.type,
+                        name: pattern.name
+                    }, 1000);
+                });
+            }
+        }
     }
     
     showMultiplierChainEffect(multiplierResult) {
@@ -2323,6 +2365,9 @@ class BlockdokuGame {
     
     showPatternDetectionEffects() {
         if (!this.effectsManager || !this.scoringSystem) return;
+        
+        // Check if pattern detection is enabled
+        if (!this.enablePatternDetection) return;
         
         const detectedPatterns = this.scoringSystem.detectPatterns(this.board);
         
@@ -2482,10 +2527,7 @@ class BlockdokuGame {
     
     // Show placement points feedback if enabled
     showPlacementPointsFeedback(points, row, col) {
-        const settings = this.storage.loadSettings();
-        const showPlacementPoints = settings.showPlacementPoints === true;
-        
-        if (!showPlacementPoints) return;
+        // Note: This method is only called when this.showPlacementPoints is true
         
         // Calculate position on canvas for the feedback
         const drawCellSize = this.actualCellSize || this.cellSize;
@@ -3299,7 +3341,7 @@ class BlockdokuGame {
             this.deadPixelsIntensity = difficultySettings.deadPixelsIntensity || 0;
             this.showPoints = difficultySettings.showPoints || false;
             this.showPersonalBests = difficultySettings.showPersonalBests || false;
-            this.showSpeedTimer = difficultySettings.showSpeedTimer || false;
+            this.showSpeedTimer = baseSettings.showSpeedTimer !== undefined ? baseSettings.showSpeedTimer : (difficultySettings.showSpeedTimer || false);
             this.enableMagicBlocks = difficultySettings.enableMagicBlocks || false;
             this.enableWildShapes = difficultySettings.enableWildShapes || false;
             
@@ -3324,6 +3366,7 @@ class BlockdokuGame {
             this.showPlacementPoints = baseSettings.showPlacementPoints || false;
             this.speedDisplayMode = baseSettings.speedDisplayMode || 'timer';
             this.particlesEnabled = baseSettings.particlesEnabled !== false;
+            this.enablePatternDetection = baseSettings.enablePatternDetection === true;
             
             // Load speed mode setting (3-way: 'bonus', 'punishment', or 'ignored')
             const speedMode = baseSettings.speedMode || 'ignored';
@@ -4201,18 +4244,40 @@ class BlockdokuGame {
         this.scoringSystem.recordPlacementTime();
         const speedBonusGained = this.scoringSystem.totalSpeedBonus - previousSpeedBonus;
         
-        // Start speed timer countdown for next placement
-        this.startSpeedTimerCountdown();
+        
+        // Start speed timer countdown for next placement (only if speed mode is not 'ignored')
+        if (this.scoringSystem.speedConfig.mode !== 'ignored') {
+            this.startSpeedTimerCountdown();
+        }
         
         // Sync app score with scoring system score after all calculations
         this.score = this.scoringSystem.getScore();
         
         // Show placement points feedback if enabled
-        this.showPlacementPointsFeedback(this.scoringSystem.basePoints.single, row, col);
+        if (this.showPlacementPoints) {
+            this.showPlacementPointsFeedback(this.scoringSystem.basePoints.single, row, col);
+        }
+        
+        // Queue placement points notification if enabled
+        if (this.showPlacementPoints) {
+            this.queueNotification('placement', {
+                points: this.scoringSystem.basePoints.single,
+                x: col * this.cellSize + this.cellSize / 2,
+                y: row * this.cellSize + this.cellSize / 2
+            }, 1000);
+        }
         
         // Show speed timer feedback if earned (only if speed mode is not 'ignored')
-        if (speedBonusGained > 0 && this.scoringSystem.speedConfig.mode !== 'ignored') {
+        if (Math.abs(speedBonusGained) > 0.01 && this.scoringSystem.speedConfig.mode !== 'ignored') {
+            console.log('Speed bonus gained:', speedBonusGained);
             this.showSpeedTimerFeedback(speedBonusGained, row, col);
+            
+            // Queue speed timer notification
+            this.queueNotification('speed', {
+                bonus: speedBonusGained,
+                x: col * this.cellSize + this.cellSize / 2,
+                y: row * this.cellSize + this.cellSize / 2
+            }, 1000);
         }
         
         // Add placement effects
@@ -4947,10 +5012,8 @@ class BlockdokuGame {
     
     // Show visual feedback for speed timer
     showSpeedTimerFeedback(bonus, row, col) {
-        const settings = this.storage.loadSettings();
-        const showSpeedTimer = settings.showSpeedTimer === true;
-        
-        if (!showSpeedTimer) return;
+        // Note: This method is only called when speed mode is not 'ignored' and a bonus was earned
+        // The visual feedback should show regardless of whether the speed timer display is enabled
         
         // Calculate position on canvas
         const cellSize = this.cellSize;
@@ -4966,7 +5029,8 @@ class BlockdokuGame {
         
         // Set text and color based on mode
         if (speedMode === 'punishment') {
-            speedText.textContent = `-${bonus} Too Slow!`;
+            // In punishment mode, bonus is already negative, so use Math.abs to avoid double negative
+            speedText.textContent = `-${Math.abs(bonus)} Too Slow!`;
         } else {
             speedText.textContent = `+${bonus} Speed!`;
         }
@@ -5000,6 +5064,200 @@ class BlockdokuGame {
         
         // Add particle effects
         this.effectsManager.onSpeedTimer(x, y, bonus);
+    }
+
+    // Notification queue system
+    queueNotification(type, data, duration = 2000) {
+        this.notificationQueue.push({ type, data, duration });
+        this.processNotificationQueue();
+    }
+
+    processNotificationQueue() {
+        if (this.currentNotification || this.notificationQueue.length === 0) {
+            return;
+        }
+
+        const notification = this.notificationQueue.shift();
+        this.currentNotification = notification;
+        this.showNotification(notification);
+
+        // Auto-hide after duration
+        this.notificationTimeout = setTimeout(() => {
+            this.hideCurrentNotification();
+        }, notification.duration);
+    }
+
+    showNotification(notification) {
+        const { type, data } = notification;
+        
+        switch (type) {
+            case 'multiplier':
+                this.showMultiplierNotification(data);
+                break;
+            case 'speed':
+                this.showSpeedNotification(data);
+                break;
+            case 'placement':
+                this.showPlacementNotification(data);
+                break;
+            case 'pattern':
+                this.showPatternNotification(data);
+                break;
+        }
+    }
+
+    showMultiplierNotification(data) {
+        const { multiplier, chain } = data;
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+
+        // Create multiplier notification element
+        const multiplierElement = document.createElement('div');
+        multiplierElement.className = 'multiplier-notification';
+        multiplierElement.style.cssText = `
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 100, 0.9);
+            color: white;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 1000;
+            pointer-events: none;
+            animation: multiplierPulse 0.5s ease-out;
+        `;
+
+        multiplierElement.innerHTML = `
+            <div style="font-size: 32px;">${multiplier}x</div>
+            <div style="font-size: 14px; margin-top: 5px;">Chain: ${chain}</div>
+        `;
+
+        document.body.appendChild(multiplierElement);
+
+        // Store reference for cleanup
+        this.currentNotificationElement = multiplierElement;
+    }
+
+    showSpeedNotification(data) {
+        const { bonus, x, y } = data;
+        
+        // Determine if this is punishment mode
+        const speedMode = this.scoringSystem.getSpeedMode();
+        const isPunishment = speedMode === 'punishment';
+        
+        // Create speed notification element
+        const speedElement = document.createElement('div');
+        speedElement.className = 'speed-notification';
+        speedElement.style.cssText = `
+            position: absolute;
+            left: ${x}px;
+            top: ${y}px;
+            transform: translate(-50%, -50%);
+            background: ${isPunishment ? 'rgba(255, 51, 51, 0.9)' : 'rgba(0, 150, 255, 0.9)'};
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 1000;
+            pointer-events: none;
+            animation: speedPulse 0.5s ease-out;
+        `;
+        
+        // Set text based on mode
+        if (isPunishment) {
+            speedElement.textContent = `-${Math.abs(bonus)} Too Slow!`;
+        } else {
+            speedElement.textContent = `+${bonus} Speed!`;
+        }
+        
+        document.body.appendChild(speedElement);
+        this.currentNotificationElement = speedElement;
+    }
+
+    showPlacementNotification(data) {
+        const { points, x, y } = data;
+        
+        // Create placement notification element
+        const placementElement = document.createElement('div');
+        placementElement.className = 'placement-notification';
+        placementElement.style.cssText = `
+            position: absolute;
+            left: ${x}px;
+            top: ${y}px;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 200, 0, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 1000;
+            pointer-events: none;
+            animation: placementPulse 0.5s ease-out;
+        `;
+        placementElement.textContent = `+${points}`;
+        
+        document.body.appendChild(placementElement);
+        this.currentNotificationElement = placementElement;
+    }
+
+    showPatternNotification(data) {
+        const { pattern, name } = data;
+        
+        // Create pattern notification element
+        const patternElement = document.createElement('div');
+        patternElement.className = 'pattern-notification';
+        patternElement.style.cssText = `
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 165, 0, 0.9);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 1000;
+            pointer-events: none;
+            animation: patternPulse 0.5s ease-out;
+            text-align: center;
+        `;
+        patternElement.innerHTML = `
+            <div style="font-size: 20px;">${name}</div>
+            <div style="font-size: 14px; margin-top: 4px;">Pattern Bonus!</div>
+        `;
+        
+        document.body.appendChild(patternElement);
+        this.currentNotificationElement = patternElement;
+    }
+
+    hideCurrentNotification() {
+        if (this.currentNotificationElement) {
+            this.currentNotificationElement.remove();
+            this.currentNotificationElement = null;
+        }
+        
+        if (this.notificationTimeout) {
+            clearTimeout(this.notificationTimeout);
+            this.notificationTimeout = null;
+        }
+
+        this.currentNotification = null;
+        
+        // Process next notification in queue
+        setTimeout(() => {
+            this.processNotificationQueue();
+        }, 100);
     }
 
     // Reset stuck UI state - clears any pending clears and refreshes blocks
