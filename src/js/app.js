@@ -3457,7 +3457,7 @@ class BlockdokuGame {
                 particles: this.particlesEnabled !== false,
                 sound: this.soundEnabled === true,
                 haptic: this.hapticEnabled !== false,
-                blockPlacementAnimations: this.blockPlacementAnimations !== false
+                blockPlacementAnimations: this.blockPlacementAnimations === true
             });
         }
     }

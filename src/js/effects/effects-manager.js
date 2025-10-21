@@ -22,7 +22,7 @@ export class EffectsManager {
             particles: true,
             sound: false,
             haptic: true,
-            blockPlacementAnimations: true
+            blockPlacementAnimations: false
         };
     }
     
