@@ -18,6 +18,7 @@ class ProgressModePage {
     }
     
     initializePage() {
+        this.loadTheme();
         this.setupEventListeners();
         this.loadProgressData();
         this.renderDifficultySelection();
@@ -99,7 +100,7 @@ class ProgressModePage {
         
         // Update selected difficulty title
         document.getElementById('selected-difficulty-title').textContent = 
-            `${this.currentDifficulty.charAt(0).toUpperCase() + this.currentDifficulty.slice(1)} Levels`;
+            `${this.currentDifficulty.charAt(0).toUpperCase() + this.currentDifficulty.slice(1)} Level Management`;
     }
     
     renderLevelGrid() {
@@ -280,6 +281,37 @@ class ProgressModePage {
         const saved = this.storage.loadProgressModeData();
         if (saved) {
             this.progressData = { ...this.getDefaultProgressData(), ...saved };
+        }
+    }
+    
+    loadTheme() {
+        const settings = this.storage.loadSettings();
+        const theme = settings.theme || 'wood';
+        this.applyTheme(theme);
+    }
+    
+    applyTheme(theme) {
+        console.log('Progress page applying theme:', theme);
+        
+        // Update the theme CSS link
+        const themeLink = document.getElementById('theme-css');
+        if (themeLink) {
+            themeLink.href = `css/themes/${theme}.css`;
+        }
+        
+        // Set data-theme attribute for CSS custom properties
+        document.documentElement.setAttribute('data-theme', theme);
+        
+        // Update theme color meta tag
+        const themeColors = {
+            wood: '#8B4513',
+            light: '#007bff',
+            dark: '#343a40'
+        };
+        
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeColorMeta) {
+            themeColorMeta.setAttribute('content', themeColors[theme] || themeColors.wood);
         }
     }
 }

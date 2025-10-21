@@ -3743,6 +3743,14 @@ html.light-theme .settings-section .difficulty-option.selected {
     align-items: center;
 }
 
+/* Progress page section descriptions */
+.section-description {
+    text-align: center;
+    color: var(--text-color-secondary);
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
 .progress-container .controls .btn {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
