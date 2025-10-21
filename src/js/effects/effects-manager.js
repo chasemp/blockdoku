@@ -29,7 +29,6 @@ export class EffectsManager {
     // Update settings
     updateSettings(settings) {
         this.settings = { ...this.settings, ...settings };
-        console.log('EffectsManager settings updated:', this.settings);
         
         this.particles.setEnabled(this.settings.particles);
         this.sound.setEnabled(this.settings.sound);
@@ -74,7 +73,7 @@ export class EffectsManager {
     
     // Block placement effects
     onBlockPlace(x, y) {
-        if (this.settings.blockPlacementAnimations) {
+        if (this.settings.blockPlacementAnimations && this.settings.particles) {
             this.particles.createSparkles(x, y, 6);
         }
         if (this.settings.sound) this.sound.play('blockPlace');
