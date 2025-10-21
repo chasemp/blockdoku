@@ -196,6 +196,7 @@ export class GameStorage {
             enableMagicBlocks: false, // Enable magic blocks that can clear lines when placed
             enableWildShapes: false, // Enable wild block shapes with creative geometries
             autoRotateBlocks: false, // Auto-rotate blocks when only one valid orientation
+            enablePatternDetection: false, // Enable pattern detection for bonus scoring
             gameMode: 'classic' // Game mode: 'classic' or 'progress'
         };
         console.log('Returning default settings with difficulty:', defaults.difficulty);
@@ -253,10 +254,22 @@ export class GameStorage {
     // Utility Methods
     clearAllData() {
         try {
-            localStorage.removeItem(this.storageKey);
-            localStorage.removeItem(this.settingsKey);
-            localStorage.removeItem(this.highScoresKey);
+            // Clear all game-related localStorage keys
+            localStorage.removeItem(this.storageKey); // blockdoku_game_data
+            localStorage.removeItem(this.settingsKey); // blockdoku_settings
+            localStorage.removeItem(this.highScoresKey); // blockdoku_high_scores
             localStorage.removeItem('blockdoku_statistics');
+            localStorage.removeItem('blockdoku_progress_mode');
+            localStorage.removeItem('blockdoku_lastgame');
+            localStorage.removeItem('blockdoku_pending_difficulty');
+            localStorage.removeItem('blockdoku_sound_mappings');
+            localStorage.removeItem('blockdoku_difficulty_overrides');
+            
+            // Clear legacy keys too
+            localStorage.removeItem('blockdoku-settings'); // Legacy settings key
+            localStorage.removeItem('blockdoku_game_state'); // Legacy game state key
+            
+            console.log('All game data cleared from localStorage');
             return true;
         } catch (error) {
             console.error('Failed to clear all data:', error);

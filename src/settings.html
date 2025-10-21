@@ -918,6 +918,15 @@
                     <p class="setting-description">Show particle effects when clearing lines and achieving combos</p>
                 </div>
                 
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="pattern-detection" />
+                        Pattern detection
+                        <span class="setting-bubble" data-setting="patternDetection">🔍</span>
+                    </label>
+                    <p class="setting-description">Detect special patterns (L-shapes, crosses, diamonds) for bonus scoring</p>
+                </div>
+                
                 <!-- Animation Speed -->
                 <div class="setting-item">
                     <h4 style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 0.5rem;">
@@ -972,13 +981,23 @@
                         </button>
                     </div>
                     
-                    <!-- Clear Cache Button -->
-                    <div class="setting-item clear-cache-item">
-                        <button id="clear-cache-button" class="clear-cache-button">
-                            <span class="clear-cache-text">🧹 Clear Cache & Reset SW</span>
+                    <!-- Check for Upgrade Button -->
+                    <div class="setting-item check-upgrade-item">
+                        <button id="check-upgrade-button" class="check-upgrade-button">
+                            <span class="check-upgrade-text">Check for Upgrade</span>
                         </button>
                         <p class="setting-description" style="font-size: 0.85rem; margin-top: 0.5rem;">
-                            Clears service worker caches and unregisters service workers. Useful for development or when experiencing issues.
+                            Checks for app updates and installs them if available. This will reload the page with the latest version.
+                        </p>
+                    </div>
+                    
+                    <!-- Reset Factory Defaults Button -->
+                    <div class="setting-item clear-cache-item">
+                        <button id="clear-cache-button" class="clear-cache-button">
+                            <span class="clear-cache-text">Reset Factory Defaults</span>
+                        </button>
+                        <p class="setting-description" style="font-size: 0.85rem; margin-top: 0.5rem;">
+                            Resets the app to factory defaults by clearing all data (saved games, high scores, settings, statistics) and service worker caches.<br>This action cannot be undone.
                         </p>
                     </div>
                 </div>

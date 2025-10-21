@@ -100,9 +100,13 @@ export class MultiplierChainManager {
      * Update multiplier based on consecutive clears
      */
     updateMultiplier() {
-        // Multiplier progression: 1x, 2x, 3x, 4x, 5x, 6x, 7x, 8x, 9x, 10x
-        // Each multiplier requires 1 additional clear
-        this.currentMultiplier = Math.min(this.consecutiveClears + 1, this.config.maxMultiplier);
+        // Multiplier progression: 1x (no multiplier), 2x, 3x, 4x, 5x, 6x, 7x, 8x, 9x, 10x
+        // Only apply multiplier for 2+ consecutive clears
+        if (this.consecutiveClears >= 2) {
+            this.currentMultiplier = Math.min(this.consecutiveClears, this.config.maxMultiplier);
+        } else {
+            this.currentMultiplier = 1; // No multiplier for single clears
+        }
         this.maxMultiplier = Math.max(this.maxMultiplier, this.currentMultiplier);
         this.maxConsecutiveClears = Math.max(this.maxConsecutiveClears, this.consecutiveClears);
     }
@@ -138,7 +142,7 @@ export class MultiplierChainManager {
             maxConsecutiveClears: this.maxConsecutiveClears,
             totalMultiplierBonus: this.totalMultiplierBonus,
             isEnabled: this.isEnabled,
-            nextMultiplier: Math.min(this.consecutiveClears + 2, this.config.maxMultiplier)
+            nextMultiplier: this.consecutiveClears >= 1 ? Math.min(this.consecutiveClears + 1, this.config.maxMultiplier) : 2
         };
     }
     

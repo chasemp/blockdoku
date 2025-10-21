@@ -465,13 +465,7 @@ export class ScoringSystem {
             scoreGained += multiplierBonus;
         }
         
-        // Detect patterns and apply pattern bonuses
-        const detectedPatterns = this.patternDetectionManager.detectPatterns(board);
-        let patternBonus = 0;
-        if (detectedPatterns.length > 0) {
-            patternBonus = this.patternDetectionManager.calculatePatternBonus(detectedPatterns, difficultyMultiplier);
-            scoreGained += patternBonus;
-        }
+        // Pattern detection is handled in applyClears method where board is available
         
         // Apply difficulty multiplier only (no level multiplier)
         const baseScoreGained = linePointsAdded + squarePointsAdded;
@@ -528,15 +522,13 @@ export class ScoringSystem {
     // Record block placement time and calculate speed bonus/punishment
     recordPlacementTime() {
         const currentTime = Date.now();
-        this.placementTimes.push(currentTime);
-        
-        console.log('Speed bonus calculation:', { mode: this.speedConfig.mode, placementTimes: this.placementTimes.length });
         
         // Skip speed tracking if mode is 'ignored'
         if (this.speedConfig.mode === 'ignored') {
-            console.log('Speed tracking ignored, returning early');
             return;
         }
+        
+        this.placementTimes.push(currentTime);
         
         // Calculate speed bonus if we have at least 2 placements
         if (this.placementTimes.length >= 2) {

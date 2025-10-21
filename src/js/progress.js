@@ -21,7 +21,10 @@ class ProgressModePage {
         this.loadTheme();
         this.setupEventListeners();
         this.loadProgressData();
-        this.renderDifficultySelection();
+        
+        // Show levels by default for the current difficulty
+        this.showLevelSelection();
+        this.renderLevelGrid();
         this.renderProgressStats();
     }
     
@@ -67,22 +70,34 @@ class ProgressModePage {
     }
     
     showDifficultySelection() {
-        document.getElementById('difficulty-section').style.display = 'block';
-        document.getElementById('levels-section').style.display = 'none';
-        document.getElementById('level-details').style.display = 'none';
+        const difficultySection = document.getElementById('difficulty-section');
+        const levelsSection = document.getElementById('levels-section');
+        const levelDetails = document.getElementById('level-details');
+        
+        if (difficultySection) difficultySection.style.display = 'block';
+        if (levelsSection) levelsSection.style.display = 'none';
+        if (levelDetails) levelDetails.style.display = 'none';
     }
     
     showLevelSelection() {
-        document.getElementById('difficulty-section').style.display = 'none';
-        document.getElementById('levels-section').style.display = 'block';
-        document.getElementById('level-details').style.display = 'none';
+        const difficultySection = document.getElementById('difficulty-section');
+        const levelsSection = document.getElementById('levels-section');
+        const levelDetails = document.getElementById('level-details');
+        
+        if (difficultySection) difficultySection.style.display = 'none';
+        if (levelsSection) levelsSection.style.display = 'block';
+        if (levelDetails) levelDetails.style.display = 'none';
     }
     
     showLevelDetails(levelNum) {
         this.selectedLevel = levelNum;
-        document.getElementById('difficulty-section').style.display = 'none';
-        document.getElementById('levels-section').style.display = 'none';
-        document.getElementById('level-details').style.display = 'block';
+        const difficultySection = document.getElementById('difficulty-section');
+        const levelsSection = document.getElementById('levels-section');
+        const levelDetails = document.getElementById('level-details');
+        
+        if (difficultySection) difficultySection.style.display = 'none';
+        if (levelsSection) levelsSection.style.display = 'none';
+        if (levelDetails) levelDetails.style.display = 'block';
         
         this.renderLevelDetails(levelNum);
     }
@@ -100,7 +115,7 @@ class ProgressModePage {
         
         // Update selected difficulty title
         document.getElementById('selected-difficulty-title').textContent = 
-            `${this.currentDifficulty.charAt(0).toUpperCase() + this.currentDifficulty.slice(1)} Level Management`;
+            `${this.currentDifficulty.charAt(0).toUpperCase() + this.currentDifficulty.slice(1)} Levels`;
     }
     
     renderLevelGrid() {
