@@ -25,6 +25,11 @@ class ProgressModePage {
     }
     
     setupEventListeners() {
+        // Back to settings button
+        document.getElementById('back-to-settings').addEventListener('click', () => {
+            window.location.href = 'gamesettings.html';
+        });
+        
         // Back to game button
         document.getElementById('back-to-game').addEventListener('click', () => {
             window.location.href = 'index.html';

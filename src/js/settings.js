@@ -104,7 +104,7 @@ export class SettingsManager {
         
         const blockPlacementAnimations = document.getElementById('block-placement-animations');
         if (blockPlacementAnimations) {
-            blockPlacementAnimations.checked = this.settings.blockPlacementAnimations !== false;
+            blockPlacementAnimations.checked = this.settings.blockPlacementAnimations === true;
         }
         
         const lineClearAnimations = document.getElementById('line-clear-animations');
@@ -1275,12 +1275,16 @@ export class SettingsManager {
             scoresList.innerHTML = '<p>No high scores yet. Play a game to set your first record!</p>';
         } else {
             scoresList.innerHTML = highScores.map((score, index) => `
-                <div class="score-item">
+                <div class="score-item clickable-score" data-score-index="${index}">
                     <div class="rank">#${index + 1}</div>
-                    <div class="score-value">${score.score}</div>
+                    <div class="score-value">${score.score.toLocaleString()}</div>
                     <div class="score-details">${(score.difficulty||'normal').toUpperCase()} • Level ${score.level} • ${new Date(score.date).toLocaleDateString()}</div>
+                    <div class="score-click-hint">Click to view details</div>
                 </div>
             `).join('');
+            
+            // Add click event listeners to high scores
+            this.setupHighScoreClickListeners();
         }
         
         // Display statistics
@@ -1491,6 +1495,37 @@ export class SettingsManager {
             // Move Sound Effects section outside game-section
             soundSection.remove();
             gameSection.insertAdjacentElement('afterend', soundSection);
+        }
+    }
+    
+    setupHighScoreClickListeners() {
+        const clickableScores = document.querySelectorAll('.clickable-score');
+        clickableScores.forEach(scoreElement => {
+            scoreElement.addEventListener('click', (e) => {
+                const scoreIndex = parseInt(scoreElement.dataset.scoreIndex);
+                this.showHighScoreDetails(scoreIndex);
+            });
+        });
+    }
+    
+    showHighScoreDetails(scoreIndex) {
+        const highScores = this.storage.getHighScores();
+        if (scoreIndex < 0 || scoreIndex >= highScores.length) {
+            console.error('Invalid score index:', scoreIndex);
+            return;
+        }
+        
+        const scoreData = highScores[scoreIndex];
+        
+        // Save the score data to localStorage for the lastgame page
+        try {
+            localStorage.setItem('blockdoku_lastgame', JSON.stringify(scoreData));
+            
+            // Navigate to lastgame.html to show the detailed stats
+            window.location.href = 'lastgame.html';
+        } catch (error) {
+            console.error('Failed to save score data for display:', error);
+            alert('Failed to load score details. Please try again.');
         }
     }
 }

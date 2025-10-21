@@ -64,6 +64,27 @@ export class GameSettingsManager {
     }
     
     loadGameModesSettings() {
+        // Game Mode Selection
+        const gameModeClassic = document.getElementById('game-mode-classic');
+        const gameModeProgress = document.getElementById('game-mode-progress');
+        const progressStats = document.getElementById('progress-stats');
+        
+        if (gameModeClassic && gameModeProgress) {
+            const gameMode = this.settings.gameMode || 'classic';
+            if (gameMode === 'progress') {
+                gameModeProgress.checked = true;
+                if (progressStats) {
+                    progressStats.style.display = 'block';
+                }
+                this.loadProgressData();
+            } else {
+                gameModeClassic.checked = true;
+                if (progressStats) {
+                    progressStats.style.display = 'none';
+                }
+            }
+        }
+        
         // Petrification
         const petrificationCheckbox = document.getElementById('enable-petrification');
         if (petrificationCheckbox) {
@@ -170,6 +191,33 @@ export class GameSettingsManager {
             } else {
                 timerRadio.checked = true;
             }
+        }
+    }
+    
+    loadProgressData() {
+        try {
+            const progressData = this.storage.loadProgressModeData();
+            if (progressData) {
+                const difficulties = ['easy', 'normal', 'hard', 'expert'];
+                difficulties.forEach(difficulty => {
+                    const progressElement = document.getElementById(`${difficulty}-progress`);
+                    if (progressElement) {
+                        const completed = progressData.completedLevels ? 
+                            progressData.completedLevels.filter(level => level.startsWith(difficulty)).length : 0;
+                        progressElement.textContent = `${completed}/30`;
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading progress data:', error);
+            // Set default values if loading fails
+            const difficulties = ['easy', 'normal', 'hard', 'expert'];
+            difficulties.forEach(difficulty => {
+                const progressElement = document.getElementById(`${difficulty}-progress`);
+                if (progressElement) {
+                    progressElement.textContent = '0/30';
+                }
+            });
         }
     }
     
@@ -445,6 +493,35 @@ export class GameSettingsManager {
     }
     
     setupGameModesListeners() {
+        // Game Mode Selection
+        const gameModeClassic = document.getElementById('game-mode-classic');
+        const gameModeProgress = document.getElementById('game-mode-progress');
+        const progressStats = document.getElementById('progress-stats');
+        
+        if (gameModeClassic) {
+            gameModeClassic.addEventListener('change', () => {
+                if (gameModeClassic.checked) {
+                    this.saveSetting('gameMode', 'classic');
+                    if (progressStats) {
+                        progressStats.style.display = 'none';
+                    }
+                }
+            });
+        }
+        
+        if (gameModeProgress) {
+            gameModeProgress.addEventListener('change', () => {
+                if (gameModeProgress.checked) {
+                    this.saveSetting('gameMode', 'progress');
+                    if (progressStats) {
+                        progressStats.style.display = 'block';
+                    }
+                    this.loadProgressData();
+                }
+            });
+        }
+        
+        
         // Petrification
         const petrificationCheckbox = document.getElementById('enable-petrification');
         if (petrificationCheckbox) {

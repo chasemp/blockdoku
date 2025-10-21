@@ -3335,8 +3335,12 @@ class BlockdokuGame {
             this.blockHoverEffects = baseSettings.blockHoverEffects !== false;
             this.blockSelectionGlow = baseSettings.blockSelectionGlow !== false;
             this.blockEntranceAnimations = baseSettings.blockEntranceAnimations !== false;
+            this.blockPlacementAnimations = baseSettings.blockPlacementAnimations !== false;
             this.particleEffects = baseSettings.particleEffects !== false;
             this.animationSpeed = baseSettings.animationSpeed || 'normal';
+            
+            // Load game mode setting
+            this.gameMode = baseSettings.gameMode || 'classic';
             
             // Store all settings for easy access by components
             this.settings = baseSettings;
@@ -3452,7 +3456,8 @@ class BlockdokuGame {
             this.effectsManager.updateSettings({
                 particles: this.particlesEnabled !== false,
                 sound: this.soundEnabled === true,
-                haptic: this.hapticEnabled !== false
+                haptic: this.hapticEnabled !== false,
+                blockPlacementAnimations: this.blockPlacementAnimations !== false
             });
         }
     }
@@ -3556,10 +3561,42 @@ class BlockdokuGame {
         
         // Only save high score if it qualifies
         if (this.storage.isHighScore(stats.score)) {
-            this.storage.saveHighScore(stats);
+            // Get all detailed game data for high score storage
+            const detailedStats = this.getDetailedGameStats(stats);
+            this.storage.saveHighScore(detailedStats);
             return true;
         }
         return false;
+    }
+    
+    // Get detailed game stats for high score storage
+    getDetailedGameStats(stats) {
+        const prizeRecognitionEnabled = this.enablePrizeRecognition !== false;
+        const prize = prizeRecognitionEnabled ? this.getPrizeForScore(stats.score) : null;
+        const nextPrizeInfo = prizeRecognitionEnabled ? this.getNextPrizeInfo(stats.score) : null;
+        
+        return {
+            // Basic stats
+            ...stats,
+            
+            // Additional detailed data
+            difficultyMultiplier: this.difficultyManager?.getScoreMultiplier?.() || 1,
+            petrificationStats: this.petrificationManager ? this.petrificationManager.getStats() : null,
+            enablePetrification: this.enablePetrification,
+            speedStats: this.scoringSystem.getSpeedStats ? this.scoringSystem.getSpeedStats() : null,
+            speedMode: this.scoringSystem.speedConfig ? this.scoringSystem.speedConfig.mode : 'ignored',
+            countdownEnabled: this.storage.loadSettings().enableTimer || false,
+            countdownDuration: this.storage.loadSettings().countdownDuration || 3,
+            timeRemaining: this.timerSystem ? this.timerSystem.getTimeRemaining() : null,
+            timeLimit: this.difficultyManager ? this.difficultyManager.getTimeLimit() : null,
+            piecesPlaced: this.gameEngine ? this.gameEngine.moveCount : 0,
+            pointsPerPiece: this.gameEngine && this.gameEngine.moveCount > 0 ? (stats.score / this.gameEngine.moveCount) : 0,
+            prizeRecognitionEnabled: prizeRecognitionEnabled,
+            prize: prize,
+            nextPrize: nextPrizeInfo?.nextPrize || null,
+            nextPrizeProgress: nextPrizeInfo?.progress || 0,
+            nextPrizePointsNeeded: nextPrizeInfo?.pointsNeeded || 0
+        };
     }
 
     getHighScores() {
@@ -4204,8 +4241,8 @@ class BlockdokuGame {
             this.saveGameState();
         }
         
-        // Generate new blocks if needed (but only if no line clears are pending)
-        if (this.blockManager.currentBlocks.length === 0 && !this.pendingClears) {
+        // Generate new blocks if needed
+        if (this.blockManager.currentBlocks.length === 0) {
             this.generateNewBlocks();
         }
         
