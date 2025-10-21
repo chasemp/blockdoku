@@ -3345,7 +3345,7 @@ class BlockdokuGame {
             this.blockHoverEffects = baseSettings.blockHoverEffects !== false;
             this.blockSelectionGlow = baseSettings.blockSelectionGlow !== false;
             this.blockEntranceAnimations = baseSettings.blockEntranceAnimations !== false;
-            this.blockPlacementAnimations = baseSettings.blockPlacementAnimations !== false;
+            this.blockPlacementAnimations = baseSettings.blockPlacementAnimations === true;
             this.particleEffects = baseSettings.particleEffects !== false;
             this.animationSpeed = baseSettings.animationSpeed || 'normal';
             

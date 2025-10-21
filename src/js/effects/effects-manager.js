@@ -29,6 +29,7 @@ export class EffectsManager {
     // Update settings
     updateSettings(settings) {
         this.settings = { ...this.settings, ...settings };
+        console.log('EffectsManager settings updated:', this.settings);
         
         this.particles.setEnabled(this.settings.particles);
         this.sound.setEnabled(this.settings.sound);
