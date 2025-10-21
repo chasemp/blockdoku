@@ -3463,12 +3463,15 @@ class BlockdokuGame {
     
     applyEffectsSettings() {
         if (this.effectsManager) {
-            this.effectsManager.updateSettings({
+            const settings = {
                 particles: this.particlesEnabled !== false,
                 sound: this.soundEnabled === true,
                 haptic: this.hapticEnabled !== false,
                 blockPlacementAnimations: this.blockPlacementAnimations === true
-            });
+            };
+            console.log('App.js applying effects settings:', settings);
+            console.log('App.js blockPlacementAnimations value:', this.blockPlacementAnimations);
+            this.effectsManager.updateSettings(settings);
         }
     }
 
