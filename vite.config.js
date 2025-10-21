@@ -42,15 +42,16 @@ export default defineConfig({
     // Safe to empty /docs since it only contains built files
     emptyOutDir: true,
     assetsDir: 'assets',
-    rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'src/index.html'),
-        splash: resolve(__dirname, 'src/splash.html'),
-        settings: resolve(__dirname, 'src/settings.html'),
-        gamesettings: resolve(__dirname, 'src/gamesettings.html'),
-        lastgame: resolve(__dirname, 'src/lastgame.html')
+      rollupOptions: {
+        input: {
+          main: resolve(__dirname, 'src/index.html'),
+          splash: resolve(__dirname, 'src/splash.html'),
+          settings: resolve(__dirname, 'src/settings.html'),
+          gamesettings: resolve(__dirname, 'src/gamesettings.html'),
+          lastgame: resolve(__dirname, 'src/lastgame.html'),
+          progress: resolve(__dirname, 'src/progress.html')
+        }
       }
-    }
   },
   server: {
     port: 3456, // Unique port for Blockdoku PWA to avoid conflicts

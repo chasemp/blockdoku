@@ -68,6 +68,7 @@ export class GameStorage {
         try {
             const scores = this.getHighScores();
             const newScore = {
+                // Basic score data
                 score: scoreData.score,
                 level: scoreData.level,
                 linesCleared: scoreData.linesCleared,
@@ -75,7 +76,31 @@ export class GameStorage {
                 maxCombo: scoreData.maxCombo,
                 difficulty: scoreData.difficulty || 'normal',
                 timestamp: Date.now(),
-                date: new Date().toLocaleDateString()
+                date: new Date().toLocaleDateString(),
+                
+                // Detailed game data for full game over display
+                totalCombos: scoreData.totalCombos || 0,
+                maxStreakCount: scoreData.maxStreakCount || 0,
+                difficultyMultiplier: scoreData.difficultyMultiplier || 1,
+                breakdown: scoreData.breakdown || { linePoints: 0, squarePoints: 0, comboBonusPoints: 0, placementPoints: 0, streakBonusPoints: 0 },
+                rowClears: scoreData.rowClears || 0,
+                columnClears: scoreData.columnClears || 0,
+                squareClears: scoreData.squareClears || 0,
+                petrificationStats: scoreData.petrificationStats,
+                enablePetrification: scoreData.enablePetrification,
+                speedStats: scoreData.speedStats,
+                speedMode: scoreData.speedMode || 'ignored',
+                countdownEnabled: scoreData.countdownEnabled || false,
+                countdownDuration: scoreData.countdownDuration || 3,
+                timeRemaining: scoreData.timeRemaining,
+                timeLimit: scoreData.timeLimit,
+                piecesPlaced: scoreData.piecesPlaced || 0,
+                pointsPerPiece: scoreData.pointsPerPiece || 0,
+                prizeRecognitionEnabled: scoreData.prizeRecognitionEnabled !== false,
+                prize: scoreData.prize,
+                nextPrize: scoreData.nextPrize,
+                nextPrizeProgress: scoreData.nextPrizeProgress || 0,
+                nextPrizePointsNeeded: scoreData.nextPrizePointsNeeded || 0
             };
 
             scores.push(newScore);
@@ -148,6 +173,7 @@ export class GameStorage {
             blockHoverEffects: true,
             blockSelectionGlow: true,
             blockEntranceAnimations: true,
+            blockPlacementAnimations: false,
             particleEffects: true,
             animationSpeed: 'normal', // 'slow', 'normal', 'fast'
             autoSave: true,
@@ -169,7 +195,8 @@ export class GameStorage {
             pieceTimeoutEnabled: false, // Enable piece timeout (15s warning, 30s timeout)
             enableMagicBlocks: false, // Enable magic blocks that can clear lines when placed
             enableWildShapes: false, // Enable wild block shapes with creative geometries
-            autoRotateBlocks: false // Auto-rotate blocks when only one valid orientation
+            autoRotateBlocks: false, // Auto-rotate blocks when only one valid orientation
+            gameMode: 'classic' // Game mode: 'classic' or 'progress'
         };
         console.log('Returning default settings with difficulty:', defaults.difficulty);
         return defaults;

@@ -249,6 +249,64 @@
                     </div>
                 </div>
                 
+        <!-- Game Mode Selection Section -->
+        <div class="game-mode-section settings-section-container">
+            <h3>Game Mode</h3>
+            <p class="setting-description" style="margin-bottom: 1.5rem; margin-left: 0; text-align: center;">Choose how you want to play Blockdoku</p>
+            <div class="game-mode-options">
+                <label class="game-mode-option">
+                    <input type="radio" name="game-mode" value="classic" id="game-mode-classic" checked />
+                    <div class="game-mode-content">
+                        <h4>Classic Mode</h4>
+                        <p>Endless gameplay with your chosen difficulty settings. Play as long as you can!</p>
+                        <div class="game-mode-features">
+                            <span class="feature-tag">∞ Endless</span>
+                            <span class="feature-tag">Customizable</span>
+                            <span class="feature-tag">High Scores</span>
+                        </div>
+                    </div>
+                </label>
+                <label class="game-mode-option">
+                    <input type="radio" name="game-mode" value="progress" id="game-mode-progress" />
+                    <div class="game-mode-content">
+                        <h4>Progress Mode</h4>
+                        <p>Structured levels with specific objectives and rewards. Complete challenges to advance!</p>
+                        <div class="game-mode-features">
+                            <span class="feature-tag">30 Levels</span>
+                            <span class="feature-tag">Objectives</span>
+                            <span class="feature-tag">Rewards</span>
+                        </div>
+                        <div class="progress-stats" id="progress-stats" style="display: none;">
+                            <div class="progress-summary">
+                                <h5>Your Progress</h5>
+                                <div class="progress-difficulties">
+                                    <div class="progress-difficulty">
+                                        <span class="difficulty-name">Easy:</span>
+                                        <span class="progress-count" id="easy-progress">0/30</span>
+                                    </div>
+                                    <div class="progress-difficulty">
+                                        <span class="difficulty-name">Normal:</span>
+                                        <span class="progress-count" id="normal-progress">0/30</span>
+                                    </div>
+                                    <div class="progress-difficulty">
+                                        <span class="difficulty-name">Hard:</span>
+                                        <span class="progress-count" id="hard-progress">0/30</span>
+                                    </div>
+                                    <div class="progress-difficulty">
+                                        <span class="difficulty-name">Expert:</span>
+                                        <span class="progress-count" id="expert-progress">0/30</span>
+                                    </div>
+                                </div>
+                                <div class="progress-actions">
+                                    <a href="progress.html" class="btn btn-secondary btn-small">Manage Levels</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
         <!-- Difficulty Selector Section -->
         <div class="difficulty-selector-section settings-section-container">
             <h3>Difficulty Level</h3>
@@ -482,6 +540,7 @@
     <div class="copyright-notice">
         <p>&copy; Chase Pettet, <a href="http://523.life" target="_blank" rel="noopener noreferrer">523.life</a></p>
     </div>
+
 
     <!-- Scripts -->
     <script type="module" src="js/game-settings.js"></script>

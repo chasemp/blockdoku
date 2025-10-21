@@ -21,7 +21,8 @@ export class EffectsManager {
         this.settings = {
             particles: true,
             sound: false,
-            haptic: true
+            haptic: true,
+            blockPlacementAnimations: true
         };
     }
     
@@ -72,7 +73,9 @@ export class EffectsManager {
     
     // Block placement effects
     onBlockPlace(x, y) {
-        this.particles.createSparkles(x, y, 6);
+        if (this.settings.blockPlacementAnimations) {
+            this.particles.createSparkles(x, y, 6);
+        }
         if (this.settings.sound) this.sound.play('blockPlace');
         this.haptic.onBlockPlace();
     }

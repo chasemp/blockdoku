@@ -1025,6 +1025,13 @@ body {
     min-width: 80px;
     text-align: center;
     font-weight: 600;
+    line-height: 1.2;
+    padding: 0.5rem 0.75rem;
+}
+
+.new-game-text {
+    display: inline-block;
+    line-height: 1.1;
 }
 
 /* Settings and Game Settings button styling to match other buttons */
@@ -2885,6 +2892,28 @@ body {
         font-size: 0.85rem;
     }
     
+    .game-mode-options {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .game-mode-option {
+        padding: 1rem;
+    }
+    
+    .game-mode-content h4 {
+        font-size: 1.1rem;
+    }
+    
+    .game-mode-content p {
+        font-size: 0.85rem;
+    }
+    
+    .progress-difficulties {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+    }
+    
     #install-button-container .install-btn {
         max-width: 100%;
         font-size: 0.9rem;
@@ -3582,6 +3611,190 @@ html.light-theme .settings-section .difficulty-option.selected {
     accent-color: var(--primary-color);
 }
 
+/* Game Mode Selection */
+.game-mode-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.game-mode-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.game-mode-option {
+    position: relative;
+    cursor: pointer;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    background: var(--bg-color);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.game-mode-option:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary-color);
+}
+
+.game-mode-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.game-mode-option input[type="radio"]:checked + .game-mode-content {
+    color: var(--primary-color);
+}
+
+.game-mode-option input[type="radio"]:checked {
+    border-color: var(--primary-color);
+    background: rgba(var(--primary-color-rgb), 0.05);
+}
+
+.game-mode-content h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.game-mode-content p {
+    margin: 0 0 1rem 0;
+    font-size: 0.9rem;
+    opacity: 0.8;
+    line-height: 1.5;
+}
+
+.game-mode-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.feature-tag {
+    background: rgba(var(--primary-color-rgb), 0.1);
+    color: var(--primary-color);
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+}
+
+.progress-stats {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.progress-summary h5 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.progress-difficulties {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+.progress-difficulty {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+.difficulty-name {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.progress-count {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.progress-actions {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.btn-small {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
+/* Progress page navigation */
+.progress-container .controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.progress-container .controls .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .progress-container .controls {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .progress-container .controls .btn {
+        width: 100%;
+        max-width: 200px;
+    }
+}
+
+/* Clickable high scores */
+.clickable-score {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    border-radius: 8px;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.clickable-score:hover {
+    background: rgba(var(--primary-color-rgb), 0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.score-click-hint {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+    font-style: italic;
+    margin-top: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.clickable-score:hover .score-click-hint {
+    opacity: 1;
+}
+
+.clickable-score:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+
 /* Combo Display Settings */
 .combo-display-settings {
     background: var(--card-bg);
@@ -4023,6 +4236,11 @@ html.light-theme .settings-section .difficulty-option.selected {
     .new-game-btn {
         min-width: 70px;
         font-size: 0.8rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .new-game-text {
+        line-height: 1.0;
     }
     
     #settings-toggle,
@@ -4042,6 +4260,11 @@ html.light-theme .settings-section .difficulty-option.selected {
     .new-game-btn {
         min-width: 75px;
         font-size: 0.85rem;
+        padding: 0.45rem 0.65rem;
+    }
+    
+    .new-game-text {
+        line-height: 1.05;
     }
     
     #settings-toggle,
