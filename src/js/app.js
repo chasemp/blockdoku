@@ -108,6 +108,11 @@ class BlockdokuGame {
         this.isGameOver = false;
         this.isInitialized = false;
         
+        // Safeguards to keep the block palette and block manager in sync
+        this.isGeneratingBlocks = false;
+        this.lastBlockSyncCheck = 0;
+        this.blockSyncCooldownMs = 250;
+        
         // Track combo display mode usage within a game (streak vs cumulative)
         this.comboModeActive = 'cumulative';
         this.comboModesUsed = new Set();
@@ -402,6 +407,15 @@ class BlockdokuGame {
         // Only update if game is initialized and has blocks
         if (this.isInitialized && this.blockManager && this.blockManager.currentBlocks && this.blockManager.currentBlocks.length > 0) {
             this.updatePlaceabilityIndicators();
+        }
+
+        const now = (typeof performance !== 'undefined' && typeof performance.now === 'function')
+            ? performance.now()
+            : Date.now();
+
+        if (now - this.lastBlockSyncCheck >= this.blockSyncCooldownMs) {
+            this.lastBlockSyncCheck = now;
+            this.guardBlockPaletteSync();
         }
     }
     
@@ -3221,6 +3235,7 @@ class BlockdokuGame {
             if (savedState.currentBlocks) {
                 this.blockManager.currentBlocks = savedState.currentBlocks;
                 this.blockPalette.updateBlocks(savedState.currentBlocks);
+                this.guardBlockPaletteSync(true);
                 
                 // If no blocks are available, generate new ones
                 if (this.blockManager.currentBlocks.length === 0) {
@@ -4147,67 +4162,119 @@ class BlockdokuGame {
         }
     }
 
-    // Enhanced block generation based on difficulty
-    generateNewBlocks() {
-        console.log('🔄 generateNewBlocks() called');
-        console.log('BlockPalette available:', !!this.blockPalette);
-        console.log('BlockManager available:', !!this.blockManager);
-        
-        let blockCount = 3;
-        let blockTypes = 'all';
-        
-        // Get current difficulty from difficulty manager (source of truth)
-        const currentDifficulty = this.difficultyManager ? this.difficultyManager.getCurrentDifficulty() : 'normal';
-        
-        // Adjust block generation based on difficulty
-        switch (currentDifficulty) {
-            case 'easy':
-                blockCount = 3;
-                blockTypes = 'large'; // Prefer larger, simpler blocks
-                break;
-            case 'normal':
-                blockCount = 3;
-                blockTypes = 'all';
-                break;
-            case 'hard':
-                blockCount = 3;
-                blockTypes = 'small'; // Prefer smaller, more complex blocks
-                break;
-            case 'expert':
-                blockCount = 3;
-                blockTypes = 'complex'; // Complex irregular shapes
-                break;
+    guardBlockPaletteSync(forceUpdate = false) {
+        if (!this.blockManager || !this.blockPalette) return;
+        if (this.isGameOver) return;
+
+        const blocks = Array.isArray(this.blockManager.currentBlocks)
+            ? this.blockManager.currentBlocks
+            : [];
+
+        // Ensure the block manager always exposes an array for current blocks
+        if (!Array.isArray(this.blockManager.currentBlocks)) {
+            this.blockManager.currentBlocks = blocks;
         }
-        
-        
-        const magicFrequency = this.settings?.magicBlocksFrequency || 1;
-        const wildFrequency = this.settings?.wildShapesFrequency || 1;
-        const newBlocks = this.blockManager.generateRandomBlocks(
-            blockCount, 
-            blockTypes, 
-            this.difficultyManager, 
-            this.enableMagicBlocks, 
-            this.enableWildShapes,
-            magicFrequency,
-            wildFrequency
-        );
-        console.log('Generated new blocks:', newBlocks);
-        console.log('BlockPalette exists:', !!this.blockPalette);
-        this.blockPalette.updateBlocks(newBlocks);
-        
-        // Update petrification tracking for new blocks
-        this.petrificationManager.updateBlockTracking(newBlocks);
-        
-        // Update placeability indicators for new blocks
-        this.updatePlaceabilityIndicators();
-        this.updateBlockPointsDisplay();
-        this.autoSelectNextBlock();
-        
-        // Auto-rotate blocks to optimal orientations
-        this.optimizeBlockOrientations();
-        
-        console.log('✅ generateNewBlocks() completed. Generated blocks:', this.blockManager.currentBlocks?.length || 0);
-        console.log('Block palette should now be updated with blocks');
+
+        if (blocks.length === 0) {
+            if (!this.isGeneratingBlocks) {
+                this.generateNewBlocks({ skipPaletteGuard: true });
+            }
+            return;
+        }
+
+        let container = document.getElementById('blocks-container');
+
+        if (!container) {
+            // Palette markup is missing (possibly due to navigation). Re-render it.
+            this.blockPalette.render();
+            container = document.getElementById('blocks-container');
+        }
+
+        if (!container || forceUpdate || container.children.length === 0) {
+            this.blockPalette.updateBlocks(blocks);
+            if (!this.selectedBlock) {
+                this.autoSelectNextBlock();
+            }
+        }
+    }
+
+    // Enhanced block generation based on difficulty
+    generateNewBlocks(options = {}) {
+        const { skipPaletteGuard = false } = options;
+        if (this.isGeneratingBlocks) {
+            console.warn('generateNewBlocks() skipped because a generation is already in progress');
+            return;
+        }
+
+        this.isGeneratingBlocks = true;
+        try {
+            console.log('🔄 generateNewBlocks() called');
+            console.log('BlockPalette available:', !!this.blockPalette);
+            console.log('BlockManager available:', !!this.blockManager);
+            
+            let blockCount = 3;
+            let blockTypes = 'all';
+            
+            // Get current difficulty from difficulty manager (source of truth)
+            const currentDifficulty = this.difficultyManager ? this.difficultyManager.getCurrentDifficulty() : 'normal';
+            
+            // Adjust block generation based on difficulty
+            switch (currentDifficulty) {
+                case 'easy':
+                    blockCount = 3;
+                    blockTypes = 'large'; // Prefer larger, simpler blocks
+                    break;
+                case 'normal':
+                    blockCount = 3;
+                    blockTypes = 'all';
+                    break;
+                case 'hard':
+                    blockCount = 3;
+                    blockTypes = 'small'; // Prefer smaller, more complex blocks
+                    break;
+                case 'expert':
+                    blockCount = 3;
+                    blockTypes = 'complex'; // Complex irregular shapes
+                    break;
+            }
+            
+            const magicFrequency = this.settings?.magicBlocksFrequency || 1;
+            const wildFrequency = this.settings?.wildShapesFrequency || 1;
+            const newBlocks = this.blockManager.generateRandomBlocks(
+                blockCount, 
+                blockTypes, 
+                this.difficultyManager, 
+                this.enableMagicBlocks, 
+                this.enableWildShapes,
+                magicFrequency,
+                wildFrequency
+            );
+            console.log('Generated new blocks:', newBlocks);
+            console.log('BlockPalette exists:', !!this.blockPalette);
+            this.blockPalette.updateBlocks(newBlocks);
+            
+            // Update petrification tracking for new blocks
+            this.petrificationManager.updateBlockTracking(newBlocks);
+            
+            // Update placeability indicators for new blocks
+            this.updatePlaceabilityIndicators();
+            this.updateBlockPointsDisplay();
+            this.autoSelectNextBlock();
+            
+            // Auto-rotate blocks to optimal orientations
+            this.optimizeBlockOrientations();
+            
+            console.log('✅ generateNewBlocks() completed. Generated blocks:', this.blockManager.currentBlocks?.length || 0);
+            console.log('Block palette should now be updated with blocks');
+        } catch (error) {
+            console.error('❌ generateNewBlocks() failed:', error);
+        } finally {
+            this.isGeneratingBlocks = false;
+        }
+
+        if (!skipPaletteGuard) {
+            this.guardBlockPaletteSync(true);
+        }
     }
 
     // Enhanced block placement with hints
@@ -5290,6 +5357,7 @@ class BlockdokuGame {
             console.log('Refreshing existing blocks...');
             this.blockPalette.updateBlocks(this.blockManager.currentBlocks);
         }
+        this.guardBlockPaletteSync(true);
         
         // Update placeability indicators
         this.updatePlaceabilityIndicators();
