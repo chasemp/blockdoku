@@ -61,6 +61,8 @@ class BlockdokuGame {
         this.currentNotification = null;
         this.notificationTimeout = null;
         this.lastNotifiedMultiplier = 0;
+        this.lastShownMultiplier = 0;
+        this.multiplierDisplayTimeout = null;
         
         // Difficulty settings
         this.difficulty = 'normal';
@@ -2271,7 +2273,6 @@ class BlockdokuGame {
     updateMultiplierChainDisplay() {
         const multiplierElement = document.getElementById('multiplier');
         const multiplierDisplay = document.getElementById('multiplier-display');
-        const multiplierProgressBar = document.getElementById('multiplier-progress-bar');
         const multiplierText = document.getElementById('multiplier-text');
         const multiplierChainDisplay = document.getElementById('multiplier-chain-display');
         
@@ -2280,32 +2281,39 @@ class BlockdokuGame {
         const status = this.scoringSystem.getMultiplierChainStatus();
         const lastResult = this.scoringSystem.getLastMultiplierResult();
         
-        
-        // Update multiplier in game info
+        // Update multiplier in game info bar (always visible)
         multiplierElement.textContent = `${status.currentMultiplier}x`;
         
-        // Update floating multiplier display
-        if (multiplierDisplay) {
-            multiplierDisplay.textContent = `${status.currentMultiplier}x`;
-        }
-        
-        // Update progress bar
-        if (multiplierProgressBar) {
-            const progress = status.currentMultiplier > 1 ? this.scoringSystem.multiplierChainManager.getProgress() : 0;
-            multiplierProgressBar.style.width = `${progress * 100}%`;
-        }
-        
-        // Update chain text
-        if (multiplierText) {
-            multiplierText.textContent = `Chain: ${status.consecutiveClears}`;
-        }
-        
-        // Show/hide floating display based on multiplier
-        if (multiplierChainDisplay) {
-            if (status.currentMultiplier > 1) {
+        // Show floating multiplier display briefly when multiplier changes
+        if (multiplierChainDisplay && multiplierDisplay && multiplierText) {
+            // Only show when multiplier actually changes to a higher value
+            if (status.currentMultiplier > 1 && status.currentMultiplier !== this.lastShownMultiplier) {
+                // Update the display content
+                multiplierDisplay.textContent = `${status.currentMultiplier}x`;
+                multiplierText.textContent = `Chain: ${status.consecutiveClears}`;
+                
+                // Show the display
                 multiplierChainDisplay.classList.add('active');
-            } else {
+                
+                // Clear any existing hide timeout
+                if (this.multiplierDisplayTimeout) {
+                    clearTimeout(this.multiplierDisplayTimeout);
+                }
+                
+                // Auto-hide after 1.5 seconds
+                this.multiplierDisplayTimeout = setTimeout(() => {
+                    multiplierChainDisplay.classList.remove('active');
+                }, 1500);
+                
+                this.lastShownMultiplier = status.currentMultiplier;
+            } else if (status.currentMultiplier <= 1) {
+                // Immediately hide when chain breaks
                 multiplierChainDisplay.classList.remove('active');
+                this.lastShownMultiplier = 0;
+                if (this.multiplierDisplayTimeout) {
+                    clearTimeout(this.multiplierDisplayTimeout);
+                    this.multiplierDisplayTimeout = null;
+                }
             }
         }
         
@@ -2314,18 +2322,9 @@ class BlockdokuGame {
             this.showMultiplierChainEffect(lastResult);
         }
 
-        // Queue multiplier notification only when multiplier changes and > 1
-        if (status.currentMultiplier > 1 && status.currentMultiplier !== this.lastNotifiedMultiplier) {
-            this.queueNotification('multiplier', {
-                multiplier: status.currentMultiplier,
-                chain: status.consecutiveClears
-            }, 1000);
-            this.lastNotifiedMultiplier = status.currentMultiplier;
-        } else if (status.currentMultiplier <= 1) {
-            // Reset the last notified multiplier when chain breaks
+        // Reset tracking when chain breaks
+        if (status.currentMultiplier <= 1) {
             this.lastNotifiedMultiplier = 0;
-            // Hide any existing multiplier notification when chain breaks
-            this.hideCurrentNotification();
         }
         
         // Show pattern detection effects
