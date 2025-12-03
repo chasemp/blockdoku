@@ -1592,32 +1592,25 @@ class BlockdokuGame {
     
     // Add enhanced particle effects for cascade steps
     addCascadeParticleEffects(clearedLines, stepIndex) {
-        if (!this.effectsManager) return;
+        if (!this.effectsManager || !this.effectsManager.particles) return;
         
-        const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']; // Different colors for each step
-        const color = colors[stepIndex % colors.length];
-        
-        // Add particles for each cleared line
+        // Add particles for each cleared line using existing particle system methods
         clearedLines.rows.forEach(row => {
             const y = row * (this.canvas.height / 9) + (this.canvas.height / 18);
-            for (let i = 0; i < 3; i++) {
-                const x = (i + 1) * (this.canvas.width / 4);
-                this.effectsManager.addParticle(x, y, color, 'cascade');
-            }
+            const x = this.canvas.width / 2;
+            this.effectsManager.particles.createConfetti(x, y, 5);
         });
         
         clearedLines.columns.forEach(col => {
             const x = col * (this.canvas.width / 9) + (this.canvas.width / 18);
-            for (let i = 0; i < 3; i++) {
-                const y = (i + 1) * (this.canvas.height / 4);
-                this.effectsManager.addParticle(x, y, color, 'cascade');
-            }
+            const y = this.canvas.height / 2;
+            this.effectsManager.particles.createConfetti(x, y, 5);
         });
         
         clearedLines.squares.forEach(square => {
             const x = square.col * 3 * (this.canvas.width / 9) + (this.canvas.width / 6);
             const y = square.row * 3 * (this.canvas.height / 9) + (this.canvas.height / 6);
-            this.effectsManager.addParticle(x, y, color, 'cascade');
+            this.effectsManager.particles.createConfetti(x, y, 8);
         });
     }
     
