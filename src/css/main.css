@@ -21,66 +21,46 @@ body {
     flex-direction: column;
 }
 
-/* Mobile viewport lock - prevent scrolling and fit to screen */
-@supports (height: 100dvh) {
-    @media (max-width: 768px) {
-        html, body {
-            height: 100dvh;
-            max-height: 100dvh;
-            overflow: hidden;
-        }
-        
-        #app {
-            height: 100dvh;
-            max-height: 100dvh;
-            min-height: auto;
-            overflow: hidden;
-        }
-    }
+/* Mobile viewport lock - ONLY for main game page (has #game-board) */
+/* These rules prevent accidental scrolling while playing the game */
+/* Settings and other pages should still be scrollable */
+
+/* Game page viewport lock - applied via JavaScript when game-board exists */
+body.game-page-locked {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100dvh !important;
+    height: 100vh !important;
 }
 
-/* Fallback for browsers without dvh support - apply to all mobile widths */
-@media (max-width: 768px) {
-    html, body {
-        height: 100vh;
-        height: -webkit-fill-available;
-        max-height: 100vh;
-        max-height: -webkit-fill-available;
-        overflow: hidden;
-    }
-    
-    #app {
-        height: 100vh;
-        height: -webkit-fill-available;
-        max-height: 100vh;
-        max-height: -webkit-fill-available;
-        min-height: auto;
-        overflow: hidden;
-    }
+body.game-page-locked #app {
+    height: 100dvh;
+    height: 100vh;
+    max-height: 100dvh;
+    max-height: 100vh;
+    min-height: auto;
+    overflow: hidden;
 }
 
-/* Touch devices get additional protections */
-@media (max-width: 768px) and (pointer: coarse) {
-    html, body {
-        position: fixed;
-        width: 100%;
-        touch-action: none;
-    }
-    
-    #app {
-        touch-action: none;
-    }
-    
-    /* Allow touch on interactive elements */
-    .game-board-container,
-    #game-board,
-    .block-palette,
-    .block-item,
-    .btn,
-    button,
-    a {
-        touch-action: manipulation;
-    }
+/* Touch devices get additional protections on game page */
+body.game-page-locked {
+    touch-action: none;
+}
+
+body.game-page-locked #app {
+    touch-action: none;
+}
+
+/* Allow touch on interactive elements even when locked */
+body.game-page-locked .game-board-container,
+body.game-page-locked #game-board,
+body.game-page-locked .block-palette,
+body.game-page-locked .block-item,
+body.game-page-locked .btn,
+body.game-page-locked button,
+body.game-page-locked a {
+    touch-action: manipulation;
 }
 
 .header {

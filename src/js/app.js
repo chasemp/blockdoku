@@ -5715,6 +5715,12 @@ class BlockdokuGame {
 
 // Initialize game when DOM is loaded
 function initializeGame() {
+    // Lock viewport scrolling on the main game page only
+    // This prevents accidental scrolling while trying to drag blocks
+    if (document.getElementById('game-board')) {
+        document.body.classList.add('game-page-locked');
+    }
+    
     window.game = new BlockdokuGame();
     
     // Check if we should start a new game (from lastgame.html "New Game" button)
