@@ -1950,10 +1950,12 @@ class BlockdokuGame {
             (this.storage.loadSettings()?.comboDisplayMode) || 'cumulative'
         );
         
-        // Create combo effect if applicable
+        // Combo effects - only trigger haptic/sound, skip redundant visual effects
+        // The score popup already shows combo info, so we don't need createComboEffect
         if (combo >= 1) {
-            this.createComboEffect(combo, centerX, centerY + 50);
-            this.effectsManager.onCombo(centerX, centerY + 50, combo);
+            // Just play sound and haptic, skip the extra visual combo popup
+            if (this.effectsManager.settings.sound) this.effectsManager.sound.play('combo');
+            this.effectsManager.haptic.onCombo(combo);
         }
         
         // Note: UI was already updated in checkLineClears, but update again in case of state changes
