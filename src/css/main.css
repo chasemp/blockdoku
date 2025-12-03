@@ -21,6 +21,68 @@ body {
     flex-direction: column;
 }
 
+/* Mobile viewport lock - prevent scrolling and fit to screen */
+@supports (height: 100dvh) {
+    @media (max-width: 768px) {
+        html, body {
+            height: 100dvh;
+            max-height: 100dvh;
+            overflow: hidden;
+        }
+        
+        #app {
+            height: 100dvh;
+            max-height: 100dvh;
+            min-height: auto;
+            overflow: hidden;
+        }
+    }
+}
+
+/* Fallback for browsers without dvh support - apply to all mobile widths */
+@media (max-width: 768px) {
+    html, body {
+        height: 100vh;
+        height: -webkit-fill-available;
+        max-height: 100vh;
+        max-height: -webkit-fill-available;
+        overflow: hidden;
+    }
+    
+    #app {
+        height: 100vh;
+        height: -webkit-fill-available;
+        max-height: 100vh;
+        max-height: -webkit-fill-available;
+        min-height: auto;
+        overflow: hidden;
+    }
+}
+
+/* Touch devices get additional protections */
+@media (max-width: 768px) and (pointer: coarse) {
+    html, body {
+        position: fixed;
+        width: 100%;
+        touch-action: none;
+    }
+    
+    #app {
+        touch-action: none;
+    }
+    
+    /* Allow touch on interactive elements */
+    .game-board-container,
+    #game-board,
+    .block-palette,
+    .block-item,
+    .btn,
+    button,
+    a {
+        touch-action: manipulation;
+    }
+}
+
 .header {
     background: linear-gradient(135deg, var(--header-bg) 0%, var(--primary-color) 100%);
     padding: 1.65rem 2rem;
@@ -2394,21 +2456,29 @@ body {
         justify-content: space-between;
         align-items: center;
         gap: 0.5rem;
+        flex-shrink: 0;
     }
     .utility-bar {
         grid-template-columns: 1fr 1fr 1fr 1fr;
-        padding: 0.2rem 0.6rem;
-        gap: 0.3rem;
-        min-height: 1.5rem;
+        padding: 0.1rem 0.5rem;
+        gap: 0.2rem;
+        min-height: 0;
+        flex-shrink: 0;
+    }
+    
+    /* Hide empty utility bar on mobile to save space */
+    .utility-bar:not(.has-content) {
+        display: none;
     }
     
     .utility-bar.has-content {
-        padding: 0.4rem 0.6rem;
-        min-height: 2.5rem;
+        display: grid;
+        padding: 0.3rem 0.5rem;
+        min-height: 2rem;
     }
     
     .utility-slot {
-        min-height: 2rem;
+        min-height: 1.5rem;
     }
     
     .personal-bests {
@@ -2454,47 +2524,66 @@ body {
         align-items: center; /* Ensure all controls are vertically aligned */
     }
     
+    .game-info {
+        flex-shrink: 0;
+    }
+    
     .main {
-        padding: 1rem 0.5rem 0.5rem 0.5rem;
+        padding: 0.5rem;
         display: flex;
         justify-content: center;
         align-items: center;
-        min-height: calc(100vh - 180px); /* Account for header and score bar height */
+        flex: 1;
+        min-height: 0; /* Allow flexbox to shrink */
+        overflow: hidden;
     }
     
     .game-container {
         width: 100%;
-        max-width: 400px;
+        max-width: 100%;
+        height: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 1.5rem;
+        justify-content: center;
+        gap: 0.5rem;
     }
     
     .game-area {
         flex-direction: column;
         align-items: center;
-        gap: 1.5rem;
+        gap: 0.5rem;
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        justify-content: center;
     }
     
     .game-board-container {
-        width: 90vw;
-        height: 90vw;
-        max-width: 90vw;
-        max-height: 90vw;
+        /* Dynamic sizing: use available space, constrained by both width and remaining height */
+        /* Reserved space: header(~55px) + game-info(~40px) + palette(~100px) + gaps(~20px) = ~215px */
+        /* Use max 95vw to leave some margin, and subtract UI height from viewport */
+        --board-size: min(95vw, calc(100dvh - 220px));
+        width: var(--board-size);
+        height: var(--board-size);
+        max-width: var(--board-size);
+        max-height: var(--board-size);
         margin: 0 auto;
         order: 1; /* Game board first */
+        flex-shrink: 0;
     }
     
     #game-board {
         width: 100%;
         height: 100%;
-        max-width: 90vw;
-        max-height: 90vw;
     }
     
     .footer {
         display: none; /* Hide explanation text on mobile */
+    }
+    
+    .copyright-notice {
+        display: none; /* Hide copyright on mobile to save space */
     }
     
     .game-info {
@@ -2506,13 +2595,14 @@ body {
         border-radius: 0;
         border: none;
         border-bottom: 1px solid var(--border-color);
-        min-height: 45px; /* Increased height to accommodate text */
+        min-height: 40px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
     }
     
     .game-info > div {
-        min-width: 60px;
-        padding: 0.4rem 0.4rem;
+        min-width: 50px;
+        padding: 0.3rem 0.3rem;
         flex: 1;
         display: flex;
         flex-direction: column;
@@ -2520,11 +2610,11 @@ body {
         justify-content: center;
         box-sizing: border-box;
         overflow: visible;
-        min-height: 35px;
+        min-height: 30px;
     }
     
     .game-info span:first-child {
-        font-size: 0.825rem; /* 50% increase from 0.55rem */
+        font-size: 0.7rem;
         line-height: 1;
         margin-bottom: 0.1rem;
         font-weight: 600;
@@ -2534,7 +2624,7 @@ body {
     }
     
     .game-info span:last-child {
-        font-size: 1.65rem; /* 50% increase from 1.1rem */
+        font-size: 1.4rem;
         line-height: 1.1;
         font-weight: 900;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
@@ -2546,26 +2636,26 @@ body {
     .blocks-container {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 0.6rem; /* Increased gap for larger blocks */
+        gap: 0.4rem;
         width: 100%;
-        max-width: 450px; /* Match game board width */
-        padding: 0.5rem;
+        max-width: min(95vw, calc(100dvh - 220px));
+        padding: 0.3rem;
     }
     
     .block-item {
         min-width: 0;
-        padding: 0.4rem; /* Increased padding for better touch targets */
-        font-size: 0.75rem;
+        padding: 0.3rem;
+        font-size: 0.7rem;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         position: relative;
         text-align: center;
-        min-width: 70px; /* Increased from 50px */
-        min-height: 70px; /* Increased from 50px */
-        width: auto; /* Let it size naturally */
-        height: auto; /* Let it size naturally */
+        min-width: 60px;
+        min-height: 60px;
+        width: auto;
+        height: auto;
     }
     
     .block-item .block-shape {
@@ -2579,13 +2669,14 @@ body {
     }
     
     .block-palette {
-        padding: 0.5rem;
+        padding: 0.4rem;
         margin: 0;
         width: 100%;
-        max-width: 450px; /* Match game board width */
-        min-height: 115px; /* Increased height for magnified selected blocks */
-        height: 115px;
+        max-width: min(95vw, calc(100dvh - 220px));
+        min-height: 100px;
+        height: 100px;
         order: 2; /* After game board */
+        flex-shrink: 0;
     }
     
     .block-palette h3 {
@@ -2751,56 +2842,61 @@ body {
     }
     
     .main {
-        padding: 1rem 0.25rem 0.25rem 0.25rem;
-        min-height: calc(100vh - 160px);
+        padding: 0.25rem;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
     }
     
     .game-container {
-        max-width: 350px;
-        gap: 1rem;
+        max-width: 100%;
+        height: 100%;
+        gap: 0.5rem;
     }
     
     .game-board-container {
-        width: 90vw;
-        height: 90vw;
-        max-width: 90vw;
-        max-height: 90vw;
+        /* Smaller screens need less reserved space for UI */
+        --board-size: min(95vw, calc(100dvh - 200px));
+        width: var(--board-size);
+        height: var(--board-size);
+        max-width: var(--board-size);
+        max-height: var(--board-size);
         margin: 0 auto;
+        flex-shrink: 0;
     }
     
     #game-board {
         width: 100%;
         height: 100%;
-        max-width: 90vw;
-        max-height: 90vw;
     }
     
     .game-area {
-        gap: 1rem;
+        gap: 0.5rem;
     }
     
     .game-info {
         flex-direction: row;
         gap: 0.3rem;
         padding: 0.3rem 0.4rem;
-        min-height: 38px; /* Increased height to accommodate text */
+        min-height: 35px;
         background: linear-gradient(135deg, var(--header-bg) 0%, var(--cell-bg) 100%);
         border-radius: 0;
         border: none;
         border-bottom: 1px solid var(--border-color);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
     }
     
     .game-info > div {
-        min-width: 45px;
-        padding: 0.2rem 0.25rem;
+        min-width: 40px;
+        padding: 0.2rem 0.2rem;
         box-sizing: border-box;
         overflow: visible;
-        min-height: 30px;
+        min-height: 28px;
     }
     
     .game-info span:first-child {
-        font-size: 0.675rem; /* 50% increase from 0.45rem */
+        font-size: 0.6rem;
         line-height: 1;
         font-weight: 600;
         white-space: nowrap;
@@ -2809,7 +2905,7 @@ body {
     }
     
     .game-info span:last-child {
-        font-size: 1.2rem; /* 50% increase from 0.8rem */
+        font-size: 1.1rem;
         line-height: 1.1;
         font-weight: 900;
         text-shadow: 0 2px 3px rgba(0, 0, 0, 0.4);
@@ -2821,14 +2917,14 @@ body {
     .blocks-container {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 0.3rem;
-        max-width: 450px; /* Match game board width */
-        padding: 0.4rem;
+        gap: 0.25rem;
+        max-width: min(95vw, calc(100dvh - 200px));
+        padding: 0.3rem;
     }
     
     .block-item {
-        padding: 0.3rem; /* Increased padding for better touch targets */
-        font-size: 0.7rem;
+        padding: 0.25rem;
+        font-size: 0.65rem;
         width: auto;
         max-width: none;
         display: flex;
@@ -2836,16 +2932,17 @@ body {
         justify-content: center;
         align-items: center;
         text-align: center;
-        min-width: 60px; /* Increased from 45px */
-        min-height: 60px; /* Increased from 45px */
-        height: auto; /* Let it size naturally */
+        min-width: 50px;
+        min-height: 50px;
+        height: auto;
     }
     
     .block-palette {
-        padding: 0.4rem;
-        max-width: 450px; /* Match game board width */
-        min-height: 105px; /* Increased height for magnified selected blocks */
-        height: 105px;
+        padding: 0.3rem;
+        max-width: min(95vw, calc(100dvh - 200px));
+        min-height: 90px;
+        height: 90px;
+        flex-shrink: 0;
     }
     
     .rotate-selected-btn {
