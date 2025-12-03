@@ -3333,9 +3333,24 @@ class BlockdokuGame {
             this.deadPixelsIntensity = difficultySettings.deadPixelsIntensity || 0;
             this.showPoints = difficultySettings.showPoints || false;
             this.showPersonalBests = difficultySettings.showPersonalBests || false;
+            const previousShowSpeedTimer = this.showSpeedTimer;
             this.showSpeedTimer = baseSettings.showSpeedTimer !== undefined ? baseSettings.showSpeedTimer : (difficultySettings.showSpeedTimer || false);
             this.enableMagicBlocks = difficultySettings.enableMagicBlocks || false;
             this.enableWildShapes = difficultySettings.enableWildShapes || false;
+            
+            // If speed timer was just enabled mid-game, start it immediately
+            if (this.showSpeedTimer && !previousShowSpeedTimer && !this.isGameOver && this.isInitialized) {
+                // Start the speed timer so it begins counting from now
+                if (!this.speedTimerStartTime) {
+                    this.startSpeedTimerCountdown();
+                    console.log('⏱️ Speed timer enabled mid-game - starting countdown');
+                }
+            }
+            // If speed timer was just disabled, stop it
+            if (!this.showSpeedTimer && previousShowSpeedTimer) {
+                this.stopSpeedTimerCountdown();
+                console.log('⏱️ Speed timer disabled - stopping countdown');
+            }
             
             // Apply difficulty-specific visual settings (like expert mode styling)
             this.applyDifficultySettings();
