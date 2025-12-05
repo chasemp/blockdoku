@@ -26,7 +26,7 @@ import { ConfirmationDialog } from './ui/confirmation-dialog.js';
 import { PetrificationManager } from './game/petrification-manager.js';
 import { DeadPixelsManager } from './game/dead-pixels-manager.js';
 import { LevelManager } from './level/level-manager.js';
-import { ProgressModeUI } from './ui/progress-mode-ui.js';
+import { ChallengeModeUI } from './ui/challenge-mode-ui.js';
 
 
 class BlockdokuGame {
@@ -100,11 +100,11 @@ class BlockdokuGame {
         this.confirmationDialog = new ConfirmationDialog();
         this.preGameOverPending = false;
         
-        // Progress Mode system
+        // Challenge Mode system
         this.levelManager = new LevelManager(this, this.storage);
-        this.progressModeUI = new ProgressModeUI(this, this.levelManager);
-        this.gameMode = 'classic'; // 'classic', 'progress', 'countdown'
-        this.currentProgressLevel = null;
+        this.challengeModeUI = new ChallengeModeUI(this, this.levelManager);
+        this.gameMode = 'classic'; // 'classic', 'challenge', 'countdown'
+        this.currentChallengeLevel = null;
         this.selectedBlock = null;
         this.previewPosition = null;
         this.isGameOver = false;
@@ -250,8 +250,8 @@ class BlockdokuGame {
         this.setupEventListeners();
         this.registerServiceWorker();
         
-        // Check for Progress Mode URL parameters
-        this.handleProgressModeURL();
+        // Check for Challenge Mode URL parameters
+        this.handleChallengeModeURL();
         
         // this.loadSettings();
         
@@ -5509,20 +5509,20 @@ class BlockdokuGame {
         }
     }
     
-    // Progress Mode Methods
+    // Challenge Mode Methods
     
     /**
-     * Handle Progress Mode URL parameters
+     * Handle Challenge Mode URL parameters
      */
-    handleProgressModeURL() {
+    handleChallengeModeURL() {
         const urlParams = new URLSearchParams(window.location.search);
         const mode = urlParams.get('mode');
         const level = urlParams.get('level');
         const difficulty = urlParams.get('difficulty');
         
-        if (mode === 'progress' && level && difficulty) {
-            console.log(`🎮 Starting Progress Mode from URL: Level ${level}, Difficulty ${difficulty}`);
-            this.startProgressModeLevel(parseInt(level), difficulty);
+        if (mode === 'challenge' && level && difficulty) {
+            console.log(`🎮 Starting Challenge Mode from URL: Level ${level}, Difficulty ${difficulty}`);
+            this.startChallengeModeLevel(parseInt(level), difficulty);
         }
     }
     
@@ -5535,13 +5535,13 @@ class BlockdokuGame {
     }
     
     /**
-     * Start a Progress Mode level
+     * Start a Challenge Mode level
      */
-    startProgressModeLevel(levelNum, difficulty) {
-        console.log(`🎮 Starting Progress Mode level ${levelNum} on ${difficulty} difficulty`);
+    startChallengeModeLevel(levelNum, difficulty) {
+        console.log(`🎮 Starting Challenge Mode level ${levelNum} on ${difficulty} difficulty`);
         
-        this.setGameMode('progress');
-        this.currentProgressLevel = levelNum;
+        this.setGameMode('challenge');
+        this.currentChallengeLevel = levelNum;
         
         // Get level definition
         const levelDef = this.levelManager.getLevelDefinition(levelNum, difficulty);
@@ -5553,7 +5553,7 @@ class BlockdokuGame {
         this.newGame();
         
         // Show progress display
-        this.progressModeUI.showProgressDisplay();
+        this.challengeModeUI.showProgressDisplay();
     }
     
     /**
@@ -5624,11 +5624,11 @@ class BlockdokuGame {
      * Check if current level objectives are met
      */
     checkLevelObjectives() {
-        if (this.gameMode !== 'progress' || !this.currentProgressLevel) {
+        if (this.gameMode !== 'challenge' || !this.currentChallengeLevel) {
             return null;
         }
         
-        const levelDef = this.levelManager.getLevelDefinition(this.currentProgressLevel, this.difficulty);
+        const levelDef = this.levelManager.getLevelDefinition(this.currentChallengeLevel, this.difficulty);
         const objectives = levelDef.objectives;
         
         const results = {
@@ -5651,10 +5651,10 @@ class BlockdokuGame {
     }
     
     /**
-     * Complete the current Progress Mode level
+     * Complete the current Challenge Mode level
      */
-    completeProgressLevel() {
-        if (this.gameMode !== 'progress' || !this.currentProgressLevel) {
+    completeChallengeLevel() {
+        if (this.gameMode !== 'challenge' || !this.currentChallengeLevel) {
             return;
         }
         
@@ -5664,16 +5664,16 @@ class BlockdokuGame {
             return;
         }
         
-        console.log(`🎮 Completing Progress Mode level ${this.currentProgressLevel}`);
+        console.log(`🎮 Completing Challenge Mode level ${this.currentChallengeLevel}`);
         
         // Complete the level in the level manager
-        this.levelManager.completeLevel(this.currentProgressLevel, results);
+        this.levelManager.completeLevel(this.currentChallengeLevel, results);
         
         // Show completion UI
-        this.progressModeUI.onLevelCompleted(results);
+        this.challengeModeUI.onLevelCompleted(results);
         
         // Reset current level
-        this.currentProgressLevel = null;
+        this.currentChallengeLevel = null;
     }
     
     /**
@@ -5687,17 +5687,17 @@ class BlockdokuGame {
     }
     
     /**
-     * Show Progress Mode level selection
+     * Show Challenge Mode level selection
      */
-    showProgressModeSelection() {
-        this.progressModeUI.showLevelSelection();
+    showChallengeModeSelection() {
+        this.challengeModeUI.showLevelSelection();
     }
     
     /**
-     * Override game over to handle Progress Mode
+     * Override game over to handle Challenge Mode
      */
-    progressModeGameOver() {
-        if (this.gameMode !== 'progress') {
+    challengeModeGameOver() {
+        if (this.gameMode !== 'challenge') {
             this.gameOver();
             return;
         }
@@ -5705,19 +5705,19 @@ class BlockdokuGame {
         // Check if we can complete the level despite game over
         const results = this.checkLevelObjectives();
         if (results && results.allObjectivesMet) {
-            this.completeProgressLevel();
+            this.completeChallengeLevel();
         } else {
-            // Show failure message for Progress Mode
-            this.showProgressModeFailure();
+            // Show failure message for Challenge Mode
+            this.showChallengeModeFailure();
         }
     }
     
     /**
-     * Show Progress Mode failure message
+     * Show Challenge Mode failure message
      */
-    showProgressModeFailure() {
+    showChallengeModeFailure() {
         // This would show a failure modal with retry option
-        console.log('🎮 Progress Mode level failed');
+        console.log('🎮 Challenge Mode level failed');
         // For now, just show regular game over
         this.gameOver();
     }

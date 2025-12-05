@@ -66,21 +66,21 @@ export class GameSettingsManager {
     loadGameModesSettings() {
         // Game Mode Selection
         const gameModeClassic = document.getElementById('game-mode-classic');
-        const gameModeProgress = document.getElementById('game-mode-progress');
-        const progressStats = document.getElementById('progress-stats');
+        const gameModeChallenge = document.getElementById('game-mode-challenge');
+        const challengeStats = document.getElementById('challenge-stats');
         
-        if (gameModeClassic && gameModeProgress) {
+        if (gameModeClassic && gameModeChallenge) {
             const gameMode = this.settings.gameMode || 'classic';
-            if (gameMode === 'progress') {
-                gameModeProgress.checked = true;
-                if (progressStats) {
-                    progressStats.style.display = 'block';
+            if (gameMode === 'challenge') {
+                gameModeChallenge.checked = true;
+                if (challengeStats) {
+                    challengeStats.style.display = 'block';
                 }
-                this.loadProgressData();
+                this.loadChallengeData();
             } else {
                 gameModeClassic.checked = true;
-                if (progressStats) {
-                    progressStats.style.display = 'none';
+                if (challengeStats) {
+                    challengeStats.style.display = 'none';
                 }
             }
         }
@@ -194,28 +194,28 @@ export class GameSettingsManager {
         }
     }
     
-    loadProgressData() {
+    loadChallengeData() {
         try {
-            const progressData = this.storage.loadProgressModeData();
-            if (progressData) {
+            const challengeData = this.storage.loadChallengeModeData();
+            if (challengeData) {
                 const difficulties = ['easy', 'normal', 'hard', 'expert'];
                 difficulties.forEach(difficulty => {
-                    const progressElement = document.getElementById(`${difficulty}-progress`);
-                    if (progressElement) {
-                        const completed = progressData.completedLevels ? 
-                            progressData.completedLevels.filter(level => level.startsWith(difficulty)).length : 0;
-                        progressElement.textContent = `${completed}/30`;
+                    const challengeElement = document.getElementById(`${difficulty}-challenge`);
+                    if (challengeElement) {
+                        const completed = challengeData.completedLevels ? 
+                            challengeData.completedLevels.filter(level => level.startsWith(difficulty)).length : 0;
+                        challengeElement.textContent = `${completed}/30`;
                     }
                 });
             }
         } catch (error) {
-            console.error('Error loading progress data:', error);
+            console.error('Error loading challenge data:', error);
             // Set default values if loading fails
             const difficulties = ['easy', 'normal', 'hard', 'expert'];
             difficulties.forEach(difficulty => {
-                const progressElement = document.getElementById(`${difficulty}-progress`);
-                if (progressElement) {
-                    progressElement.textContent = '0/30';
+                const challengeElement = document.getElementById(`${difficulty}-challenge`);
+                if (challengeElement) {
+                    challengeElement.textContent = '0/30';
                 }
             });
         }
@@ -495,28 +495,28 @@ export class GameSettingsManager {
     setupGameModesListeners() {
         // Game Mode Selection
         const gameModeClassic = document.getElementById('game-mode-classic');
-        const gameModeProgress = document.getElementById('game-mode-progress');
-        const progressStats = document.getElementById('progress-stats');
+        const gameModeChallenge = document.getElementById('game-mode-challenge');
+        const challengeStats = document.getElementById('challenge-stats');
         
         if (gameModeClassic) {
             gameModeClassic.addEventListener('change', () => {
                 if (gameModeClassic.checked) {
                     this.saveSetting('gameMode', 'classic');
-                    if (progressStats) {
-                        progressStats.style.display = 'none';
+                    if (challengeStats) {
+                        challengeStats.style.display = 'none';
                     }
                 }
             });
         }
         
-        if (gameModeProgress) {
-            gameModeProgress.addEventListener('change', () => {
-                if (gameModeProgress.checked) {
-                    this.saveSetting('gameMode', 'progress');
-                    if (progressStats) {
-                        progressStats.style.display = 'block';
+        if (gameModeChallenge) {
+            gameModeChallenge.addEventListener('change', () => {
+                if (gameModeChallenge.checked) {
+                    this.saveSetting('gameMode', 'challenge');
+                    if (challengeStats) {
+                        challengeStats.style.display = 'block';
                     }
-                    this.loadProgressData();
+                    this.loadChallengeData();
                 }
             });
         }

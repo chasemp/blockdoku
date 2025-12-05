@@ -1,18 +1,18 @@
 /**
- * Blockdoku PWA - Progress Mode Page
- * Dedicated page for Progress Mode with mobile-first design
+ * Blockdoku PWA - Challenge Mode Page
+ * Dedicated page for Challenge Mode with mobile-first design
  */
 
 import { LevelManager } from './level/level-manager.js';
 import { GameStorage } from './storage/game-storage.js';
 
-class ProgressModePage {
+class ChallengeModePage {
     constructor() {
         this.storage = new GameStorage();
         this.levelManager = new LevelManager(null, this.storage);
         this.currentDifficulty = 'normal';
         this.selectedLevel = 1;
-        this.progressData = this.storage.loadProgressModeData() || this.getDefaultProgressData();
+        this.progressData = this.storage.loadChallengeModeData() || this.getDefaultProgressData();
         
         this.initializePage();
     }
@@ -225,14 +225,14 @@ class ProgressModePage {
     
     startSelectedLevel() {
         // Store the selected level and difficulty
-        this.storage.saveProgressModeData({
+        this.storage.saveChallengeModeData({
             ...this.progressData,
             selectedLevel: this.selectedLevel,
             selectedDifficulty: this.currentDifficulty
         });
         
-        // Navigate to game with Progress Mode
-        window.location.href = `index.html?mode=progress&level=${this.selectedLevel}&difficulty=${this.currentDifficulty}`;
+        // Navigate to game with Challenge Mode
+        window.location.href = `index.html?mode=challenge&level=${this.selectedLevel}&difficulty=${this.currentDifficulty}`;
     }
     
     renderProgressStats() {
@@ -293,7 +293,7 @@ class ProgressModePage {
     }
     
     loadProgressData() {
-        const saved = this.storage.loadProgressModeData();
+        const saved = this.storage.loadChallengeModeData();
         if (saved) {
             this.progressData = { ...this.getDefaultProgressData(), ...saved };
         }
@@ -306,7 +306,7 @@ class ProgressModePage {
     }
     
     applyTheme(theme) {
-        console.log('Progress page applying theme:', theme);
+        console.log('Challenge page applying theme:', theme);
         
         // Update the theme CSS link
         const themeLink = document.getElementById('theme-css');
@@ -333,5 +333,5 @@ class ProgressModePage {
 
 // Initialize the page when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    new ProgressModePage();
+    new ChallengeModePage();
 });

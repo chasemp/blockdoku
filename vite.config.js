@@ -49,7 +49,7 @@ export default defineConfig({
           settings: resolve(__dirname, 'src/settings.html'),
           gamesettings: resolve(__dirname, 'src/gamesettings.html'),
           lastgame: resolve(__dirname, 'src/lastgame.html'),
-          progress: resolve(__dirname, 'src/progress.html')
+          challenge: resolve(__dirname, 'src/challenge.html')
         }
       }
   },

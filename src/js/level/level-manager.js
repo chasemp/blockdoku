@@ -1,6 +1,6 @@
 /**
- * Blockdoku PWA - Progress Mode Level Management System
- * Handles level progression, requirements, and rewards for Progress Mode
+ * Blockdoku PWA - Challenge Mode Level Management System
+ * Handles level progression, requirements, and rewards for Challenge Mode
  */
 
 export class LevelManager {
@@ -375,7 +375,7 @@ export class LevelManager {
         if (!this.storage) return;
         
         try {
-            const progress = this.storage.loadProgressModeData();
+            const progress = this.storage.loadChallengeModeData();
             if (progress) {
                 this.currentLevel = progress.currentLevel || 1;
                 this.currentTier = progress.currentTier || 'foundation';
@@ -384,7 +384,7 @@ export class LevelManager {
                 this.achievements = new Map(progress.achievements || []);
             }
         } catch (error) {
-            console.error('Error loading progress mode data:', error);
+            console.error('Error loading challenge mode data:', error);
         }
     }
     
@@ -400,9 +400,9 @@ export class LevelManager {
                 achievements: Array.from(this.achievements.entries())
             };
             
-            this.storage.saveProgressModeData(progress);
+            this.storage.saveChallengeModeData(progress);
         } catch (error) {
-            console.error('Error saving progress mode data:', error);
+            console.error('Error saving challenge mode data:', error);
         }
     }
     
