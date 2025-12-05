@@ -5633,12 +5633,12 @@ class BlockdokuGame {
         
         const results = {
             score: this.score,
-            movesUsed: this.moveCount,
+            movesUsed: this.gameEngine?.moveCount || 0,
             timeUsed: this.getElapsedTime(),
             combos: this.scoringSystem?.totalCombos || 0,
             objectives: {
                 scoreMet: this.score >= objectives.scoreTarget,
-                movesMet: this.moveCount <= objectives.maxMoves,
+                movesMet: (this.gameEngine?.moveCount || 0) <= objectives.maxMoves,
                 timeMet: !objectives.timeLimit || this.getElapsedTime() <= objectives.timeLimit,
                 combosMet: this.scoringSystem?.totalCombos >= objectives.comboRequirement
             }

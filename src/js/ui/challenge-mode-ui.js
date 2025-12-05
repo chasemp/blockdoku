@@ -436,7 +436,8 @@ export class ChallengeModeUI {
         
         document.getElementById('current-level-display').textContent = this.selectedLevel;
         document.getElementById('score-progress').textContent = `${this.game.score}/${levelDef.objectives.scoreTarget}`;
-        document.getElementById('moves-progress').textContent = `${this.game.moveCount}/${levelDef.objectives.maxMoves}`;
+        const moveCount = this.game.gameEngine?.moveCount || 0;
+        document.getElementById('moves-progress').textContent = `${moveCount}/${levelDef.objectives.maxMoves}`;
         document.getElementById('combos-progress').textContent = `${this.game.scoringSystem?.totalCombos || 0}/${levelDef.objectives.comboRequirement}`;
     }
     
