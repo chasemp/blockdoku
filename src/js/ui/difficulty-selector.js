@@ -250,7 +250,7 @@ export class DifficultySelector {
             this.hide();
         };
         
-        // Handle challenge click - start challenge mode directly
+        // Handle challenge click - show info popup then start challenge mode
         const handleChallengeClick = (e) => {
             e.preventDefault();
             challengeOption.classList.add('active');
@@ -261,8 +261,16 @@ export class DifficultySelector {
             const currentLevel = this.game.levelManager?.getCurrentLevel() || 1;
             const currentDifficulty = this.difficultyManager.getCurrentDifficulty();
             
-            // Start challenge mode directly
-            this.game.startChallengeModeLevel(currentLevel, currentDifficulty);
+            // Check if user wants to skip the popup
+            const skipPopup = localStorage.getItem('blockdoku_skip_challenge_popup') === 'true';
+            
+            if (skipPopup) {
+                // Start challenge mode directly
+                this.game.startChallengeModeLevel(currentLevel, currentDifficulty);
+            } else {
+                // Show the challenge mode info popup
+                this.showChallengeModePopup(currentLevel, currentDifficulty);
+            }
         };
         
         classicOption.addEventListener('click', handleClassicClick);
@@ -286,14 +294,236 @@ export class DifficultySelector {
         return container;
     }
     
+    showChallengeModePopup(currentLevel, currentDifficulty) {
+        // Create popup overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'challenge-popup-overlay';
+        overlay.id = 'challenge-popup-overlay';
+        
+        const popup = document.createElement('div');
+        popup.className = 'challenge-popup';
+        
+        popup.innerHTML = `
+            <div class="challenge-popup-header">
+                <h2>🏆 Challenge Mode</h2>
+            </div>
+            <div class="challenge-popup-body">
+                <p>You have switched to Challenge Mode.</p>
+                <p class="challenge-level-info">You are on <strong>Level ${currentLevel}</strong></p>
+                <p class="challenge-popup-links">
+                    See details on <a href="challenge.html" class="challenge-link">Leveling</a>
+                </p>
+            </div>
+            <div class="challenge-popup-footer">
+                <label class="challenge-popup-checkbox">
+                    <input type="checkbox" id="skip-challenge-popup">
+                    <span>Never show this again</span>
+                </label>
+                <button class="btn btn-primary challenge-play-btn" id="challenge-play-btn">Play</button>
+            </div>
+        `;
+        
+        overlay.appendChild(popup);
+        document.body.appendChild(overlay);
+        
+        // Add styles if not already added
+        this.addChallengeModePopupStyles();
+        
+        // Show with animation
+        requestAnimationFrame(() => {
+            overlay.classList.add('show');
+        });
+        
+        // Handle Play button
+        const playBtn = document.getElementById('challenge-play-btn');
+        const checkbox = document.getElementById('skip-challenge-popup');
+        
+        const handlePlay = () => {
+            // Save preference if checkbox is checked
+            if (checkbox.checked) {
+                localStorage.setItem('blockdoku_skip_challenge_popup', 'true');
+            }
+            
+            // Close popup
+            overlay.classList.remove('show');
+            setTimeout(() => {
+                overlay.remove();
+            }, 300);
+            
+            // Start challenge mode
+            this.game.startChallengeModeLevel(currentLevel, currentDifficulty);
+        };
+        
+        playBtn.addEventListener('click', handlePlay);
+        playBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handlePlay();
+        }, { passive: false });
+        
+        // Close on overlay click (outside popup)
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                handlePlay();
+            }
+        });
+    }
+    
+    addChallengeModePopupStyles() {
+        if (document.getElementById('challenge-popup-styles')) return;
+        
+        const style = document.createElement('style');
+        style.id = 'challenge-popup-styles';
+        style.textContent = `
+            .challenge-popup-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(5px);
+                z-index: 2000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            
+            .challenge-popup-overlay.show {
+                opacity: 1;
+            }
+            
+            .challenge-popup {
+                background: var(--card-bg, var(--header-bg, #fff));
+                border: 2px solid var(--border-color, #e0e0e0);
+                border-radius: 16px;
+                padding: 24px;
+                max-width: 400px;
+                width: 90%;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+                transform: scale(0.9);
+                transition: transform 0.3s ease;
+            }
+            
+            .challenge-popup-overlay.show .challenge-popup {
+                transform: scale(1);
+            }
+            
+            .challenge-popup-header {
+                text-align: center;
+                margin-bottom: 16px;
+            }
+            
+            .challenge-popup-header h2 {
+                margin: 0;
+                color: var(--text-color, #333);
+                font-size: 1.5rem;
+            }
+            
+            .challenge-popup-body {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            
+            .challenge-popup-body p {
+                margin: 8px 0;
+                color: var(--text-color, #333);
+                font-size: 1rem;
+                line-height: 1.5;
+            }
+            
+            .challenge-level-info {
+                font-size: 1.2rem !important;
+                color: var(--primary-color, #007bff) !important;
+                margin: 16px 0 !important;
+            }
+            
+            .challenge-level-info strong {
+                color: var(--primary-color, #007bff);
+            }
+            
+            .challenge-popup-links {
+                margin-top: 12px !important;
+            }
+            
+            .challenge-link {
+                color: var(--primary-color, #007bff);
+                text-decoration: underline;
+                font-weight: 600;
+                cursor: pointer;
+            }
+            
+            .challenge-link:hover {
+                color: var(--primary-hover, #0056b3);
+            }
+            
+            .challenge-popup-footer {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 16px;
+            }
+            
+            .challenge-popup-checkbox {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                cursor: pointer;
+                color: var(--text-muted, #666);
+                font-size: 0.9rem;
+            }
+            
+            .challenge-popup-checkbox input[type="checkbox"] {
+                width: 18px;
+                height: 18px;
+                cursor: pointer;
+                accent-color: var(--primary-color, #007bff);
+            }
+            
+            .challenge-play-btn {
+                padding: 12px 48px;
+                font-size: 1.1rem;
+                font-weight: 600;
+                border-radius: 8px;
+                min-width: 150px;
+            }
+            
+            @media (max-width: 480px) {
+                .challenge-popup {
+                    padding: 20px;
+                    margin: 16px;
+                }
+                
+                .challenge-popup-header h2 {
+                    font-size: 1.3rem;
+                }
+                
+                .challenge-play-btn {
+                    width: 100%;
+                    padding: 14px 24px;
+                }
+            }
+        `;
+        
+        document.head.appendChild(style);
+    }
+    
     async selectDifficulty(difficulty) {
         console.log(`🎯 DifficultySelector: selectDifficulty called with difficulty: ${difficulty}`);
         
-        // Special handling for Challenge Mode - start directly
+        // Special handling for Challenge Mode - show popup then start
         if (difficulty === 'challenge') {
             this.hide();
             const currentLevel = this.game.levelManager?.getCurrentLevel() || 1;
-            this.game.startChallengeModeLevel(currentLevel, this.difficultyManager.getCurrentDifficulty());
+            const currentDifficulty = this.difficultyManager.getCurrentDifficulty();
+            
+            const skipPopup = localStorage.getItem('blockdoku_skip_challenge_popup') === 'true';
+            if (skipPopup) {
+                this.game.startChallengeModeLevel(currentLevel, currentDifficulty);
+            } else {
+                this.showChallengeModePopup(currentLevel, currentDifficulty);
+            }
             return;
         }
         
