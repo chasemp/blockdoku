@@ -39,16 +39,22 @@ export class DifficultySelector {
         header.className = 'difficulty-header';
         header.innerHTML = '<h2>Select Difficulty</h2>';
         
-        // Create difficulty options
+        // Create difficulty options (exclude Challenge Mode - it goes in the toggle)
         const optionsContainer = document.createElement('div');
         optionsContainer.className = 'difficulty-options';
         
         const difficulties = this.difficultyManager.getAvailableDifficulties();
         
         difficulties.forEach(difficulty => {
+            // Skip Challenge Mode - it's shown as a toggle below
+            if (difficulty.key === 'challenge') return;
+            
             const option = this.createDifficultyOption(difficulty);
             optionsContainer.appendChild(option);
         });
+        
+        // Create game mode toggle (Classic vs Challenge)
+        const modeToggle = this.createGameModeToggle();
         
         // Create close button
         const closeButton = document.createElement('button');
@@ -64,6 +70,7 @@ export class DifficultySelector {
         // Assemble modal
         modal.appendChild(header);
         modal.appendChild(optionsContainer);
+        modal.appendChild(modeToggle);
         modal.appendChild(closeButton);
         
         // Assemble container
@@ -209,6 +216,68 @@ export class DifficultySelector {
             challenge: '📈'
         };
         return icons[difficulty] || '🎮';
+    }
+    
+    createGameModeToggle() {
+        const container = document.createElement('div');
+        container.className = 'game-mode-toggle-container';
+        
+        const label = document.createElement('div');
+        label.className = 'game-mode-label';
+        label.textContent = 'Game Mode';
+        
+        const toggleWrapper = document.createElement('div');
+        toggleWrapper.className = 'game-mode-toggle-wrapper';
+        
+        // Classic option
+        const classicOption = document.createElement('button');
+        classicOption.className = 'game-mode-toggle-option active';
+        classicOption.dataset.mode = 'classic';
+        classicOption.innerHTML = '🎮 Classic';
+        
+        // Challenge option
+        const challengeOption = document.createElement('button');
+        challengeOption.className = 'game-mode-toggle-option';
+        challengeOption.dataset.mode = 'challenge';
+        challengeOption.innerHTML = '🏆 Challenge';
+        
+        // Handle classic click
+        const handleClassicClick = (e) => {
+            e.preventDefault();
+            classicOption.classList.add('active');
+            challengeOption.classList.remove('active');
+            // Already in classic mode, just close
+            this.hide();
+        };
+        
+        // Handle challenge click
+        const handleChallengeClick = (e) => {
+            e.preventDefault();
+            challengeOption.classList.add('active');
+            classicOption.classList.remove('active');
+            this.hide();
+            window.location.href = 'challenge.html';
+        };
+        
+        classicOption.addEventListener('click', handleClassicClick);
+        classicOption.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleClassicClick(e);
+        }, { passive: false });
+        
+        challengeOption.addEventListener('click', handleChallengeClick);
+        challengeOption.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleChallengeClick(e);
+        }, { passive: false });
+        
+        toggleWrapper.appendChild(classicOption);
+        toggleWrapper.appendChild(challengeOption);
+        
+        container.appendChild(label);
+        container.appendChild(toggleWrapper);
+        
+        return container;
     }
     
     async selectDifficulty(difficulty) {
@@ -485,6 +554,60 @@ export class DifficultySelector {
                 color: var(--text-color, #333);
             }
             
+            /* Game Mode Toggle */
+            .game-mode-toggle-container {
+                margin-top: 20px;
+                padding-top: 20px;
+                border-top: 1px solid var(--border-color, #e0e0e0);
+            }
+            
+            .game-mode-label {
+                text-align: center;
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: var(--text-muted, #666);
+                margin-bottom: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            .game-mode-toggle-wrapper {
+                display: flex;
+                gap: 0;
+                border-radius: 8px;
+                overflow: hidden;
+                border: 2px solid var(--border-color, #e0e0e0);
+            }
+            
+            .game-mode-toggle-option {
+                flex: 1;
+                padding: 14px 16px;
+                border: none;
+                background: var(--card-bg, var(--header-bg, white));
+                color: var(--text-color, #333);
+                font-size: 1rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+            }
+            
+            .game-mode-toggle-option:first-child {
+                border-right: 1px solid var(--border-color, #e0e0e0);
+            }
+            
+            .game-mode-toggle-option:hover:not(.active) {
+                background: var(--cell-hover, #f5f5f5);
+            }
+            
+            .game-mode-toggle-option.active {
+                background: var(--primary-color, #007bff);
+                color: white;
+            }
+            
             @media (max-width: 480px) {
                 .difficulty-modal {
                     padding: 16px;
@@ -498,6 +621,11 @@ export class DifficultySelector {
                 .difficulty-icon {
                     font-size: 1.5rem;
                     margin-right: 12px;
+                }
+                
+                .game-mode-toggle-option {
+                    padding: 12px 10px;
+                    font-size: 0.9rem;
                 }
             }
         `;
