@@ -4927,8 +4927,9 @@ html.light-theme .settings-section .difficulty-option.selected {
     opacity: 1;
 }
 
-/* Progress Mode Page Styles */
-.progress-container {
+/* Challenge Mode Page Styles */
+.progress-container,
+.challenge-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 1rem;
@@ -4978,13 +4979,13 @@ html.light-theme .settings-section .difficulty-option.selected {
     color: white;
 }
 
-.difficulty-option.progress-mode-option {
+.difficulty-option.challenge-mode-option {
     background: linear-gradient(135deg, #6f42c1, #8e44ad);
     border-color: #6f42c1;
     color: white;
 }
 
-.difficulty-option.progress-mode-option:hover {
+.difficulty-option.challenge-mode-option:hover {
     background: linear-gradient(135deg, #5a32a3, #7d3c98);
     border-color: #5a32a3;
     transform: translateY(-2px) scale(1.02);
@@ -5457,8 +5458,8 @@ html.light-theme .settings-section .difficulty-option.selected {
     margin-bottom: 0.5rem;
 }
 
-/* Progress Mode In-Game Display */
-.progress-mode-display {
+/* Challenge Mode In-Game Display */
+.challenge-mode-display {
     background: var(--cell-bg);
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -5513,9 +5514,10 @@ html.light-theme .settings-section .difficulty-option.selected {
     color: var(--primary-color);
 }
 
-/* Progress Mode Mobile Responsive */
+/* Challenge Mode Mobile Responsive */
 @media (max-width: 768px) {
-    .progress-container {
+    .progress-container,
+    .challenge-container {
         padding: 0.5rem;
     }
     
@@ -5598,7 +5600,7 @@ html.light-theme .settings-section .difficulty-option.selected {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .progress-mode-body {
+    .challenge-mode-body {
         grid-template-columns: 1fr;
         gap: 1rem;
     }

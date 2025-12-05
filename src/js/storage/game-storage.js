@@ -259,7 +259,8 @@ export class GameStorage {
             localStorage.removeItem(this.settingsKey); // blockdoku_settings
             localStorage.removeItem(this.highScoresKey); // blockdoku_high_scores
             localStorage.removeItem('blockdoku_statistics');
-            localStorage.removeItem('blockdoku_progress_mode');
+            localStorage.removeItem('blockdoku_challenge_mode');
+            localStorage.removeItem('blockdoku_progress_mode'); // Legacy key
             localStorage.removeItem('blockdoku_lastgame');
             localStorage.removeItem('blockdoku_pending_difficulty');
             localStorage.removeItem('blockdoku_sound_mappings');
@@ -401,33 +402,43 @@ export class GameStorage {
         }
     }
 
-    // Progress Mode Data Management
-    loadProgressModeData() {
+    // Challenge Mode Data Management
+    loadChallengeModeData() {
         try {
-            const data = localStorage.getItem('blockdoku_progress_mode');
+            // Check for new key first, then fall back to old key for migration
+            let data = localStorage.getItem('blockdoku_challenge_mode');
+            if (!data) {
+                data = localStorage.getItem('blockdoku_progress_mode');
+                if (data) {
+                    // Migrate to new key
+                    localStorage.setItem('blockdoku_challenge_mode', data);
+                    localStorage.removeItem('blockdoku_progress_mode');
+                }
+            }
             return data ? JSON.parse(data) : null;
         } catch (error) {
-            console.error('Failed to load progress mode data:', error);
+            console.error('Failed to load challenge mode data:', error);
             return null;
         }
     }
 
-    saveProgressModeData(progressData) {
+    saveChallengeModeData(challengeData) {
         try {
-            localStorage.setItem('blockdoku_progress_mode', JSON.stringify(progressData));
+            localStorage.setItem('blockdoku_challenge_mode', JSON.stringify(challengeData));
             return true;
         } catch (error) {
-            console.error('Failed to save progress mode data:', error);
+            console.error('Failed to save challenge mode data:', error);
             return false;
         }
     }
 
-    clearProgressModeData() {
+    clearChallengeModeData() {
         try {
-            localStorage.removeItem('blockdoku_progress_mode');
+            localStorage.removeItem('blockdoku_challenge_mode');
+            localStorage.removeItem('blockdoku_progress_mode'); // Also clear old key
             return true;
         } catch (error) {
-            console.error('Failed to clear progress mode data:', error);
+            console.error('Failed to clear challenge mode data:', error);
             return false;
         }
     }

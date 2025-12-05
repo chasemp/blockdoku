@@ -348,10 +348,10 @@ export class DifficultyManager {
             ...this.difficultySettings[key]
         }));
         
-        // Add Progress Mode as a special option
+        // Add Challenge Mode as a special option
         difficulties.push({
-            key: 'progress',
-            name: 'Progress Mode',
+            key: 'challenge',
+            name: 'Challenge Mode',
             shortDescription: 'Structured levels with objectives',
             description: 'Complete structured levels with specific objectives and rewards',
             isSpecialMode: true

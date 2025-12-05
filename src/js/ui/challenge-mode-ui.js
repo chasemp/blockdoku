@@ -1,9 +1,9 @@
 /**
- * Blockdoku PWA - Progress Mode UI Manager
+ * Blockdoku PWA - Challenge Mode UI Manager
  * Handles UI for level selection, progress tracking, and level completion
  */
 
-export class ProgressModeUI {
+export class ChallengeModeUI {
     constructor(game, levelManager) {
         this.game = game;
         this.levelManager = levelManager;
@@ -22,18 +22,18 @@ export class ProgressModeUI {
     createLevelSelectionModal() {
         // Create modal container
         const modal = document.createElement('div');
-        modal.id = 'progress-mode-modal';
+        modal.id = 'challenge-mode-modal';
         modal.className = 'modal';
         modal.style.display = 'none';
         
         modal.innerHTML = `
-            <div class="modal-content progress-mode-content">
+            <div class="modal-content challenge-mode-content">
                 <div class="modal-header">
-                    <h2>Progress Mode</h2>
-                    <span class="close" id="close-progress-modal">&times;</span>
+                    <h2>Challenge Mode</h2>
+                    <span class="close" id="close-challenge-modal">&times;</span>
                 </div>
                 
-                <div class="progress-mode-body">
+                <div class="challenge-mode-body">
                     <div class="difficulty-selector">
                         <h3>Select Difficulty</h3>
                         <div class="difficulty-options">
@@ -84,7 +84,7 @@ export class ProgressModeUI {
                     
                     <div class="modal-actions">
                         <button id="start-level-btn" class="btn btn-primary" disabled>Start Level</button>
-                        <button id="cancel-progress-btn" class="btn btn-secondary">Cancel</button>
+                        <button id="cancel-challenge-btn" class="btn btn-secondary">Cancel</button>
                     </div>
                 </div>
             </div>
@@ -157,8 +157,8 @@ export class ProgressModeUI {
     createProgressDisplay() {
         // Create progress display for in-game UI
         const progressDisplay = document.createElement('div');
-        progressDisplay.id = 'progress-mode-display';
-        progressDisplay.className = 'progress-mode-display';
+        progressDisplay.id = 'challenge-mode-display';
+        progressDisplay.className = 'challenge-mode-display';
         progressDisplay.style.display = 'none';
         
         progressDisplay.innerHTML = `
@@ -194,9 +194,9 @@ export class ProgressModeUI {
     }
     
     setupLevelSelectionEvents() {
-        const modal = document.getElementById('progress-mode-modal');
-        const closeBtn = document.getElementById('close-progress-modal');
-        const cancelBtn = document.getElementById('cancel-progress-btn');
+        const modal = document.getElementById('challenge-mode-modal');
+        const closeBtn = document.getElementById('close-challenge-modal');
+        const cancelBtn = document.getElementById('cancel-challenge-btn');
         const startBtn = document.getElementById('start-level-btn');
         
         // Close modal events
@@ -251,14 +251,14 @@ export class ProgressModeUI {
     }
     
     showLevelSelection() {
-        const modal = document.getElementById('progress-mode-modal');
+        const modal = document.getElementById('challenge-mode-modal');
         modal.style.display = 'block';
         this.updateLevelGrid();
         this.updateProgressStats();
     }
     
     hideLevelSelection() {
-        const modal = document.getElementById('progress-mode-modal');
+        const modal = document.getElementById('challenge-mode-modal');
         modal.style.display = 'none';
     }
     
@@ -405,7 +405,7 @@ export class ProgressModeUI {
     startSelectedLevel() {
         this.hideLevelSelection();
         this.showProgressDisplay();
-        this.game.startProgressModeLevel(this.selectedLevel, this.currentDifficulty);
+        this.game.startChallengeModeLevel(this.selectedLevel, this.currentDifficulty);
     }
     
     startNextLevel() {
@@ -421,13 +421,13 @@ export class ProgressModeUI {
     }
     
     showProgressDisplay() {
-        const display = document.getElementById('progress-mode-display');
+        const display = document.getElementById('challenge-mode-display');
         display.style.display = 'block';
         this.updateProgressDisplay();
     }
     
     hideProgressDisplay() {
-        const display = document.getElementById('progress-mode-display');
+        const display = document.getElementById('challenge-mode-display');
         display.style.display = 'none';
     }
     
