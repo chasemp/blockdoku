@@ -250,13 +250,19 @@ export class DifficultySelector {
             this.hide();
         };
         
-        // Handle challenge click
+        // Handle challenge click - start challenge mode directly
         const handleChallengeClick = (e) => {
             e.preventDefault();
             challengeOption.classList.add('active');
             classicOption.classList.remove('active');
             this.hide();
-            window.location.href = 'challenge.html';
+            
+            // Get the current challenge level from storage or default to 1
+            const currentLevel = this.game.levelManager?.getCurrentLevel() || 1;
+            const currentDifficulty = this.difficultyManager.getCurrentDifficulty();
+            
+            // Start challenge mode directly
+            this.game.startChallengeModeLevel(currentLevel, currentDifficulty);
         };
         
         classicOption.addEventListener('click', handleClassicClick);
@@ -283,10 +289,11 @@ export class DifficultySelector {
     async selectDifficulty(difficulty) {
         console.log(`🎯 DifficultySelector: selectDifficulty called with difficulty: ${difficulty}`);
         
-        // Special handling for Challenge Mode
+        // Special handling for Challenge Mode - start directly
         if (difficulty === 'challenge') {
             this.hide();
-            window.location.href = 'challenge.html';
+            const currentLevel = this.game.levelManager?.getCurrentLevel() || 1;
+            this.game.startChallengeModeLevel(currentLevel, this.difficultyManager.getCurrentDifficulty());
             return;
         }
         
