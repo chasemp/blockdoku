@@ -233,7 +233,7 @@ export class DifficultySelector {
         const classicOption = document.createElement('button');
         classicOption.className = 'game-mode-toggle-option active';
         classicOption.dataset.mode = 'classic';
-        classicOption.innerHTML = '🎮 Classic';
+        classicOption.innerHTML = '♾️ Classic';
         
         // Challenge option
         const challengeOption = document.createElement('button');
