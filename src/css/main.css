@@ -2530,9 +2530,9 @@ body.game-page-locked a {
     
     .game-board-container {
         /* Dynamic sizing: use available space, constrained by both width and remaining height */
-        /* Reserved space: header(~55px) + game-info(~40px) + palette(~100px) + gaps(~20px) = ~215px */
+        /* Reserved space: header(~80px) + game-info(~50px) + palette(~110px) + gaps(~30px) + safe-area(~20px) = ~290px */
         /* Use max 95vw to leave some margin, and subtract UI height from viewport */
-        --board-size: min(95vw, calc(100dvh - 220px));
+        --board-size: min(95vw, calc(100dvh - 280px - env(safe-area-inset-bottom, 0px)));
         width: var(--board-size);
         height: var(--board-size);
         max-width: var(--board-size);
@@ -2607,7 +2607,7 @@ body.game-page-locked a {
         grid-template-columns: repeat(3, 1fr);
         gap: 0.4rem;
         width: 100%;
-        max-width: min(95vw, calc(100dvh - 220px));
+        max-width: min(95vw, calc(100dvh - 280px - env(safe-area-inset-bottom, 0px)));
         padding: 0.3rem;
     }
     
@@ -2641,11 +2641,12 @@ body.game-page-locked a {
         padding: 0.4rem;
         margin: 0;
         width: 100%;
-        max-width: min(95vw, calc(100dvh - 220px));
+        max-width: min(95vw, calc(100dvh - 280px - env(safe-area-inset-bottom, 0px)));
         min-height: 100px;
         height: 100px;
         order: 2; /* After game board */
         flex-shrink: 0;
+        margin-bottom: env(safe-area-inset-bottom, 0px);
     }
     
     .block-palette h3 {
@@ -2824,8 +2825,8 @@ body.game-page-locked a {
     }
     
     .game-board-container {
-        /* Smaller screens need less reserved space for UI */
-        --board-size: min(95vw, calc(100dvh - 200px));
+        /* Smaller screens still need adequate reserved space for UI + safe areas */
+        --board-size: min(95vw, calc(100dvh - 260px - env(safe-area-inset-bottom, 0px)));
         width: var(--board-size);
         height: var(--board-size);
         max-width: var(--board-size);
@@ -2887,7 +2888,7 @@ body.game-page-locked a {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 0.25rem;
-        max-width: min(95vw, calc(100dvh - 200px));
+        max-width: min(95vw, calc(100dvh - 260px - env(safe-area-inset-bottom, 0px)));
         padding: 0.3rem;
     }
     
@@ -2908,10 +2909,11 @@ body.game-page-locked a {
     
     .block-palette {
         padding: 0.3rem;
-        max-width: min(95vw, calc(100dvh - 200px));
+        max-width: min(95vw, calc(100dvh - 260px - env(safe-area-inset-bottom, 0px)));
         min-height: 90px;
         height: 90px;
         flex-shrink: 0;
+        margin-bottom: env(safe-area-inset-bottom, 0px);
     }
     
     .rotate-selected-btn {
